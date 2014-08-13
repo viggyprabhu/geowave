@@ -1,6 +1,10 @@
-# GeoWave 0.8.0
-
+# GeoWave 0.8.0	
 ## About  
+
+<img align="left" src="https://travis-ci.org/ngageoint/geowave.svg?branch=master"/>
+<br/>
+
+
 
 GeoWave is an open source set of software that:
 	
@@ -11,7 +15,18 @@ GeoWave is an open source set of software that:
 
 Basically, GeoWave attempts to do for Accumulo as PostGIS does for PostgreSQL.  
 
-See [GeoWave io page](http://ngageoint.github.io/geowave/)
+See [GeoWave io page](http://ngageoint.github.io/geowave/) for more detailed documenatation, quickstart, examples, etc.
+
+## Screenshots
+
+<p align="center">
+	<a href="https://ngageoint.github.io/geowave/assets/images/geolife-density-13.jpg" target="_blank"><img align="center" src="https://ngageoint.github.io/geowave/assets/images/geolife-density-13-thumb.jpg" alt="T-drive density at city scale"></a><br/><br/>
+	<a href="https://ngageoint.github.io/geowave/assets/images/geolife-density-17-full.jpg" target="_blank"><img align="center" src="https://ngageoint.github.io/geowave/assets/images/geolife-density-17-thumb.jpg" alt="T-drive density at city scale"></a><br/><br/>
+	<a href="https://ngageoint.github.io/geowave/assets/images/osmgpx-full.jpg" target="_blank"><img align="center" src="https://ngageoint.github.io/geowave/assets/images/osmgpx-thumb.jpg" alt="T-drive density at city scale"></a><br/>
+	
+</p>
+
+See [Screenshots](https://ngageoint.github.io/geowave/screenshots.html) for more information.
 
 ## Origin
 
@@ -23,6 +38,9 @@ GeoWave was developed at the National Geospatial-Intelligence Agency (NGA) in co
 All pull request contributions to this project will be released under the Apache 2.0 license.  
 
 Software source code previously released under an open source license and then modified by NGA staff is considered a "joint work" (see *17 USC  101*); it is partially copyrighted, partially public domain, and as a whole is protected by the copyrights of the non-government authors and must be released according to the terms of the original open source license.
+
+##In the News###
+[Federal IT Innovation Depends On Being Open](http://www.informationweek.com/government/open-government/federal-it-innovation-depends-on-being-open/a/d-id/1297521), Information Week, 7/24/2014 mentions GeoWave.  
 
 ## *Ultra* Quickstart
 
@@ -89,7 +107,9 @@ This should be very familiar by now; from the geowave root directory:
     $ cd geowave-gt
     $ mvn package -Paccumulo-container-singlejar
 
-This distributable needs to be in the Accumulo classpath on every tablet server.  Accumulo (in 1.5) leverages the Apache VFSClassloader to provide an easy way to do this in one shot - load dependencies out of HDFS.  Unfortunately we have a current bug (**GEOWAVE-28**) where the hdfs URI breaks some SPI injection fixes we have in place.  So until this is addressed you need to distribute this jar (*geowave-gt-0.7.0-accumulo-singlejar.jar*) to each tabled server, on the accumulo classpath ( $ACCUMULO_HOME/lib/ext/  is the default choice ).  
+This distributable needs to be in the Accumulo classpath on every tablet server.
+
+See: [Installtion Page](https://ngageoint.github.io/geowave//installation.html) for more information about deployment.
 
 ### GeoWave System Integration Test
 
@@ -99,11 +119,20 @@ A specific Accumulo instance can be configured either directly within this pom.x
 
 If any of these configuration parameters are left unspecified the default integration test will use a MiniAccumuloCluster created within a temporary directory.  For this to work on Windows, make sure Cygwin is installed and a "CYGPATH" environment variable must reference the &lt;CYGWIN_HOME&gt;/bin/cygpath.exe file.  
 
+### Supported Versions
+
+The Travis CI test matrix will test all combinations of the following releases using Oracle JDK7:  
+Accumulo: 1.5.1 and 1.6.0  
+Hadoop: 2.0.0-cdh4.7.0, 2.3.0-cdh5.0.3, and 1.2.0.23*  
+GeoTools/GeoServer: 11.0/2.5 and 11.2/2.5.2  
+
+\* Accumulo 1.5.1 and Hadoop 1.2.0.23 is the one exception that is not tested and has been found to fail starting the MiniAccumuloCluster in the integration test
+
 ### Ingest Data
 
 *Coming Soon! With useful details!*
 
-(basically see  geowave-ingest::mil.nga.giat.geowave.ingest.VectorFileIngest for an example that can ingest any geotools supported format) 
+(basically run geowave-ingest::mil.nga.giat.geowave.ingest.IngestMain with the geowave-types module included in the classpath - geowave-ingest uses SPI to discover supported formats and geowave-types provides a set of basic formats) 
 
 
 ### View in GeoServer
