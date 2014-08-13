@@ -229,6 +229,7 @@
 		<module>geowave-types</module>
 		<module>geowave-analytics</module>
 		<module>geowave-test</module>
+		<module>geowave-webservices</module>
 	</modules>
 
 	<repositories>

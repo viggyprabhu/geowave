@@ -459,4 +459,12 @@ public class AccumuloDataStore implements
 						}),
 				limit);
 	}
+	
+	public AdapterStore getAdapterStore() {
+		return adapterStore;
+	}
+
+	public IndexStore getIndexStore() {
+		return indexStore;
+	}
 }
