@@ -1,49 +1,43 @@
 package mil.nga.giat.geowave.webservices.rest.data;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import org.apache.log4j.Logger;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 public class BoundingBox
 {
-
+	private final static Logger LOGGER = Logger.getLogger(BoundingBox.class);
+	
+	private String title;
+	private double minx;
+	private double maxx;
+	private double miny;
+	private double maxy;
+	private String crs;
+	
+	final static String MINX = "minx";
+	final static String MAXX = "maxx";
+	final static String MINY = "miny";
+	final static String MAXY = "maxy";
+	final static String CRS = "crs";
+	
 	public BoundingBox() {
 		super();
-	}
-	
-	public BoundingBox(JSONObject json) throws JSONException {
-		this();
 		
-		minx = json.getDouble(MINX);
-		maxx = json.getDouble(MAXX);
-		miny = json.getDouble(MINY);
-		maxy = json.getDouble(MAXY);
-		crs = json.getString(CRS);
+		minx = -180;
+		maxx = 180;
+		miny = -90;
+		maxy = 90;
+		crs = "";
 	}
-	
-	public BoundingBox(double minx, double maxx, double miny, double maxy, String crs) {
-		this.minx = minx;
-		this.maxx = maxx;
-		this.miny = miny;
-		this.maxy = maxy;
+
+	public BoundingBox(String crs) {
+		this();
 		this.crs = crs;
 	}
 	
-	public JSONObject toJSON() throws JSONException {
-		JSONObject json = new JSONObject();
-		
-		json.put(MINX, minx);
-		json.put(MAXX, maxx);
-		json.put(MINY, miny);
-		json.put(MAXY, maxy);
-		json.put(CRS, crs);
-		
-		return json;
-	}
-	
-	public String toJSONString() throws JSONException {
-		return toJSON().toString();
-	}
-
 	public double getMinx() {
 		return minx;
 	}
@@ -89,15 +83,43 @@ public class BoundingBox
 		this.crs = crs;
 	}
 
-	private double minx;
-	private double maxx;
-	private double miny;
-	private double maxy;
-	private String crs;
-	
-	private final static String MINX = "minx";
-	private final static String MAXX = "maxx";
-	private final static String MINY = "miny";
-	private final static String MAXY = "maxy";
-	private final static String CRS = "crs";
+	public Node toXML(
+			Document document ) {
+		Element rootElement = document.createElement(title);
+		try {
+			
+			// root element
+			document.appendChild(rootElement);
+						
+			// minx element
+			Element minxElement = document.createElement(MINX);
+			minxElement.appendChild(document.createTextNode(Double.toString(getMinx())));
+			rootElement.appendChild(minxElement);
+			
+			// maxx element
+			Element maxxElement = document.createElement(MAXX);
+			maxxElement.appendChild(document.createTextNode(Double.toString(getMaxx())));
+			rootElement.appendChild(maxxElement);
+			
+			// minx element
+			Element minyElement = document.createElement(MINY);
+			minyElement.appendChild(document.createTextNode(Double.toString(getMiny())));
+			rootElement.appendChild(minyElement);
+			
+			// maxy element
+			Element maxyElement = document.createElement(MAXY);
+			maxyElement.appendChild(document.createTextNode(Double.toString(getMaxy())));
+			rootElement.appendChild(maxyElement);
+			
+			// crs element
+			Element crsElement = document.createElement(CRS);
+			crsElement.appendChild(document.createTextNode(getCrs()));
+			rootElement.appendChild(crsElement);
+		}
+		catch (DOMException e) {
+			LOGGER.error(e.getMessage());
+		}
+		return rootElement;
+	}
+
 }
