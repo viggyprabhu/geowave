@@ -15,14 +15,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -68,16 +67,13 @@ import org.w3c.dom.Element;
 @Path("/services")
 public class Services
 {
-	@Context
-	private static HttpServletRequest request;
-
 	public static void main(String [] args) {
 	}
 
 	@GET
 	@Produces({MediaType.APPLICATION_XML})
 	@Path("/geowaveNamespaces")
-	public static Response getGeowaveNamespaces() {
+	public static String getGeowaveNamespaces() {
 
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -87,23 +83,6 @@ public class Services
 			Element rootElement = document.createElement("GeowaveNamespaces");
 			document.appendChild(rootElement);
 
-			Element zkElement = document.createElement("zookeeperUrl");
-			zkElement.appendChild(document.createTextNode(zookeeperUrl));
-			rootElement.appendChild(zkElement);
-
-			Element instElement = document.createElement("instanceName");
-			instElement.appendChild(document.createTextNode(instanceName));
-			rootElement.appendChild(instElement);
-
-			Element userElement = document.createElement("username");
-			userElement.appendChild(document.createTextNode(geowaveUsername));
-			rootElement.appendChild(userElement);
-
-			Element passElement = document.createElement("password");
-			passElement.appendChild(document.createTextNode(geowavePassword));
-			rootElement.appendChild(passElement);
-
-			Element nsListElement = document.createElement("namespaces");
 			List<String> namespaces = new ArrayList<String>();
 
 			TableOperations tableOperations = getOperations("").getConnector().tableOperations();
@@ -118,26 +97,22 @@ public class Services
 
 						Element nsElement = document.createElement("namespace");
 						nsElement.appendChild(document.createTextNode(namespace));
-						nsListElement.appendChild(nsElement);
+						rootElement.appendChild(nsElement);
 					}
 				}
 			}
-			rootElement.appendChild(nsListElement);
-
 			StringWriter writer = new StringWriter();
 
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			DOMSource source = new DOMSource(document);
 			StreamResult result = new StreamResult(writer);
-
 			transformer.transform(source, result);
-
-			return Response.status(Status.OK).entity(writer.toString()).build();
+			return writer.toString();
 		}
 		catch (AccumuloException | AccumuloSecurityException | IOException | ParserConfigurationException | TransformerException e) {
 			LOGGER.error(e.getMessage());
-			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+			return null;
 		}
 
 	}
@@ -145,7 +120,7 @@ public class Services
 	@GET
 	@Produces({MediaType.APPLICATION_XML})
 	@Path("/geowaveLayers/{namespace}")
-	public static Response getGeowaveLayers(@PathParam("namespace")String namespace) {
+	public static String getGeowaveLayers(@PathParam("namespace")String namespace) {
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -196,11 +171,11 @@ public class Services
 
 			transformer.transform(source, result);
 
-			return Response.status(200).entity(writer.toString()).build();
+			return writer.toString();
 		}
 		catch (AccumuloException | AccumuloSecurityException | TableNotFoundException | IOException | ParserConfigurationException | TransformerException e) {
 			LOGGER.error(e.getMessage());
-			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+			return null;
 		}
 	}
 
@@ -208,19 +183,28 @@ public class Services
 	@Path("/publishDataStore")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public static Response publishDataStore(MultivaluedMap<String, String> parameter) {
-		String dataStore = null;
+		String namespace = null;
 		for (String key : parameter.keySet()) {
-			if (key.equals("dataStore"))
-				dataStore = parameter.getFirst(key);
+			if (key.equals("namespace"))
+				namespace = parameter.getFirst(key);
 		}
+		return publishDataStore(namespace);
+	}
+
+	@POST
+	@Path("/publishDataStore/{namespace}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	public static Response publishDataStore(@PathParam("namespace")String namespace) {
 		boolean flag = false;
-		if (dataStore != null)
-			flag = publishDataStore(dataStore);
+		if (namespace != null) namespace.replaceAll("\\s+", "");
+
+		if (namespace != null && namespace.length() > 0)
+			flag = createDataStore(namespace);
 		else
-			return Response.status(Status.INTERNAL_SERVER_ERROR).entity("No value entered for Data Store.").build();
+			return Response.status(Status.INTERNAL_SERVER_ERROR).entity("No value entered for Geowave Namespace.").build();
 
 		if (flag)
-			return Response.status(Status.OK).entity("Datastore published.").build();
+			return Response.status(Status.CREATED).entity("Datastore published.").build();
 		else
 			return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error occurred.").build();
 	}
@@ -237,27 +221,81 @@ public class Services
 			else if (key.equals("layer"))
 				layer = parameter.getFirst(key);
 		}
+		return publishLayer(dataStore, layer);
+	}
+
+	@POST
+	@Path("/publishLayer/{dataStore}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	public static Response publishLayer(@PathParam("dataStore")String dataStore, @QueryParam("name")String name) {
 		boolean flag = false;
-		if (dataStore != null && layer != null)
-			flag = publishLayer(dataStore, layer);
-		else
-			return Response.status(Status.INTERNAL_SERVER_ERROR).entity("No value entered for Data Store and/or Layer.").build();
+		if (dataStore != null) dataStore.replaceAll("\\s+", "");
+		if (name != null) name.replaceAll("\\s+", "");
+
+		if (dataStore != null && dataStore.length() > 0
+				&& name != null && name.length() > 0)
+			flag = createLayer(dataStore, name);
 
 		if (flag)
-			return Response.status(Status.OK).entity("Layer published.").build();
+			return Response.status(Status.CREATED).entity("Layer published.").build();
 		else
 			return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error occurred.").build();
 	}
 
-	public static boolean publishDataStore(String name) {
-		return publishDataStore(name, name);
+	@GET
+	@Produces({MediaType.APPLICATION_XML})
+	@Path("/getStyles")
+	public static String getStyles() {
+		try {
+			loadProperties();
+
+			GeowaveRESTReader reader = new GeowaveRESTReader(geoserverUrl, geoserverUsername, geoserverPassword);
+			return reader.getStyles();
+		}
+		catch(IOException e) {}
+
+		return null;
 	}
 
-	public static boolean publishDataStore(String name, String namespace) {
+	@GET
+	@Produces({MediaType.APPLICATION_XML})
+	@Path("/getStyles/{styleName}")
+	public static String getStyle(@PathParam("styleName")String styleName) {
+		try {
+			loadProperties();
+			GeowaveRESTReader reader = new GeowaveRESTReader(geoserverUrl, geoserverUsername, geoserverPassword);
+			return reader.getStyles(styleName);
+		}
+		catch(IOException e) {}
+
+		return null;
+	}
+
+	public static boolean publishStyle(String styleName, File sld) {
+		try {
+			loadProperties();
+			GeowaveRESTPublisher publisher = new GeowaveRESTPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
+			return publisher.publishStyle(styleName, sld);
+		}
+		catch (IOException e) {}
+		return false;
+	}
+
+	public static boolean updateStyle(String styleName, File sld) {
+		try {
+			loadProperties();
+			GeowaveRESTPublisher publisher = new GeowaveRESTPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
+			return publisher.updateStyle(styleName, sld);
+		}
+		catch (IOException e) {}
+		return false;
+	}
+
+	private static boolean createDataStore(String namespace) {
 		boolean flag = false;
 		try {
 			DatastoreEncoder encoder = new DatastoreEncoder();
-			encoder.setName(name);
+			encoder.setName(namespace);
 			encoder.setType("GeoWave DataStore");
 			encoder.setEnabled(true);
 
@@ -274,8 +312,8 @@ public class Services
 
 			GeowaveRESTPublisher publisher = new GeowaveRESTPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
 
-			if (publisher.datastoreExist(geoserverWorkspace, name)) {
-				LOGGER.info("Datastore: " + name + " already exists.");
+			if (publisher.datastoreExist(geoserverWorkspace, namespace)) {
+				LOGGER.info("Datastore: " + namespace + " already exists.");
 			}
 			else {
 				flag = publisher.createDatastore(geoserverWorkspace, encoder);
@@ -288,7 +326,7 @@ public class Services
 		return flag;
 	}
 
-	public static boolean publishLayer(String dataStore, String layerName) {
+	private static boolean createLayer(String dataStore, String layerName) {
 		boolean flag = false;
 		try {
 			FeatureTypeEncoder layer = new FeatureTypeEncoder();
@@ -320,41 +358,6 @@ public class Services
 			LOGGER.error(e.getMessage());
 		}
 		return flag;
-	}
-	
-	public static String getStyles() {
-		GeowaveRESTReader reader = new GeowaveRESTReader(geoserverUrl, geoserverUsername, geoserverPassword);
-		return reader.getStyles();
-	}
-	
-	public static String getStyle(String styleName) {
-		GeowaveRESTReader reader = new GeowaveRESTReader(geoserverUrl, geoserverUsername, geoserverPassword);
-		return reader.getStyles(styleName);
-	}
-	
-	public static boolean publishStyle(String styleName, String sld) {
-		GeowaveRESTPublisher publisher = new GeowaveRESTPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
-		return publisher.publishStyle(styleName, sld);	
-	}
-	
-	public static boolean publishStyle(String styleName, File sld) {
-		GeowaveRESTPublisher publisher = new GeowaveRESTPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
-		return publisher.publishStyle(styleName, sld);
-	}
-	
-	public static boolean updateStyle(String styleName, String sld) {
-		GeowaveRESTPublisher publisher = new GeowaveRESTPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
-		return publisher.updateStyle(styleName, sld);	
-	}
-	
-	public static boolean updateStyle(String styleName, File sld) {
-		GeowaveRESTPublisher publisher = new GeowaveRESTPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
-		return publisher.updateStyle(styleName, sld);
-	}
-	
-	public static boolean removeStyle(String styleName) {
-		GeowaveRESTPublisher publisher = new GeowaveRESTPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
-		return publisher.removeStyle(styleName);
 	}
 
 	private static BasicAccumuloOperations getOperations(String namespace) throws AccumuloException, AccumuloSecurityException, IOException {

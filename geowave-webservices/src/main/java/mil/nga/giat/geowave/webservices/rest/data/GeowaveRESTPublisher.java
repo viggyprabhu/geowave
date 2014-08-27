@@ -62,11 +62,6 @@ public class GeowaveRESTPublisher
 			return false;
 	}
 
-	public boolean removeStyle(String styleName) {
-		String url = restURL + "/rest/styles/" + styleName + "?purge=true";
-		return HttpURLConnection.HTTP_OK == HttpUtils.delete(url, username, password);
-	}
-	
 	public boolean updateStyle(String styleName, String sld) {
 		String url = restURL + "/rest/styles/" + styleName;
 		return HttpURLConnection.HTTP_OK == HttpUtils.put(url, sld, SLD, username, password);

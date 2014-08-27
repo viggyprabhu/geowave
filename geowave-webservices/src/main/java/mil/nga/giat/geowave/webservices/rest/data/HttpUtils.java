@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.apache.commons.net.util.Base64;
 import org.apache.log4j.Logger;
 
 public class HttpUtils
@@ -29,20 +30,12 @@ public class HttpUtils
 
 	public static String get(String sUrl, String contentType, String geoserverUsername, String geoserverPassword) {
 		StringBuffer output = new StringBuffer();
+		
 		HttpURLConnection connection = null;
 		OutputStream os = null;
 	
 		try {
-			URL url = new URL(sUrl);
-	
-			connection =
-					(HttpURLConnection) url.openConnection();
-	
-			String userpass = geoserverUsername + ":" + geoserverPassword;
-			@SuppressWarnings("restriction")
-			String basicAuth = "Basic " + new String(new sun.misc.BASE64Encoder().encode(userpass.getBytes()));
-			connection.setRequestProperty ("Authorization", basicAuth);
-	
+			connection = createConnection(sUrl, geoserverUsername, geoserverPassword);
 			connection.setRequestMethod(GET);
 			connection.setRequestProperty("Accept", contentType);
 	
@@ -87,14 +80,7 @@ public class HttpUtils
 		OutputStream os = null;
 
 		try {
-			URL url = new URL(sUrl);
-			connection = (HttpURLConnection) url.openConnection();
-
-			String userpass = geoserverUsername + ":" + geoserverPassword;
-			@SuppressWarnings("restriction")
-			String basicAuth = "Basic " + new String(new sun.misc.BASE64Encoder().encode(userpass.getBytes()));
-			connection.setRequestProperty ("Authorization", basicAuth);
-
+			connection = createConnection(sUrl, geoserverUsername, geoserverPassword);
 			connection.setDoOutput(true);
 			connection.setRequestMethod(POST);
 			connection.setRequestProperty("Content-Type", contentType);
@@ -138,15 +124,7 @@ public class HttpUtils
 		OutputStream os = null;
 
 		try {
-			URL url = new URL(sUrl);
-
-			connection = (HttpURLConnection) url.openConnection();
-
-			String userpass = geoserverUsername + ":" + geoserverPassword;
-			@SuppressWarnings("restriction")
-			String basicAuth = "Basic " + new String(new sun.misc.BASE64Encoder().encode(userpass.getBytes()));
-			connection.setRequestProperty ("Authorization", basicAuth);
-
+			connection = createConnection(sUrl, geoserverUsername, geoserverPassword);
 			connection.setDoOutput(true);
 			connection.setRequestMethod(POST);
 			connection.setRequestProperty("Content-Type", contentType);
@@ -205,16 +183,7 @@ public class HttpUtils
 		OutputStream os = null;
 
 		try {
-			URL url = new URL(sUrl);
-
-			connection =
-					(HttpURLConnection) url.openConnection();
-
-			String userpass = geoserverUsername + ":" + geoserverPassword;
-			@SuppressWarnings("restriction")
-			String basicAuth = "Basic " + new String(new sun.misc.BASE64Encoder().encode(userpass.getBytes()));
-			connection.setRequestProperty ("Authorization", basicAuth);
-
+			connection = createConnection(sUrl, geoserverUsername, geoserverPassword);
 			connection.setDoOutput(true);
 			connection.setRequestMethod(PUT);
 			connection.setRequestProperty("Content-Type", contentType);
@@ -258,15 +227,7 @@ public class HttpUtils
 		OutputStream os = null;
 
 		try {
-			URL url = new URL(sUrl);
-
-			connection = (HttpURLConnection) url.openConnection();
-
-			String userpass = geoserverUsername + ":" + geoserverPassword;
-			@SuppressWarnings("restriction")
-			String basicAuth = "Basic " + new String(new sun.misc.BASE64Encoder().encode(userpass.getBytes()));
-			connection.setRequestProperty ("Authorization", basicAuth);
-
+			connection = createConnection(sUrl, geoserverUsername, geoserverPassword);
 			connection.setDoOutput(true);
 			connection.setRequestMethod(PUT);
 			connection.setRequestProperty("Content-Type", contentType);
@@ -324,15 +285,8 @@ public class HttpUtils
 		HttpURLConnection connection = null;
 
 		try {
-			URL url = new URL(sUrl);
-
-			connection = (HttpURLConnection) url.openConnection();
-
-			String userpass = geoserverUsername + ":" + geoserverPassword;
-			@SuppressWarnings("restriction")
-			String basicAuth = "Basic " + new String(new sun.misc.BASE64Encoder().encode(userpass.getBytes()));
-			connection.setRequestProperty ("Authorization", basicAuth);
-
+			connection = createConnection(sUrl, geoserverUsername, geoserverPassword);
+			connection.setDoOutput(true);
 			connection.setRequestMethod(DELETE);
 			connection.connect();
 
@@ -351,5 +305,17 @@ public class HttpUtils
 				connection.disconnect();
 		}
 		return response;
+	}
+	
+	private static HttpURLConnection createConnection(String sUrl, String geoserverUsername, String geoserverPassword) throws IOException {
+		URL url = new URL(sUrl);
+
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+		String userpass = geoserverUsername + ":" + geoserverPassword;
+		String basicAuth = "Basic " + new String(Base64.encodeBase64(userpass.getBytes()));
+		connection.setRequestProperty ("Authorization", basicAuth);
+		
+		return connection;
 	}
 }
