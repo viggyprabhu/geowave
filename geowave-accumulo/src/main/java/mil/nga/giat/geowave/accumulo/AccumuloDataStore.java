@@ -847,4 +847,13 @@ public class AccumuloDataStore implements
 						}),
 				limit);
 	}
+
+	public AdapterStore getAdapterStore() {
+		return adapterStore;
+	}
+
+	public IndexStore getIndexStore() {
+		// TODO Auto-generated method stub
+		return indexStore;
+	}
 }

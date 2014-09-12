@@ -419,6 +419,23 @@ public class BasicAccumuloOperations implements
 					new Date().getTime());
 		}
 	}
+	
+
+	@Override
+	public void clearLocalityGroup(
+			String tableName,
+			byte[] localityGroup ) throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
+		final String qName = getQualifiedTableName(tableName);
+		final String localityGroupStr = qName + StringUtils.stringFromBinary(localityGroup);
+
+		// check the cache for our locality group
+		if (locGrpCache.containsKey(localityGroupStr)) {
+			locGrpCache.remove(localityGroupStr);
+		}
+
+		connector.tableOperations().setLocalityGroups(tableName, null);
+	}
+
 
 	@Override
 	public Scanner createScanner(

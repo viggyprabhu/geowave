@@ -116,7 +116,7 @@ public class AccumuloUtils
 				index);
 	}
 
-	protected static <T> T decodeRow(
+	public static <T> T decodeRow(
 			final Key k,
 			final Value v,
 			DataAdapter<T> adapter,
