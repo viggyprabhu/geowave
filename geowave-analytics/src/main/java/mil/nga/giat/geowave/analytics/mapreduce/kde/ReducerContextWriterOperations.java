@@ -101,4 +101,15 @@ public class ReducerContextWriterOperations implements
 			throws TableNotFoundException {
 		return null;
 	}
+
+	@Override
+	public void clearLocalityGroup(
+			String tableName,
+			byte[] localityGroup )
+			throws AccumuloException,
+			AccumuloSecurityException,
+			TableNotFoundException {
+		// TODO Auto-generated method stub
+		
+	}
 }
