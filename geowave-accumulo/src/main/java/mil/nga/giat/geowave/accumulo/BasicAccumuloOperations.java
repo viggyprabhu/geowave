@@ -420,11 +420,10 @@ public class BasicAccumuloOperations implements
 		}
 	}
 	
-
 	@Override
 	public void clearLocalityGroup(
 			String tableName,
-			byte[] localityGroup ) throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
+			byte[] localityGroup ) throws AccumuloException, TableNotFoundException, AccumuloSecurityException {
 		final String qName = getQualifiedTableName(tableName);
 		final String localityGroupStr = qName + StringUtils.stringFromBinary(localityGroup);
 
@@ -432,10 +431,19 @@ public class BasicAccumuloOperations implements
 		if (locGrpCache.containsKey(localityGroupStr)) {
 			locGrpCache.remove(localityGroupStr);
 		}
+		
+		if (connector.tableOperations().exists(
+				qName)) {
+			HashMap<String,Set<Text>> localityGroups =
+				    new HashMap<String, Set<Text>>();
 
-		connector.tableOperations().setLocalityGroups(tableName, null);
+
+				connector.tableOperations().setLocalityGroups(
+						qName,
+						localityGroups);
+
+		}
 	}
-
 
 	@Override
 	public Scanner createScanner(

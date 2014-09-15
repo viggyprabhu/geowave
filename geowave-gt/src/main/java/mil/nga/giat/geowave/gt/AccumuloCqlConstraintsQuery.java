@@ -2,7 +2,7 @@ package mil.nga.giat.geowave.gt;
 
 import java.util.List;
 
-import mil.nga.giat.geowave.accumulo.AccumuloConstraintsQuery;
+import mil.nga.giat.geowave.accumulo.query.AccumuloConstraintsQuery;
 import mil.nga.giat.geowave.gt.adapter.FeatureDataAdapter;
 import mil.nga.giat.geowave.gt.query.CqlQueryFilterIterator;
 import mil.nga.giat.geowave.index.ByteArrayId;

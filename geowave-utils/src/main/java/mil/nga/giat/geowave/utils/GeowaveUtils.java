@@ -3,6 +3,8 @@ package mil.nga.giat.geowave.utils;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -22,7 +24,7 @@ import mil.nga.giat.geowave.accumulo.AccumuloUtils;
 import mil.nga.giat.geowave.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.accumulo.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.accumulo.CloseableIteratorWrapper.ScannerClosableWrapper;
-import mil.nga.giat.geowave.accumulo.AccumuloConstraintsQuery;
+import mil.nga.giat.geowave.accumulo.query.AccumuloConstraintsQuery;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.index.StringUtils;
 import mil.nga.giat.geowave.store.CloseableIterator;
@@ -74,7 +76,38 @@ public class GeowaveUtils
 	private static String geowaveUsername;
 	private static String geowavePassword;
 	
-	public static void main(String[] args) {
+	public static void main(String [] args) {
+		Collection<String> namespaces = new ArrayList<String>();
+		try {
+			namespaces.addAll(getGeowaveNamespaces());
+		}
+		catch (AccumuloException | AccumuloSecurityException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		for (String namespace : namespaces) {
+			System.out.println("namespace: " + namespace);
+
+			try {
+				BasicAccumuloOperations operations = new BasicAccumuloOperations("geowave-master:2181,geowave-node1:2181,geowave-node2:2181",
+						"geowave",
+						"root",
+						"geowave",
+						namespace);
+				
+				AccumuloDataStore dataStore = new AccumuloDataStore(operations);
+
+				dataStore.query(null);
+
+			}
+			catch (Throwable t) {
+			}
+
+		}
+	}
+	
+	
+	public static void main2(String[] args) {
 		long time0 = System.nanoTime();
 		System.out.println("getGeowaveNamespaces()");
 		try {
@@ -86,14 +119,14 @@ public class GeowaveUtils
 					
 //					foo(namespace);
 					
-//					long entries = getEntries(namespace);
-//					System.out.println("number of entries: " + entries);
+					long entries = getEntries(namespace);
+					System.out.println("number of entries: " + entries);
 					Collection<Index> indices = getIndices(namespace);
 					for (Index index : indices) {
 
 					System.out.println("\tindex: " + StringUtils.stringFromBinary(index.getId().getBytes()));
 					
-					setSplitsByNumSplits(namespace, index, 10);
+//					setSplitsByNumSplits(namespace, index, 10);
 					
 ////						long entries = getEntries(namespace, index);
 //						entries = getEntries(namespace, index);
@@ -198,24 +231,42 @@ public class GeowaveUtils
 	}
 	
 	public static void setSplitsByPercentile(String namespace, Index index, int percentile) throws AccumuloException, AccumuloSecurityException, IOException, TableNotFoundException {
+		SortedSet<Text> splits = new TreeSet<Text>();
+		
 		CloseableIterator<Entry<Key,Value>> iterator = getIterator(namespace, index);
 
-		Entry<Key, Value> first = null;
-		Entry<Key, Value> last = null;
+		int numberSplits = 100 / percentile - 1;
+		BigInteger min = BigInteger.valueOf(Long.MAX_VALUE);
+		BigInteger max = BigInteger.valueOf(Long.MIN_VALUE);
 		
 		while (iterator.hasNext()) {
-			Entry<Key, Value> entry = iterator.next();
-			if (first == null)
-				first = entry;
-			last = entry;
+			Entry<Key, Value> entry = iterator.next();			
+			byte[] bytes = entry.getKey().getRow().getBytes();			
+			BigInteger value = new BigInteger(bytes);		
+			min = min.min(value);
+			max = max.max(value);
 		}
 		
-		first.getKey().getRowData();
-		last.getKey().getRowData();
+		System.out.println("Minimum: " + min);
+		System.out.println("Maximum: " + max);
 		
-//		System.out.println("count (alternative): " + count2);
-//		System.out.println("number of splits: " + splits.size());
-//		System.out.println("split interval: " + numberRows);
+		BigDecimal dMax = new BigDecimal(max);
+		dMax = dMax.divide(new BigDecimal(100));
+		dMax = dMax.multiply(new BigDecimal(percentile));
+		BigDecimal dMin = new BigDecimal(min);
+		dMin = dMin.divide(new BigDecimal(100));
+		dMin = dMin.multiply(new BigDecimal(percentile));
+		long delta = dMax.subtract(dMin).toBigInteger().longValue();
+		long minimum = min.longValue();
+
+		for (int ii = 1; ii <= numberSplits; ii++) {
+			BigInteger value = BigInteger.valueOf(minimum + delta*ii);
+			byte [] bytes = value.toByteArray();
+			
+			Text split = new Text(bytes);
+			splits.add(split);
+		}
+		System.out.println("number of splits: " + splits.size());
 		
 //		BasicAccumuloOperations operations = getOperations(namespace);
 //		String tableName = AccumuloUtils.getQualifiedTableName(namespace,
@@ -663,15 +714,15 @@ private static CloseableIterator<Entry<Key,Value>> getIterator(String namespace,
 //		}
 //	}
 
-//	public static void getAllTablenames() throws AccumuloException, AccumuloSecurityException, IOException {
-//		TableOperations tableOperations = getOperations("").getConnector().tableOperations();
-//		List<String> allTables = new ArrayList<String>();
-//		allTables.addAll(tableOperations.list());
-//
-//		for (String table : allTables) {
-//			System.out.println("tablename : " + table);
-//		}
-//	}
+	public static void getAllTablenames() throws AccumuloException, AccumuloSecurityException, IOException {
+		TableOperations tableOperations = getOperations("").getConnector().tableOperations();
+		List<String> allTables = new ArrayList<String>();
+		allTables.addAll(tableOperations.list());
+
+		for (String table : allTables) {
+			System.out.println("tablename : " + table);
+		}
+	}
 	
 	static class IteratorWrapper implements Iterator<Entry<Key, Value>> {
 
