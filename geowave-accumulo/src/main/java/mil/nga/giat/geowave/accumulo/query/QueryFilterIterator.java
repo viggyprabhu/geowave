@@ -1,9 +1,10 @@
-package mil.nga.giat.geowave.accumulo;
+package mil.nga.giat.geowave.accumulo.query;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import mil.nga.giat.geowave.accumulo.AccumuloRowId;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.index.ByteArrayUtils;
 import mil.nga.giat.geowave.index.PersistenceUtils;

@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.accumulo.MutationIteratorWrapper.EntryToMutationConverter;
+import mil.nga.giat.geowave.accumulo.query.AccumuloConstraintsQuery;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.index.ByteArrayUtils;
 import mil.nga.giat.geowave.index.StringUtils;
@@ -847,7 +848,7 @@ public class AccumuloDataStore implements
 						}),
 				limit);
 	}
-	
+
 	public AdapterStore getAdapterStore() {
 		return adapterStore;
 	}

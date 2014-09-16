@@ -1,9 +1,13 @@
-package mil.nga.giat.geowave.accumulo;
+package mil.nga.giat.geowave.accumulo.query;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import mil.nga.giat.geowave.accumulo.AccumuloOperations;
+import mil.nga.giat.geowave.accumulo.AccumuloQuery;
+import mil.nga.giat.geowave.accumulo.CloseableIteratorWrapper;
+import mil.nga.giat.geowave.accumulo.EntryIteratorWrapper;
 import mil.nga.giat.geowave.accumulo.CloseableIteratorWrapper.ScannerClosableWrapper;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.index.ByteArrayRange;

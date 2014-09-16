@@ -7,11 +7,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import mil.nga.giat.geowave.accumulo.AccumuloConstraintsQuery;
 import mil.nga.giat.geowave.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.accumulo.AccumuloOptions;
 import mil.nga.giat.geowave.accumulo.CloseableIteratorWrapper;
+import mil.nga.giat.geowave.accumulo.query.AccumuloConstraintsQuery;
 import mil.nga.giat.geowave.gt.adapter.FeatureDataAdapter;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.store.CloseableIterator;

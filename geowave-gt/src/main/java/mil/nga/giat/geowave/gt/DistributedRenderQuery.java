@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import mil.nga.giat.geowave.accumulo.AccumuloConstraintsQuery;
 import mil.nga.giat.geowave.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.accumulo.AccumuloQuery;
 import mil.nga.giat.geowave.accumulo.CloseableIteratorWrapper;
+import mil.nga.giat.geowave.accumulo.query.AccumuloConstraintsQuery;
 import mil.nga.giat.geowave.gt.adapter.FeatureDataAdapter;
 import mil.nga.giat.geowave.gt.query.CqlQueryFilterIterator;
 import mil.nga.giat.geowave.gt.query.CqlQueryRenderIterator;

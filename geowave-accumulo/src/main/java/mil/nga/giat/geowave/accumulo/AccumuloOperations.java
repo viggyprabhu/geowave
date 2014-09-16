@@ -166,6 +166,17 @@ public interface AccumuloOperations
 			throws AccumuloException,
 			TableNotFoundException,
 			AccumuloSecurityException;
+	
+	/**
+	 * Removes all locality groups form the table of the given name
+	 * 
+	 * @param tableName
+	 * @param localityGroup
+	 * @throws AccumuloException
+	 * @throws AccumuloSecurityException
+	 * @throws TableNotFoundException
+	 */
+	public void clearLocalityGroup(final String tableName, final byte[] localityGroup) throws AccumuloException, TableNotFoundException, AccumuloSecurityException;
 
 	/**
 	 * Drops all tables in the given namespace. Returns whether any tables were
