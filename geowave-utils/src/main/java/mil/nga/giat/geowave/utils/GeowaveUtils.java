@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
 
 import mil.nga.giat.geowave.accumulo.AbstractAccumuloPersistence;
 import mil.nga.giat.geowave.accumulo.AccumuloAdapterStore;
@@ -46,287 +45,157 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 import org.apache.hadoop.io.Text;
-import org.apache.log4j.Logger;
 
 /**
+ * Geowave utility class to perform convenience functionality:
  * 
-    set splits on a table
-    based on quantile distribution and fixed number of splits
-        based on equal interval distribution and fixed number of splits
-        based on fixed number of rows per split
-    get all geowave namespaces
-    set locality groups per column family (data adapter) or clear all locality groups
-    get # of entries per data adapter in an index
-    get # of entries per index
-    get # of entries per namespace
-    list adapters per namespace
-    list indices per namespace
-
- * @author hayesrd1
- *
+ * 	Set splits on a table:
+ * 		Based on quantile distribution and fixed number of splits.
+ * 		Based on equal interval distribution and fixed number of splits.
+ * 		Based on fixed number of rows per split.
+ * 
+ * Get all geowave namespaces.
+ * 
+ * Set locality groups per column family (data adapter) or clear all locality groups.
+ * 
+ * Get # of entries per data adapter in an index.
+ * 
+ * Get # of entries per index.
+ * 
+ * Get # of entries per namespace.
+ * 
+ * List adapters per namespace.
+ * 
+ * List indices per namespace.
+ * 
  */
 
 public class GeowaveUtils
 {
-	private final static Logger LOGGER = Logger.getLogger(GeowaveUtils.class);
-	
 	private static boolean loaded;
 	private static String zookeeperUrl;
 	private static String instanceName;
 	private static String geowaveUsername;
 	private static String geowavePassword;
 	
-	public static void main(String [] args) {
-		Collection<String> namespaces = new ArrayList<String>();
-		try {
-			namespaces.addAll(getGeowaveNamespaces());
-		}
-		catch (AccumuloException | AccumuloSecurityException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		for (String namespace : namespaces) {
-			System.out.println("namespace: " + namespace);
-
-			try {
-				BasicAccumuloOperations operations = new BasicAccumuloOperations("geowave-master:2181,geowave-node1:2181,geowave-node2:2181",
-						"geowave",
-						"root",
-						"geowave",
-						namespace);
-				
-				AccumuloDataStore dataStore = new AccumuloDataStore(operations);
-
-				dataStore.query(null);
-
-			}
-			catch (Throwable t) {
-			}
-
-		}
-	}
+	/**
+	 * Set splits on a table based on quantile distribution and fixed number of splits
+	 * 
+	 * @param namespace
+	 * @param index
+	 * @param quantile
+	 * @throws AccumuloException
+	 * @throws AccumuloSecurityException
+	 * @throws IOException
+	 * @throws TableNotFoundException
+	 */
+	public static void setSplitsByQuantile(String namespace, Index index, int quantile) throws AccumuloException, AccumuloSecurityException, IOException, TableNotFoundException {
+		SortedSet<Text> splits = new TreeSet<Text>();
+		
+		CloseableIterator<Entry<Key,Value>> iterator = getIterator(namespace, index);
 	
+		int numberSplits = quantile - 1;
+		BigInteger min = null;
+		BigInteger max = null;
+		
+		while (iterator.hasNext()) {
+			Entry<Key, Value> entry = iterator.next();			
+			byte[] bytes = entry.getKey().getRow().getBytes();
+			BigInteger value = new BigInteger(bytes);
+			if (min == null || max == null) {
+				min = value;
+				max = value;
+			}				
+			min = min.min(value);
+			max = max.max(value);
+		}
+		
+		BigDecimal dMax = new BigDecimal(max);
+		BigDecimal dMin = new BigDecimal(min);
+		BigDecimal delta = dMax.subtract(dMin);
+		delta = delta.divideToIntegralValue(new BigDecimal(quantile));
 	
-	public static void main2(String[] args) {
-		long time0 = System.nanoTime();
-		System.out.println("getGeowaveNamespaces()");
-		try {
-//			getAllTablenames();
+		for (int ii = 1; ii <= numberSplits; ii++) {
+			BigDecimal temp = delta.multiply(BigDecimal.valueOf(ii));
+			BigInteger value = min.add(temp.toBigInteger());
 			
-			for (String namespace : getGeowaveNamespaces()) {
-				try {
-					System.out.println("namespace: " + namespace);
-					
-//					foo(namespace);
-					
-					long entries = getEntries(namespace);
-					System.out.println("number of entries: " + entries);
-					Collection<Index> indices = getIndices(namespace);
-					for (Index index : indices) {
-
-					System.out.println("\tindex: " + StringUtils.stringFromBinary(index.getId().getBytes()));
-					
-//					setSplitsByNumSplits(namespace, index, 10);
-					
-////						long entries = getEntries(namespace, index);
-//						entries = getEntries(namespace, index);
-//						System.out.println("\t\tnumber of entries: " + entries);
-						Collection<DataAdapter<?>> adapters = getAdapters(namespace);
-						for (DataAdapter<?> adapter : adapters) {
-//							System.out.println("\t\tdata adapter: " + StringUtils.stringFromBinary(adapter.getAdapterId().getBytes()));
-////							long entries = getEntries(namespace, index, adapter);
-//							entries = getEntries(namespace, index, adapter);
-//						    System.out.println("\t\t\tnumber of entries: " + entries);
-//
-//							boolean flag = isLocalityGroupSet(namespace, index, adapter);
-//							System.out.println("\t\t\tlocality group: " + flag);
-//							if (!flag) {
-//								System.out.println("\t\t\tAdd locality group");
-//								setLocalityGroup(namespace, index, adapter);
-//								flag = isLocalityGroupSet(namespace, index, adapter);
-//								System.out.println("\t\t\tlocality group: " + flag);
-//							}
-//							if (isLocalityGroupSet(namespace, index, adapter)) {
-//								System.out.println("\t\t\tRemove locality group");
-//								clearLocalityGroup(namespace, index, adapter);
-//							}
-						}
-					}
-					
-					
-				}
-				catch (AccumuloException | AccumuloSecurityException | IOException | TableNotFoundException e) {
-					LOGGER.error("Namespace = " + namespace + ": "+ e.getMessage());
-				}
-				catch(Exception e) {
-					LOGGER.error("Possible Runtime Excpetion");
-					LOGGER.error("Namespace = " + namespace + ": "+ e.getMessage());
-				}
-			}
+			Text split = new Text(value.toByteArray());
+			splits.add(split);
 		}
-		catch (AccumuloException | AccumuloSecurityException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		long elapsed = System.nanoTime() - time0;
-		long seconds = TimeUnit.SECONDS.convert(elapsed, TimeUnit.NANOSECONDS);
-		System.out.println("Elapsed time (seconds): " + seconds);
+		
+		BasicAccumuloOperations operations = getOperations(namespace);
+		String tableName = AccumuloUtils.getQualifiedTableName(namespace,
+				StringUtils.stringFromBinary(index.getId().getBytes()));
+		operations.getConnector().tableOperations().addSplits(tableName, splits);
+		operations.getConnector().tableOperations().compact(tableName, null, null, true, true);
 	}
-	
+
+	/**
+	 * Set splits on table based on equal interval distribution and fixed number of splits.
+	 * 
+	 * @param namespace
+	 * @param index
+	 * @param numberSplits
+	 * @throws AccumuloException
+	 * @throws AccumuloSecurityException
+	 * @throws IOException
+	 * @throws TableNotFoundException
+	 */
 	public static void setSplitsByNumSplits(String namespace, Index index, int numberSplits) throws AccumuloException, AccumuloSecurityException, IOException, TableNotFoundException {
 		long count = getEntries(namespace, index);
 		
 		CloseableIterator<Entry<Key,Value>> iterator = getIterator(namespace, index);
 
-		long i = 0L;
-		long count2 = 0L;
+		long ii = 0;
 		long splitInterval = count / numberSplits;
 		SortedSet<Text> splits = new TreeSet<Text>();
 		while (iterator.hasNext()) {
 			Entry<Key, Value> entry = iterator.next();
-			i++;
-			count2++;
-			if (i >= splitInterval) {
-				i = 0;
+			ii++;
+			if (ii >= splitInterval) {
+				ii = 0;
 				splits.add(entry.getKey().getRow());
 			}
 		}
-		System.out.println("count (alternative): " + count2);
-		System.out.println("number of splits: " + splits.size());
-		System.out.println("split interval: " + splitInterval);
 		
-//		BasicAccumuloOperations operations = getOperations(namespace);
-//		String tableName = AccumuloUtils.getQualifiedTableName(namespace,
-//				StringUtils.stringFromBinary(index.getId().getBytes()));
-//		operations.getConnector().tableOperations().addSplits(tableName, splits);
-//		operations.getConnector().tableOperations().compact(tableName, null, null, true, true);
+		BasicAccumuloOperations operations = getOperations(namespace);
+		String tableName = AccumuloUtils.getQualifiedTableName(namespace,
+				StringUtils.stringFromBinary(index.getId().getBytes()));
+		operations.getConnector().tableOperations().addSplits(tableName, splits);
+		operations.getConnector().tableOperations().compact(tableName, null, null, true, true);
 	}
 	
+	/**
+	 * Set splits on table based on fixed number of rows per split.
+	 * 
+	 * @param namespace
+	 * @param index
+	 * @param numberRows
+	 * @throws AccumuloException
+	 * @throws AccumuloSecurityException
+	 * @throws IOException
+	 * @throws TableNotFoundException
+	 */
 	public static void setSplitsByNumRows(String namespace, Index index, long numberRows) throws AccumuloException, AccumuloSecurityException, IOException, TableNotFoundException {
-		long count = getEntries(namespace, index);
-		
 		CloseableIterator<Entry<Key,Value>> iterator = getIterator(namespace, index);
 
-		long i = 0L;
-		long count2 = 0L;
+		long ii = 0;
 		SortedSet<Text> splits = new TreeSet<Text>();
 		while (iterator.hasNext()) {
 			Entry<Key, Value> entry = iterator.next();
-			i++;
-			count2++;
-			if (i >= numberRows) {
-				i = 0;
+			ii++;
+			if (ii >= numberRows) {
+				ii = 0;
 				splits.add(entry.getKey().getRow());
 			}
 		}
-		System.out.println("count (alternative): " + count2);
-		System.out.println("number of splits: " + splits.size());
-		System.out.println("split interval: " + numberRows);
 		
-//		BasicAccumuloOperations operations = getOperations(namespace);
-//		String tableName = AccumuloUtils.getQualifiedTableName(namespace,
-//				StringUtils.stringFromBinary(index.getId().getBytes()));
-//		operations.getConnector().tableOperations().addSplits(tableName, splits);
-//		operations.getConnector().tableOperations().compact(tableName, null, null, true, true);
+		BasicAccumuloOperations operations = getOperations(namespace);
+		String tableName = AccumuloUtils.getQualifiedTableName(namespace,
+				StringUtils.stringFromBinary(index.getId().getBytes()));
+		operations.getConnector().tableOperations().addSplits(tableName, splits);
+		operations.getConnector().tableOperations().compact(tableName, null, null, true, true);
 	}
-	
-	public static void setSplitsByPercentile(String namespace, Index index, int percentile) throws AccumuloException, AccumuloSecurityException, IOException, TableNotFoundException {
-		SortedSet<Text> splits = new TreeSet<Text>();
-		
-		CloseableIterator<Entry<Key,Value>> iterator = getIterator(namespace, index);
-
-		int numberSplits = 100 / percentile - 1;
-		BigInteger min = BigInteger.valueOf(Long.MAX_VALUE);
-		BigInteger max = BigInteger.valueOf(Long.MIN_VALUE);
-		
-		while (iterator.hasNext()) {
-			Entry<Key, Value> entry = iterator.next();			
-			byte[] bytes = entry.getKey().getRow().getBytes();			
-			BigInteger value = new BigInteger(bytes);		
-			min = min.min(value);
-			max = max.max(value);
-		}
-		
-		System.out.println("Minimum: " + min);
-		System.out.println("Maximum: " + max);
-		
-		BigDecimal dMax = new BigDecimal(max);
-		dMax = dMax.divide(new BigDecimal(100));
-		dMax = dMax.multiply(new BigDecimal(percentile));
-		BigDecimal dMin = new BigDecimal(min);
-		dMin = dMin.divide(new BigDecimal(100));
-		dMin = dMin.multiply(new BigDecimal(percentile));
-		long delta = dMax.subtract(dMin).toBigInteger().longValue();
-		long minimum = min.longValue();
-
-		for (int ii = 1; ii <= numberSplits; ii++) {
-			BigInteger value = BigInteger.valueOf(minimum + delta*ii);
-			byte [] bytes = value.toByteArray();
-			
-			Text split = new Text(bytes);
-			splits.add(split);
-		}
-		System.out.println("number of splits: " + splits.size());
-		
-//		BasicAccumuloOperations operations = getOperations(namespace);
-//		String tableName = AccumuloUtils.getQualifiedTableName(namespace,
-//				StringUtils.stringFromBinary(index.getId().getBytes()));
-//		operations.getConnector().tableOperations().addSplits(tableName, splits);
-//		operations.getConnector().tableOperations().compact(tableName, null, null, true, true);
-	}
-	
-//	public static void setSplits(String namespace, Index index) throws AccumuloException, AccumuloSecurityException, IOException, TableNotFoundException {
-//		long count = getEntries(namespace, index);
-//		
-//		System.out.println("batch count: " + count);
-//
-//		AccumuloOperations operations = getOperations(namespace);
-//		AccumuloIndexStore indexStore = new AccumuloIndexStore(operations);
-//		AccumuloAdapterStore adapterStore = new AccumuloAdapterStore(operations);
-//
-//		if (indexStore.indexExists(index.getId())) {
-//			String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
-//			final ScannerBase scanner = operations.createBatchScanner(tableName);
-//			((BatchScanner) scanner).setRanges(AccumuloUtils.byteArrayRangesToAccumuloRanges(null));
-//			
-//			final IteratorSetting iteratorSettings = new IteratorSetting(
-//					10,
-//					"GEOWAVE_WHOLE_ROW_ITERATOR",
-//					WholeRowIterator.class);
-//			scanner.addScanIterator(iteratorSettings);
-//			
-//			List<QueryFilter> clientFilters = new ArrayList<QueryFilter>();
-//			clientFilters.add(
-//					0,
-//					new DedupeFilter());
-//			
-//			Iterator<Entry<Key,Value>> it = new IteratorWrapper(adapterStore, index, scanner.iterator(), new FilterList<QueryFilter>(
-//					clientFilters));
-//			
-//			CloseableIterator<Entry<Key,Value>> iterator = new CloseableIteratorWrapper<Entry<Key,Value>>(new ScannerClosableWrapper(scanner), it);
-//
-//			long i = 0L;
-//			long count2 = 0L;
-//			double splitCount = 12;
-//			double splitInterval = count / splitCount;
-//			SortedSet<Text> splits = new TreeSet<Text>();
-//			while (iterator.hasNext()) {
-//				Entry<Key, Value> entry = iterator.next();
-//				i++;
-//				count2++;
-//				if (i > splitInterval) {
-//					i = 0;
-//					splits.add(entry.getKey().getRow());
-//				}
-//			}
-//			System.out.println("count (alternative): " + count2);
-//			System.out.println("number of splits: " + splits.size());
-//			System.out.println("split interval: " + splitInterval);
-//		}
-//		
-//		// operations.getConnector().tableOperations().addSplits(tableName, splits);
-//		//operations.getConnector().tableOperations().compact(tableName, null, null, true, true);
-//	}
 	
 	/**
 	 * Get GeoWave Namespaces
@@ -621,110 +490,8 @@ private static CloseableIterator<Entry<Key,Value>> getIterator(String namespace,
 		}
 		return iterator;
 	}
-
-//	private static Collection<String> getIndexTableNames(String namespace) throws AccumuloException, AccumuloSecurityException, IOException {
-//		Collection<String> tableNames = new ArrayList<String>();
-//		for (String tableName : getTableNames(namespace)) {
-//			if (!tableName.contains(AbstractAccumuloPersistence.METADATA_TABLE))
-//				tableNames.add(tableName);
-//		}
-//		return tableNames;
-//	}
-//	
-//	private static Collection<String> getMetaTableNames(String namespace) throws AccumuloException, AccumuloSecurityException, IOException {
-//		Collection<String> tableNames = new ArrayList<String>();
-//		for (String tableName : getTableNames(namespace)) {
-//			if (tableName.contains(AbstractAccumuloPersistence.METADATA_TABLE))
-//				tableNames.add(tableName);
-//		}
-//		return tableNames;
-//	}
-//	
-//	private static Collection<String> getTableNames(String namespace) throws AccumuloException, AccumuloSecurityException, IOException {
-//		Collection<String> tableNames = new ArrayList<String>();
-//		BasicAccumuloOperations operations = getOperations(namespace);
-//		Connector connector = operations.getConnector();
-//
-//		for (String tableName : connector.tableOperations().list()) {
-//			if (tableName.startsWith(namespace)) {
-//				tableNames.add(tableName);
-//			}
-//		}
-//		return tableNames;
-//	}
-//
-//	private static void getMetaTableInfo(String namespace) throws AccumuloException, AccumuloSecurityException, TableNotFoundException, IOException {
-//		BasicAccumuloOperations operations = getOperations(namespace);
-//		Connector connector = operations.getConnector();
-//
-//		for (String tableName : connector.tableOperations().list()) {
-//			if (tableName.startsWith(namespace)
-//					&& tableName.contains(AbstractAccumuloPersistence.METADATA_TABLE)) {
-//				Scanner scanner = operations.createScanner(tableName.replace(namespace + "_", ""));
-//
-//				System.out.println("Table name: " + tableName);
-//				
-//				List<String> colFamily = new ArrayList<String>();
-//				for (Entry<Key, Value> entry : scanner) {
-//					String family = entry.getKey().getColumnFamily().toString();
-//					if (!colFamily.contains(family)) {
-//						colFamily.add(family);
-//						System.out.println("\tColumn Family: " + family);
-//					}
-//				}
-//			}
-//		}
-//	}
-//	
-//	private static void getTableInfo(String namespace) throws AccumuloException, AccumuloSecurityException, TableNotFoundException, IOException {
-//		BasicAccumuloOperations operations;
-//		operations = getOperations(namespace);
-//		Connector connector = operations.getConnector();
-//
-//		for (String tableName : connector.tableOperations().list()) {
-//			if (tableName.startsWith(namespace)
-//					&& !tableName.contains(AbstractAccumuloPersistence.METADATA_TABLE)) {
-//				Scanner scanner = operations.createScanner(tableName.replace(namespace + "_", ""));
-//
-//				System.out.println("Table name: " + tableName);
-//				
-//				List<String> colFamily = new ArrayList<String>();
-//				for (Entry<Key, Value> entry : scanner) {
-//					String family = entry.getKey().getColumnFamily().toString();
-//					if (!colFamily.contains(family)) {
-//						colFamily.add(family);
-//						System.out.println("\tColumn Family: " + family);
-//					}
-//				}
-//			}
-//		}
-//	}
-//
-//	private static void foo(String namespace) throws AccumuloException, AccumuloSecurityException, IOException, TableNotFoundException {
-//		TableOperations operations = getOperations(namespace).getConnector().tableOperations();
-//		Collection<String> tables = getTableNames(namespace);
-//		for (String tableName : tables) {
-//			Collection<Text> splits = operations.listSplits(tableName);
-//			int numberOfSplits = 0;
-//			for(Text split : splits) {
-//				numberOfSplits++;
-//				System.out.println("key: " + split.toString());
-//			}
-//			System.out.println("Number of Splits (" + tableName + ") :" + numberOfSplits);
-//		}
-//	}
-
-	public static void getAllTablenames() throws AccumuloException, AccumuloSecurityException, IOException {
-		TableOperations tableOperations = getOperations("").getConnector().tableOperations();
-		List<String> allTables = new ArrayList<String>();
-		allTables.addAll(tableOperations.list());
-
-		for (String table : allTables) {
-			System.out.println("tablename : " + table);
-		}
-	}
 	
-	static class IteratorWrapper implements Iterator<Entry<Key, Value>> {
+	private static class IteratorWrapper implements Iterator<Entry<Key, Value>> {
 
 		private final Iterator<Entry<Key, Value>> scannerIt;
 		private AdapterStore adapterStore;
@@ -786,43 +553,6 @@ private static CloseableIterator<Entry<Key,Value>> getIterator(String namespace,
 
 		@Override
 		public void remove() {
-			// TODO Auto-generated method stub
-			
 		}
 	}
-	
-//	class IteratorWrapper<Entry<Key, Value>> implements
-//	Iterator<Entry<Key, Value>>
-//	{
-//		private final Iterator<Entry<Key, Value>> scannerIt;
-//
-//		private T nextValue;
-//
-//		public IteratorWrapper(
-//				final Iterator<Entry<Key, Value>> scannerIt) {
-//			this.scannerIt = scannerIt;
-//		}
-//
-//		@Override
-//		public boolean hasNext() {
-//			return scannerIt.hasNext();
-//		}
-//
-//		@Override
-//		public Entry<Key, Value> next() {
-//			return scannerIt.next();
-//		}
-//
-//		@Override
-//		public void remove() {
-//			// TODO what should we do here considering the scanning iterator is
-//			// already past the current entry? it probably doesn't matter much as
-//			// this is not called in practice
-//
-//			// scannerIt.remove();
-//		}
-//
-//}
-
-
 }
