@@ -19,7 +19,7 @@
   	</dependency>
   	<dependency>
   		<groupId>mil.nga.giat</groupId>
-  		<artifactId>geowave-utils</artifactId>
+  		<artifactId>geowave-index</artifactId>
   		<version>0.8.0-SNAPSHOT</version>
   	</dependency>
   	<dependency>
