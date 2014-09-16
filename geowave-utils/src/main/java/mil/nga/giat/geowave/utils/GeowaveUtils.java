@@ -405,6 +405,38 @@ public class GeowaveUtils
 	}
 
 	/**
+	 * Create accumulo connection.
+	 * 
+	 * @param namespace
+	 * @return
+	 * @throws AccumuloException
+	 * @throws AccumuloSecurityException
+	 * @throws IOException
+	 */
+	public static BasicAccumuloOperations getOperations(String namespace) throws AccumuloException, AccumuloSecurityException, IOException {
+		loadProperties();
+	
+		return new BasicAccumuloOperations(zookeeperUrl,
+				instanceName,
+				geowaveUsername,
+				geowavePassword,
+				namespace);
+	}
+
+	/**
+	 * Create accumulo version of the data store.
+	 * 
+	 * @param namespace
+	 * @return
+	 * @throws AccumuloException
+	 * @throws AccumuloSecurityException
+	 * @throws IOException
+	 */
+	public static AccumuloDataStore getDataStore(String namespace) throws AccumuloException, AccumuloSecurityException, IOException {
+		return new AccumuloDataStore(getOperations(namespace));
+	}
+
+	/**
 	 * Load GeoWave connection properties.
 	 * 
 	 * @throws IOException
@@ -429,39 +461,7 @@ public class GeowaveUtils
 		}
 	}
 
-	/**
-	 * Create accumulo connection.
-	 * 
-	 * @param namespace
-	 * @return
-	 * @throws AccumuloException
-	 * @throws AccumuloSecurityException
-	 * @throws IOException
-	 */
-	private static BasicAccumuloOperations getOperations(String namespace) throws AccumuloException, AccumuloSecurityException, IOException {
-		loadProperties();
-
-		return new BasicAccumuloOperations(zookeeperUrl,
-				instanceName,
-				geowaveUsername,
-				geowavePassword,
-				namespace);
-	}
-
-	/**
-	 * Create accumulo version of the data store.
-	 * 
-	 * @param namespace
-	 * @return
-	 * @throws AccumuloException
-	 * @throws AccumuloSecurityException
-	 * @throws IOException
-	 */
-	private static AccumuloDataStore getDataStore(String namespace) throws AccumuloException, AccumuloSecurityException, IOException {
-		return new AccumuloDataStore(getOperations(namespace));
-	}
-	
-private static CloseableIterator<Entry<Key,Value>> getIterator(String namespace, Index index) throws AccumuloException, AccumuloSecurityException, IOException, TableNotFoundException {
+	private static CloseableIterator<Entry<Key,Value>> getIterator(String namespace, Index index) throws AccumuloException, AccumuloSecurityException, IOException, TableNotFoundException {
 		CloseableIterator<Entry<Key,Value>> iterator = null;
 		AccumuloOperations operations = getOperations(namespace);
 		AccumuloIndexStore indexStore = new AccumuloIndexStore(operations);

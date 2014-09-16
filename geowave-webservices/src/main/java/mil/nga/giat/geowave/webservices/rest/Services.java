@@ -10,9 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.ws.rs.Consumes;
@@ -35,17 +33,15 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import mil.nga.giat.geowave.accumulo.AbstractAccumuloPersistence;
 import mil.nga.giat.geowave.accumulo.AccumuloAdapterStore;
 import mil.nga.giat.geowave.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.accumulo.AccumuloIndexStore;
-import mil.nga.giat.geowave.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.gt.adapter.FeatureDataAdapter;
-import mil.nga.giat.geowave.index.PersistenceUtils;
 import mil.nga.giat.geowave.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.store.index.Index;
 import mil.nga.giat.geowave.store.index.IndexStore;
+import mil.nga.giat.geowave.utils.GeowaveUtils;
 import mil.nga.giat.geowave.webservices.rest.data.DatastoreEncoder;
 import mil.nga.giat.geowave.webservices.rest.data.FeatureTypeEncoder;
 import mil.nga.giat.geowave.webservices.rest.data.GeowaveRESTPublisher;
@@ -53,12 +49,6 @@ import mil.nga.giat.geowave.webservices.rest.data.GeowaveRESTReader;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.Scanner;
-import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.client.admin.TableOperations;
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Value;
 import org.apache.log4j.Logger;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.w3c.dom.Document;
@@ -67,9 +57,6 @@ import org.w3c.dom.Element;
 @Path("/services")
 public class Services
 {
-	public static void main(String [] args) {
-	}
-
 	@GET
 	@Produces({MediaType.APPLICATION_XML})
 	@Path("/geowaveNamespaces")
@@ -82,24 +69,13 @@ public class Services
 			Document document = docBuilder.newDocument();
 			Element rootElement = document.createElement("GeowaveNamespaces");
 			document.appendChild(rootElement);
+			
+			Collection<String> namespaces = GeowaveUtils.getGeowaveNamespaces();
 
-			List<String> namespaces = new ArrayList<String>();
-
-			TableOperations tableOperations = getOperations("").getConnector().tableOperations();
-			List<String> allTables = new ArrayList<String>();
-			allTables.addAll(tableOperations.list());
-
-			for (String table : allTables) {
-				if (table.contains("_GEOWAVE_METADATA")) {
-					String namespace = table.substring(0, table.indexOf("_GEOWAVE_METADATA"));
-					if (!namespaces.contains(namespace)) {
-						namespaces.add(namespace);
-
-						Element nsElement = document.createElement("namespace");
-						nsElement.appendChild(document.createTextNode(namespace));
-						rootElement.appendChild(nsElement);
-					}
-				}
+			for (String namespace : namespaces) {
+				Element nsElement = document.createElement("namespace");
+				nsElement.appendChild(document.createTextNode(namespace));
+				rootElement.appendChild(nsElement);
 			}
 			StringWriter writer = new StringWriter();
 
@@ -114,69 +90,28 @@ public class Services
 			LOGGER.error(e.getMessage());
 			return null;
 		}
-
 	}
 
 	@GET
 	@Produces({MediaType.APPLICATION_XML})
-	@Path("/geowaveLayers/{namespace}")
-	public static String getGeowaveLayers(@PathParam("namespace")String namespace) {
+	@Path("/geowaveLayers")
+	public static String getGeowaveLayers() {
 		try {
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-
-			Document document = docBuilder.newDocument();
-			Element rootElement = document.createElement("GeowaveLayers");
-			document.appendChild(rootElement);
-
-			Element nsElement = document.createElement("namespace");
-			rootElement.appendChild(nsElement);
-
-			Element nameElement = document.createElement("name");
-			nameElement.appendChild(document.createTextNode(namespace));
-			nsElement.appendChild(nameElement);
-
-			Element lsElement = document.createElement("layers");
-			nsElement.appendChild(lsElement);
-
-			AccumuloDataStore dataStore = getDataStore(namespace);
-			IndexStore indexStore = dataStore.getIndexStore();
-			AdapterStore adapterStore = dataStore.getAdapterStore();
-			if (indexStore instanceof AccumuloIndexStore) {
-				Iterator<Index> indexIter = ((AccumuloIndexStore)indexStore).getIndices();
-				while(indexIter.hasNext()) {
-					indexIter.next();
-					if (adapterStore instanceof AccumuloAdapterStore) {
-						Iterator<DataAdapter<?>> iterator = ((AccumuloAdapterStore)adapterStore).getAdapters();
-						while (iterator.hasNext()) {
-							DataAdapter<?> dataAdapter = iterator.next();
-							if (dataAdapter instanceof FeatureDataAdapter) {
-								SimpleFeatureType simpleFeatureType = ((FeatureDataAdapter)dataAdapter).getType();
-
-								Element lElement = document.createElement("layer");
-								lElement.appendChild(document.createTextNode(simpleFeatureType.getTypeName()));
-								lsElement.appendChild(lElement);
-							}
-						}
-					}
-				}
-			}
-
-			StringWriter writer = new StringWriter();
-
-			TransformerFactory transformerFactory = TransformerFactory.newInstance();
-			Transformer transformer = transformerFactory.newTransformer();
-			DOMSource source = new DOMSource(document);
-			StreamResult result = new StreamResult(writer);
-
-			transformer.transform(source, result);
-
-			return writer.toString();
+			return getGeowaveLayers(GeowaveUtils.getGeowaveNamespaces());
 		}
-		catch (AccumuloException | AccumuloSecurityException | TableNotFoundException | IOException | ParserConfigurationException | TransformerException e) {
+		catch (AccumuloException | AccumuloSecurityException | IOException e) {
 			LOGGER.error(e.getMessage());
 			return null;
 		}
+	}
+	
+	@GET
+	@Produces({MediaType.APPLICATION_XML})
+	@Path("/geowaveLayers/{namespace}")
+	public static String getGeowaveLayers(@PathParam("namespace")String namespace) {
+		Collection<String> namespaces = new ArrayList<String>();
+		namespaces.add(namespace);
+		return getGeowaveLayers(namespaces);
 	}
 
 	@POST
@@ -290,6 +225,67 @@ public class Services
 		catch (IOException e) {}
 		return false;
 	}
+	
+	private static String getGeowaveLayers(Collection<String> namespaces) {
+		try {
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+			Document document = docBuilder.newDocument();
+			Element rootElement = document.createElement("GeowaveLayers");
+			document.appendChild(rootElement);
+
+			for (String namespace : namespaces) {
+				Element nsElement = document.createElement("namespace");
+				rootElement.appendChild(nsElement);
+
+				Element nameElement = document.createElement("name");
+				nameElement.appendChild(document.createTextNode(namespace));
+				nsElement.appendChild(nameElement);
+
+				Element lsElement = document.createElement("layers");
+				nsElement.appendChild(lsElement);
+
+				AccumuloDataStore dataStore = GeowaveUtils.getDataStore(namespace);
+				IndexStore indexStore = dataStore.getIndexStore();
+				AdapterStore adapterStore = dataStore.getAdapterStore();
+				if (indexStore instanceof AccumuloIndexStore) {
+					Iterator<Index> indexIter = ((AccumuloIndexStore)indexStore).getIndices();
+					while(indexIter.hasNext()) {
+						indexIter.next();
+						if (adapterStore instanceof AccumuloAdapterStore) {
+							Iterator<DataAdapter<?>> iterator = ((AccumuloAdapterStore)adapterStore).getAdapters();
+							while (iterator.hasNext()) {
+								DataAdapter<?> dataAdapter = iterator.next();
+								if (dataAdapter instanceof FeatureDataAdapter) {
+									SimpleFeatureType simpleFeatureType = ((FeatureDataAdapter)dataAdapter).getType();
+
+									Element lElement = document.createElement("layer");
+									lElement.appendChild(document.createTextNode(simpleFeatureType.getTypeName()));
+									lsElement.appendChild(lElement);
+								}
+							}
+						}
+					}
+				}
+			}
+
+			StringWriter writer = new StringWriter();
+
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			DOMSource source = new DOMSource(document);
+			StreamResult result = new StreamResult(writer);
+
+			transformer.transform(source, result);
+
+			return writer.toString();
+		}
+		catch (AccumuloException | AccumuloSecurityException | IOException | ParserConfigurationException | TransformerException e) {
+			LOGGER.error(e.getMessage());
+			return null;
+		}
+	}
 
 	private static boolean createDataStore(String namespace) {
 		boolean flag = false;
@@ -300,7 +296,7 @@ public class Services
 			encoder.setEnabled(true);
 
 			loadProperties();
-
+			
 			Map<String, String> cp = new HashMap<String, String>();
 			cp.put("ZookeeperServers", zookeeperUrl);
 			cp.put("Password", geowavePassword);
@@ -360,55 +356,22 @@ public class Services
 		return flag;
 	}
 
-	private static BasicAccumuloOperations getOperations(String namespace) throws AccumuloException, AccumuloSecurityException, IOException {
-		loadProperties();
-
-		return new BasicAccumuloOperations(zookeeperUrl,
-				instanceName,
-				geowaveUsername,
-				geowavePassword,
-				namespace);
-	}
-
-	private static AccumuloDataStore getDataStore(String namespace) throws AccumuloException, AccumuloSecurityException, TableNotFoundException, IOException {
-		AccumuloDataStore dataStore = null;
-		BasicAccumuloOperations operations;
-		operations = getOperations(namespace);
-		Connector connector = operations.getConnector();
-
-		for (String tableName : connector.tableOperations().list()) {
-			if (tableName.startsWith(namespace)
-					&& tableName.contains(AbstractAccumuloPersistence.METADATA_TABLE)) {
-
-				IndexStore indexStore = new AccumuloIndexStore(operations);
-				AdapterStore adapterStore = new AccumuloAdapterStore(operations);
-				Scanner scanner = operations.createScanner(tableName.replace(namespace + "_", ""));
-
-				for (Entry<Key, Value> entry : scanner) {
-					if ("INDEX".equals(entry.getKey().getColumnFamily().toString())) {
-						indexStore.addIndex(PersistenceUtils.fromBinary(entry.getValue().get(), Index.class));
-					}
-					else if ("ADAPTER".equals(entry.getKey().getColumnFamily().toString())) {
-						adapterStore.addAdapter(PersistenceUtils.fromBinary(entry.getValue().get(), DataAdapter.class));
-					}
-				}
-
-				dataStore = new AccumuloDataStore(indexStore, adapterStore, operations);
-			}
-		}
-		return dataStore;
-	}
-
 	private static void loadProperties() throws IOException {
 		if (!loaded) {
+			// load geowave properties
 			Properties prop = new Properties();
-			String propFileName = "config.properties";
-
+			String propFileName = "mil/nga/giat/geowave/utils/config.properties";
 			InputStream inputStream = Services.class.getClassLoader().getResourceAsStream(propFileName);
-			prop.load(inputStream);
-			if (inputStream == null) {
+			if (inputStream == null)
 				throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
-			}
+			prop.load(inputStream);
+			
+			// load geoserver properties
+			propFileName = "mil/nga/giat/geowave/webservices/rest/config.properties";
+			inputStream = Services.class.getClassLoader().getResourceAsStream(propFileName);
+			if (inputStream == null)
+				throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
+			prop.load(inputStream);
 
 			zookeeperUrl = prop.getProperty("zookeeperUrl");
 			instanceName = prop.getProperty("instanceName");
