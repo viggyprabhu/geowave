@@ -1,5 +1,6 @@
 package mil.nga.giat.geowave.webservices.rest;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,13 +14,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -46,17 +50,58 @@ import mil.nga.giat.geowave.webservices.rest.data.DatastoreEncoder;
 import mil.nga.giat.geowave.webservices.rest.data.FeatureTypeEncoder;
 import mil.nga.giat.geowave.webservices.rest.data.GeowaveRESTPublisher;
 import mil.nga.giat.geowave.webservices.rest.data.GeowaveRESTReader;
+import mil.nga.giat.geowave.webservices.rest.data.HttpUtils;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemFactory;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.Logger;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+/**
+ * 
+ * 
+
+Some operations to support are:
+
+--    list GeoWave namespaces that exist (geowave-utils #43)
+
+    ingest by:
+        upload file (#4)
+        ingest from a filesystem accessible by the server
+        allow for additional attributes be associated with each feature (GeoTools ingest type only)
+
+    Geoserver facades with default GeoWave configuration to
+ --       publish data stores
+ --       publish layers
+        get/set styles
+        enable GeoWebCache
+        list GeoWave data stores, with zookeepers, accumulo instance and namespace of each
+ --       list all GeoWave layers, and list layers by namespace
+
+    analytics services to follow
+
+
+ * @author hayesrd1
+ *
+ */
 
 @Path("/services")
 public class Services
 {
+	public static void main(String [] args) {
+		System.out.println(getGeowaveDatastores());
+	}
+	
 	@GET
 	@Produces({MediaType.APPLICATION_XML})
 	@Path("/geowaveNamespaces")
@@ -112,6 +157,102 @@ public class Services
 		Collection<String> namespaces = new ArrayList<String>();
 		namespaces.add(namespace);
 		return getGeowaveLayers(namespaces);
+	}
+
+	@GET
+	@Produces({MediaType.APPLICATION_XML})
+	@Path("/getGeowaveDatastores")
+	public static String getGeowaveDatastores() {
+		Collection<DatastoreEncoder> datastores = new ArrayList<DatastoreEncoder>();
+		try {
+			loadProperties();
+
+			GeowaveRESTReader reader = new GeowaveRESTReader(geoserverUrl, geoserverUsername, geoserverPassword);
+			
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document document = builder.parse(new ByteArrayInputStream((reader.getDatastores("geowave")).getBytes()));
+			NodeList nodeList = document.getDocumentElement().getChildNodes();
+			for (int i = 0; i < nodeList.getLength(); i++) {
+				Node node = nodeList.item(i);
+				if (node.getNodeType() == Node.ELEMENT_NODE && "dataStore".equals(node.getNodeName())) {
+					DatastoreEncoder datastore = new DatastoreEncoder();
+					for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
+						if (child.getNodeType() == Node.ELEMENT_NODE && "atom:link".equals(child.getNodeName())) {
+							NamedNodeMap attributes = child.getAttributes();
+				            for (int ii = 0; ii < attributes.getLength(); ii++) {
+				                Node attribute = attributes.item(ii);
+				                if ("href".equals(attribute.getNodeName())) {
+				                	byte [] urlResponse = 
+				                			HttpUtils.get(attribute.getNodeValue(), "",
+				                					geoserverUsername, geoserverPassword).getBytes();
+				                	document = builder.parse(new ByteArrayInputStream(urlResponse));
+				                	NodeList nodes = document.getDocumentElement().getChildNodes();
+				                	for (int jj = 0; jj < nodes.getLength(); jj++) {
+				                		Node item = nodes.item(jj);
+				                		if (item.getNodeType() == Node.ELEMENT_NODE && "name".equals(item.getNodeName())) {
+				                			for (Node itemChild = item.getFirstChild(); itemChild != null; itemChild = itemChild.getNextSibling()) {
+				                				datastore.setName(itemChild.getNodeValue());
+				                			}
+				                		}
+				                		else if (item.getNodeType() == Node.ELEMENT_NODE && "type".equals(item.getNodeName())) {
+				                			for (Node itemChild = item.getFirstChild(); itemChild != null; itemChild = itemChild.getNextSibling()) {
+				                				datastore.setType(itemChild.getNodeValue());
+				                			}
+				                		}
+				                		else if (item.getNodeType() == Node.ELEMENT_NODE && "enabled".equals(item.getNodeName())) {
+				                			for (Node itemChild = item.getFirstChild(); itemChild != null; itemChild = itemChild.getNextSibling()) {
+				                				datastore.setEnabled(Boolean.parseBoolean(itemChild.getNodeValue()));
+				                			}
+				                		}
+				                		else if (item.getNodeType() == Node.ELEMENT_NODE && "__default".equals(item.getNodeName())) {
+				                			for (Node itemChild = item.getFirstChild(); itemChild != null; itemChild = itemChild.getNextSibling()) {
+				                				datastore.set_default((Boolean.parseBoolean(itemChild.getNodeValue())));
+				                			}
+				                		}
+				                		else if (item.getNodeType() == Node.ELEMENT_NODE && "connectionParameters".equals(item.getNodeName())) {
+				                			Map<String, String> connParams = new HashMap<String, String>();
+				                			for (Node itemChild = item.getFirstChild(); itemChild != null; itemChild = itemChild.getNextSibling()) {
+				                				if (itemChild.getNodeType() == Node.ELEMENT_NODE && "entry".equals(itemChild.getNodeName())) {
+				                					NamedNodeMap attrs = itemChild.getAttributes();
+				                					for (int j = 0; j < attrs.getLength(); j++) {
+				        				                Node attr = attrs.item(j);
+				        				                if (!"Password".equals(attr.getNodeValue()) && !"UserName".equals(attr.getNodeValue())) {
+				        				                	String key = attr.getNodeValue();
+						                					for (Node itemGrandChild = itemChild.getFirstChild(); itemGrandChild != null; itemGrandChild = itemGrandChild.getNextSibling()) {
+						                						if (itemGrandChild.getNodeType() == Node.TEXT_NODE) {
+						                							connParams.put(key, itemGrandChild.getNodeValue());
+						                						}
+						                					}
+				        				                }
+				                					}
+				                				}
+				                			}
+				                			datastore.setConnectionParameters(connParams);
+				                		}
+				                	}
+				                }
+				            }
+						}
+					}
+					datastores.add(datastore);					
+				}
+			}
+			
+			if (datastores.size() == 0)
+				return "<datastores/>";
+			else {
+				String value = "<datastores>";
+				for (DatastoreEncoder datastore : datastores) {
+					value += datastore;
+				}
+				value += "</datastores>";
+				return value;
+			}
+		}
+		catch(IOException | ParserConfigurationException | SAXException e) {}
+
+		return null;
 	}
 
 	@POST
@@ -206,6 +347,41 @@ public class Services
 		return null;
 	}
 
+	@POST
+	@Path("/publishStyle")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public static boolean publishStyle(@Context HttpServletRequest request) {
+		File sld = null;
+		String styleName = null;
+		try {
+			//checks whether there is a file upload request or not
+			if (ServletFileUpload.isMultipartContent(request)) {
+				FileItemFactory factory = new DiskFileItemFactory();
+				ServletFileUpload fileUpload = new ServletFileUpload(factory);
+				
+				for(Object obj : fileUpload.parseRequest(request)) {
+					// check if it represents an uploaded file
+					if (obj instanceof FileItem) {
+						FileItem item = (FileItem)obj;
+						if (item.isFormField()) {
+							sld = new File(item.getName());
+							item.write(sld);
+						}
+						else {
+							if (item.getFieldName().equals("STYLE_NAME"))
+								styleName = item.getString();
+						}
+					}
+				}
+			}
+			if (sld != null && styleName != null) {
+				return publishStyle(styleName, sld);
+			}
+		}
+		catch (Exception e) {}
+		return false;
+	}
+	
 	public static boolean publishStyle(String styleName, File sld) {
 		try {
 			loadProperties();
@@ -213,6 +389,41 @@ public class Services
 			return publisher.publishStyle(styleName, sld);
 		}
 		catch (IOException e) {}
+		return false;
+	}
+	
+	@PUT
+	@Path("/updateStyle")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public static boolean updateStyle(@Context HttpServletRequest request) {
+		File sld = null;
+		String styleName = null;
+		try {
+			//checks whether there is a file upload request or not
+			if (ServletFileUpload.isMultipartContent(request)) {
+				FileItemFactory factory = new DiskFileItemFactory();
+				ServletFileUpload fileUpload = new ServletFileUpload(factory);
+				
+				for(Object obj : fileUpload.parseRequest(request)) {
+					// check if it represents an uploaded file
+					if (obj instanceof FileItem) {
+						FileItem item = (FileItem)obj;
+						if (item.isFormField()) {
+							sld = new File(item.getName());
+							item.write(sld);
+						}
+						else {
+							if (item.getFieldName().equals("STYLE_NAME"))
+								styleName = item.getString();
+						}
+					}
+				}
+			}
+			if (sld != null && styleName != null) {
+				return updateStyle(styleName, sld);
+			}
+		}
+		catch (Exception e) {}
 		return false;
 	}
 
@@ -387,7 +598,7 @@ public class Services
 			loaded = true;
 		}
 	}
-
+	
 	private static boolean loaded = false;
 	private static String zookeeperUrl;
 	private static String instanceName;

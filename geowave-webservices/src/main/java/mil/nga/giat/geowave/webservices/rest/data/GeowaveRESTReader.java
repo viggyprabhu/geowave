@@ -25,4 +25,14 @@ public class GeowaveRESTReader
 		String url = restURL + "/rest/styles/" + name;
 		return HttpUtils.get(url, SLD, username, password);
 	}
+	
+	public String getDatastores(String workspace) {
+		String url = restURL + "/rest/workspaces/" + workspace + "/datastores";
+		return HttpUtils.get(url, XML, username, password);
+	}
+	
+	public String getDatastore(String workspace, String datastore) {
+		String url = restURL + "/rest/workspaces/" + workspace + "/datastores/" + datastore;
+		return HttpUtils.get(url, XML, username, password);		
+	}
 }
