@@ -48,8 +48,8 @@ import mil.nga.giat.geowave.store.index.IndexStore;
 import mil.nga.giat.geowave.utils.GeowaveUtils;
 import mil.nga.giat.geowave.webservices.rest.data.DatastoreEncoder;
 import mil.nga.giat.geowave.webservices.rest.data.FeatureTypeEncoder;
-import mil.nga.giat.geowave.webservices.rest.data.GeowaveRESTPublisher;
-import mil.nga.giat.geowave.webservices.rest.data.GeowaveRESTReader;
+import mil.nga.giat.geowave.webservices.rest.data.GeoserverPublisher;
+import mil.nga.giat.geowave.webservices.rest.data.GeoserverReader;
 import mil.nga.giat.geowave.webservices.rest.data.HttpUtils;
 
 import org.apache.accumulo.core.client.AccumuloException;
@@ -83,7 +83,7 @@ Some operations to support are:
     Geoserver facades with default GeoWave configuration to
  --       publish data stores
  --       publish layers
-        get/set styles
+ --       get/set styles
         enable GeoWebCache
  --       list GeoWave data stores, with zookeepers, accumulo instance and namespace of each
  --       list all GeoWave layers, and list layers by namespace
@@ -98,6 +98,7 @@ Some operations to support are:
 @Path("/services")
 public class Services
 {
+
 	@GET
 	@Produces({MediaType.APPLICATION_XML})
 	@Path("/geowaveNamespaces")
@@ -163,7 +164,7 @@ public class Services
 		try {
 			loadProperties();
 
-			GeowaveRESTReader reader = new GeowaveRESTReader(geoserverUrl, geoserverUsername, geoserverPassword);
+			GeoserverReader reader = new GeoserverReader(geoserverUrl, geoserverUsername, geoserverPassword);
 			
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -273,7 +274,7 @@ public class Services
 		try {
 			loadProperties();
 
-			GeowaveRESTReader reader = new GeowaveRESTReader(geoserverUrl, geoserverUsername, geoserverPassword);
+			GeoserverReader reader = new GeoserverReader(geoserverUrl, geoserverUsername, geoserverPassword);
 			return reader.getStyles();
 		}
 		catch(IOException e) {}
@@ -287,7 +288,7 @@ public class Services
 	public static String getStyle(@PathParam("styleName")String styleName) {
 		try {
 			loadProperties();
-			GeowaveRESTReader reader = new GeowaveRESTReader(geoserverUrl, geoserverUsername, geoserverPassword);
+			GeoserverReader reader = new GeoserverReader(geoserverUrl, geoserverUsername, geoserverPassword);
 			return reader.getStyles(styleName);
 		}
 		catch(IOException e) {}
@@ -333,7 +334,7 @@ public class Services
 	public static boolean publishStyle(String styleName, File sld) {
 		try {
 			loadProperties();
-			GeowaveRESTPublisher publisher = new GeowaveRESTPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
+			GeoserverPublisher publisher = new GeoserverPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
 			return publisher.publishStyle(styleName, sld);
 		}
 		catch (IOException e) {}
@@ -378,7 +379,7 @@ public class Services
 	public static boolean updateStyle(String styleName, File sld) {
 		try {
 			loadProperties();
-			GeowaveRESTPublisher publisher = new GeowaveRESTPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
+			GeoserverPublisher publisher = new GeoserverPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
 			return publisher.updateStyle(styleName, sld);
 		}
 		catch (IOException e) {}
@@ -465,7 +466,7 @@ public class Services
 
 			encoder.setConnectionParameters(cp);
 
-			GeowaveRESTPublisher publisher = new GeowaveRESTPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
+			GeoserverPublisher publisher = new GeoserverPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
 
 			if (publisher.datastoreExist(geoserverWorkspace, namespace)) {
 				LOGGER.info("Datastore: " + namespace + " already exists.");
@@ -500,7 +501,7 @@ public class Services
 
 			loadProperties();
 
-			GeowaveRESTPublisher publisher = new GeowaveRESTPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
+			GeoserverPublisher publisher = new GeoserverPublisher(geoserverUrl, geoserverUsername, geoserverPassword);
 
 			if (publisher.layerExist(layerName)) {
 				LOGGER.info("Layer: " + layerName + " already exists.");

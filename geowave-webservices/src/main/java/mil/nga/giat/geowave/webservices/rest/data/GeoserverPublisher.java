@@ -3,7 +3,7 @@ package mil.nga.giat.geowave.webservices.rest.data;
 import java.io.File;
 import java.net.HttpURLConnection;
 
-public class GeowaveRESTPublisher
+public class GeoserverPublisher
 {
 	private static final String XML = "application/xml";
 	private static final String SLD = "application/vnd.ogc.sld+xml";
@@ -12,7 +12,7 @@ public class GeowaveRESTPublisher
 	private final String username;
 	private final String password;
 	
-	public GeowaveRESTPublisher(String restURL, String username,
+	public GeoserverPublisher(String restURL, String username,
 			String password) {
 		this.restURL = HttpUtils.decurtSlash(restURL);
 		this.username = username;

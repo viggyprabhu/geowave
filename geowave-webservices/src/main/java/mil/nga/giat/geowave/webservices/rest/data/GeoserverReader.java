@@ -1,6 +1,6 @@
 package mil.nga.giat.geowave.webservices.rest.data;
 
-public class GeowaveRESTReader
+public class GeoserverReader
 {
 	private static final String XML = "application/xml";
 	private static final String SLD = "application/vnd.ogc.sld+xml";
@@ -9,7 +9,7 @@ public class GeowaveRESTReader
 	private final String username;
 	private final String password;
 	
-	public GeowaveRESTReader(String restURL, String username,
+	public GeoserverReader(String restURL, String username,
 			String password) {
 		this.restURL = HttpUtils.decurtSlash(restURL);
 		this.username = username;
