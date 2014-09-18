@@ -1,6 +1,9 @@
 package mil.nga.giat.geowave.webservices.rest.data;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -17,6 +20,10 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 public class DatastoreEncoder
 {
@@ -30,7 +37,9 @@ public class DatastoreEncoder
 	private static final String ENTRY = "entry";
 	private static final String KEY = "key";
 	private static final String DEFAULT = "__default";
-
+	private static final String USERNAME = "UserName";
+	private static final String PASSWORD = "Password";
+	
 	private String name;
 	private String type;
 	private boolean enabled;
@@ -38,9 +47,52 @@ public class DatastoreEncoder
 	private boolean _default;
 
 	public DatastoreEncoder() {}
-
-	@Override
-	public String toString() {
+	
+	public DatastoreEncoder(String xml) {
+		try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+//			Document document = builder.parse(xml);
+			Document document = builder.parse(new ByteArrayInputStream(xml.getBytes()));
+			NodeList nodeList = document.getDocumentElement().getChildNodes();
+			for (int ii = 0; ii < nodeList.getLength(); ii++) {
+				Node node = nodeList.item(ii);
+				if (node.getNodeType() == Node.ELEMENT_NODE && "name".equals(node.getNodeName()))
+					setName(node.getFirstChild().getNodeValue());
+				else if (node.getNodeType() == Node.ELEMENT_NODE && "type".equals(node.getNodeName()))
+					setType(node.getFirstChild().getNodeValue());
+				else if (node.getNodeType() == Node.ELEMENT_NODE && "enabled".equals(node.getNodeName()))
+					setEnabled(Boolean.parseBoolean(node.getFirstChild().getNodeValue()));
+				else if (node.getNodeType() == Node.ELEMENT_NODE && "__default".equals(node.getNodeName()))
+					set_default((Boolean.parseBoolean(node.getFirstChild().getNodeValue())));
+				else if (node.getNodeType() == Node.ELEMENT_NODE && "connectionParameters".equals(node.getNodeName())) {
+					Map<String, String> connParams = new HashMap<String, String>();
+					for (Node nodeChild = node.getFirstChild(); nodeChild != null; nodeChild = nodeChild.getNextSibling()) {
+						if (nodeChild.getNodeType() == Node.ELEMENT_NODE && "entry".equals(nodeChild.getNodeName())) {
+							NamedNodeMap attrs = nodeChild.getAttributes();
+							for (int jj = 0; jj < attrs.getLength(); jj++) {
+								Node attr = attrs.item(jj);
+								String key = attr.getNodeValue();
+								for (Node nodeGrandChild = nodeChild.getFirstChild(); nodeGrandChild != null; nodeGrandChild = nodeGrandChild.getNextSibling()) {
+									if (nodeGrandChild.getNodeType() == Node.TEXT_NODE)
+										connParams.put(key, nodeGrandChild.getNodeValue());
+								}
+							}
+						}
+					}
+					setConnectionParameters(connParams);
+				}
+			}
+		}
+		catch (ParserConfigurationException | SAXException | IOException e) {
+			LOGGER.error(e.getMessage());
+		}
+	}
+	public String xmlFormat() {
+		return xmlFormat(true);
+	}
+	
+	public String xmlFormat(boolean displayAll) {
 		String xml = null;
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -71,15 +123,20 @@ public class DatastoreEncoder
 			Element connectionElement = document.createElement(CONNECTION_PARAMETERS);
 			
 			for (String key : connectionParameters.keySet()) {
-				// entry element
-				Element entryElement = document.createElement(ENTRY);
-				// set attribute to entry element
-				Attr attribute = document.createAttribute(KEY);
-				attribute.setValue(key);
-				entryElement.setAttributeNode(attribute);
-				
-				entryElement.appendChild(document.createTextNode(connectionParameters.get(key)));
-				connectionElement.appendChild(entryElement);
+				// logic to display USERNAME and PASSWORD
+				if ((!(PASSWORD.equals(key)) ||
+						displayAll) &&
+						(!(USERNAME.equals(key)) || displayAll)) {
+					// entry element
+					Element entryElement = document.createElement(ENTRY);
+					// set attribute to entry element
+					Attr attribute = document.createAttribute(KEY);
+					attribute.setValue(key);
+					entryElement.setAttributeNode(attribute);
+
+					entryElement.appendChild(document.createTextNode(connectionParameters.get(key)));
+					connectionElement.appendChild(entryElement);
+				}
 			}
 			rootElement.appendChild(connectionElement);
 			

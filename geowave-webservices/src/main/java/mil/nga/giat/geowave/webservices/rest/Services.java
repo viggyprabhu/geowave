@@ -85,7 +85,7 @@ Some operations to support are:
  --       publish layers
         get/set styles
         enable GeoWebCache
-        list GeoWave data stores, with zookeepers, accumulo instance and namespace of each
+ --       list GeoWave data stores, with zookeepers, accumulo instance and namespace of each
  --       list all GeoWave layers, and list layers by namespace
 
     analytics services to follow
@@ -98,10 +98,6 @@ Some operations to support are:
 @Path("/services")
 public class Services
 {
-	public static void main(String [] args) {
-		System.out.println(getGeowaveDatastores());
-	}
-	
 	@GET
 	@Produces({MediaType.APPLICATION_XML})
 	@Path("/geowaveNamespaces")
@@ -176,66 +172,18 @@ public class Services
 			for (int i = 0; i < nodeList.getLength(); i++) {
 				Node node = nodeList.item(i);
 				if (node.getNodeType() == Node.ELEMENT_NODE && "dataStore".equals(node.getNodeName())) {
-					DatastoreEncoder datastore = new DatastoreEncoder();
 					for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
 						if (child.getNodeType() == Node.ELEMENT_NODE && "atom:link".equals(child.getNodeName())) {
 							NamedNodeMap attributes = child.getAttributes();
 				            for (int ii = 0; ii < attributes.getLength(); ii++) {
 				                Node attribute = attributes.item(ii);
 				                if ("href".equals(attribute.getNodeName())) {
-				                	byte [] urlResponse = 
-				                			HttpUtils.get(attribute.getNodeValue(), "",
-				                					geoserverUsername, geoserverPassword).getBytes();
-				                	document = builder.parse(new ByteArrayInputStream(urlResponse));
-				                	NodeList nodes = document.getDocumentElement().getChildNodes();
-				                	for (int jj = 0; jj < nodes.getLength(); jj++) {
-				                		Node item = nodes.item(jj);
-				                		if (item.getNodeType() == Node.ELEMENT_NODE && "name".equals(item.getNodeName())) {
-				                			for (Node itemChild = item.getFirstChild(); itemChild != null; itemChild = itemChild.getNextSibling()) {
-				                				datastore.setName(itemChild.getNodeValue());
-				                			}
-				                		}
-				                		else if (item.getNodeType() == Node.ELEMENT_NODE && "type".equals(item.getNodeName())) {
-				                			for (Node itemChild = item.getFirstChild(); itemChild != null; itemChild = itemChild.getNextSibling()) {
-				                				datastore.setType(itemChild.getNodeValue());
-				                			}
-				                		}
-				                		else if (item.getNodeType() == Node.ELEMENT_NODE && "enabled".equals(item.getNodeName())) {
-				                			for (Node itemChild = item.getFirstChild(); itemChild != null; itemChild = itemChild.getNextSibling()) {
-				                				datastore.setEnabled(Boolean.parseBoolean(itemChild.getNodeValue()));
-				                			}
-				                		}
-				                		else if (item.getNodeType() == Node.ELEMENT_NODE && "__default".equals(item.getNodeName())) {
-				                			for (Node itemChild = item.getFirstChild(); itemChild != null; itemChild = itemChild.getNextSibling()) {
-				                				datastore.set_default((Boolean.parseBoolean(itemChild.getNodeValue())));
-				                			}
-				                		}
-				                		else if (item.getNodeType() == Node.ELEMENT_NODE && "connectionParameters".equals(item.getNodeName())) {
-				                			Map<String, String> connParams = new HashMap<String, String>();
-				                			for (Node itemChild = item.getFirstChild(); itemChild != null; itemChild = itemChild.getNextSibling()) {
-				                				if (itemChild.getNodeType() == Node.ELEMENT_NODE && "entry".equals(itemChild.getNodeName())) {
-				                					NamedNodeMap attrs = itemChild.getAttributes();
-				                					for (int j = 0; j < attrs.getLength(); j++) {
-				        				                Node attr = attrs.item(j);
-				        				                if (!"Password".equals(attr.getNodeValue()) && !"UserName".equals(attr.getNodeValue())) {
-				        				                	String key = attr.getNodeValue();
-						                					for (Node itemGrandChild = itemChild.getFirstChild(); itemGrandChild != null; itemGrandChild = itemGrandChild.getNextSibling()) {
-						                						if (itemGrandChild.getNodeType() == Node.TEXT_NODE) {
-						                							connParams.put(key, itemGrandChild.getNodeValue());
-						                						}
-						                					}
-				        				                }
-				                					}
-				                				}
-				                			}
-				                			datastore.setConnectionParameters(connParams);
-				                		}
-				                	}
+				                	datastores.add(new DatastoreEncoder(HttpUtils.get(attribute.getNodeValue(), "",
+		                					geoserverUsername, geoserverPassword)));
 				                }
 				            }
 						}
-					}
-					datastores.add(datastore);					
+					}				
 				}
 			}
 			
@@ -244,7 +192,7 @@ public class Services
 			else {
 				String value = "<datastores>";
 				for (DatastoreEncoder datastore : datastores) {
-					value += datastore;
+					value += datastore.xmlFormat(false);
 				}
 				value += "</datastores>";
 				return value;
