@@ -33,8 +33,28 @@ public class FileUpload {
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces("text/plain")
+	@Path("/ingestFile")
+	public Response ingestFile(@Context HttpServletRequest request) {
+		Response response = null;
+		try {
+			upload(request);
+		}
+		catch (Exception e) {
+			LOGGER.error(e.getMessage());
+		} 
+		finally {
+			if (file != null) {
+				// add ingest logic here
+			}
+		}
+		return response;
+	}
+	
+	@POST
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces("text/plain")
 	@Path("/uploadStyle")
-	public Response uploadFile(@Context HttpServletRequest request) {
+	public Response uploadStyle(@Context HttpServletRequest request) {
 		Response response = null;
 		try {
 			upload(request);
@@ -64,7 +84,7 @@ public class FileUpload {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces("text/plain")
 	@Path("/updateStyle")
-	public Response updateFile(@Context HttpServletRequest request) {
+	public Response updateStyle(@Context HttpServletRequest request) {
 		Response response = null;
 		try {
 			upload(request);
