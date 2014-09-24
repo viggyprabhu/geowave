@@ -33,6 +33,10 @@ public class ClearNamespace
 		run(null, null);
 	}
 	
+	public void run(String namespace) throws ParseException {
+		run(namespace, null);
+	}
+	
 	public void run(String namespace, String visibility) throws ParseException {
 		Options options = new Options();
 		driver.applyOptions(options);
