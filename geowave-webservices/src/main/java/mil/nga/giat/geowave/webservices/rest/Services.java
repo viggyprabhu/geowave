@@ -69,29 +69,12 @@ import org.xml.sax.SAXException;
 
 /**
  * 
- * 
-
-Some operations to support are:
-
---    list GeoWave namespaces that exist (geowave-utils #43)
-
-    ingest by:
-        upload file (#4)
-        ingest from a filesystem accessible by the server
-        allow for additional attributes be associated with each feature (GeoTools ingest type only)
-
-    Geoserver facades with default GeoWave configuration to
- --       publish data stores
- --       publish layers
- --       get/set styles
-        enable GeoWebCache
- --       list GeoWave data stores, with zookeepers, accumulo instance and namespace of each
- --       list all GeoWave layers, and list layers by namespace
-
-    analytics services to follow
-
-
- * @author hayesrd1
+ * Geoserver facades with default GeoWave configuration to
+ * 		publish data stores
+ * 		publish layers
+ * 		get/set styles
+ * 		list GeoWave data stores, with zookeepers, accumulo instance and namespace of each
+ * 		list all GeoWave layers, and list layers by namespace
  *
  */
 
