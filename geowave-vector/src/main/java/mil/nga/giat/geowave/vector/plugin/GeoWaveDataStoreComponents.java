@@ -2,9 +2,12 @@ package mil.nga.giat.geowave.vector.plugin;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import mil.nga.giat.geowave.index.ByteArrayId;
+import mil.nga.giat.geowave.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.store.data.visibility.GlobalVisibilityHandler;
 import mil.nga.giat.geowave.store.data.visibility.UniformVisibilityWriter;
 import mil.nga.giat.geowave.store.index.Index;
@@ -74,14 +77,32 @@ public class GeoWaveDataStoreComponents
 				replacement));
 	}
 
+	@SuppressWarnings("unchecked")
+	public Map<ByteArrayId, DataStatistics<SimpleFeature>> getDataStatistics(
+			GeoWaveTransaction transaction ) {
+		final Map<ByteArrayId, DataStatistics<SimpleFeature>> stats = new HashMap<ByteArrayId, DataStatistics<SimpleFeature>>();
+
+		for (ByteArrayId statsId : adapter.getSupportedStatisticsIds()) {
+			@SuppressWarnings("unused")
+			DataStatistics<SimpleFeature> put = stats.put(
+					statsId,
+					(DataStatistics<SimpleFeature>) dataStore.getStatsStore().getDataStatistics(
+							this.adapter.getAdapterId(),
+							statsId,
+							transaction.composeVisibility()));
+		}
+		return stats;
+	}
+
 	public void remove(
 			SimpleFeature feature,
 			GeoWaveTransaction transaction )
 			throws IOException {
 		this.dataStore.deleteEntry(
-				this.adapter,
 				this.currentIndex,
-				feature);
+				this.adapter,
+				feature,
+				transaction.composeVisibility());
 	}
 
 	@SuppressWarnings("unchecked")

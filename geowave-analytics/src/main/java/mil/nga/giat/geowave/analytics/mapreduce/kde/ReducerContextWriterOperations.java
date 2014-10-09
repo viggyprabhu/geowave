@@ -77,13 +77,6 @@ public class ReducerContextWriterOperations implements
 	}
 
 	@Override
-	public boolean deleteAll(
-			final String tableName,
-			final String columnFamily ) {
-		return false;
-	}
-
-	@Override
 	public boolean tableExists(
 			final String tableName ) {
 		return false;
@@ -116,13 +109,6 @@ public class ReducerContextWriterOperations implements
 	}
 
 	@Override
-	public BatchDeleter createBatchDeleter(
-			final String tableName )
-			throws TableNotFoundException {
-		return null;
-	}
-
-	@Override
 	public boolean attachIterators(
 			String tableName,
 			boolean createTable,
@@ -143,12 +129,39 @@ public class ReducerContextWriterOperations implements
 	}
 
 	@Override
+	public BatchDeleter createBatchDeleter(
+			String tableName,
+			String... additionalAuthorizations )
+			throws TableNotFoundException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public boolean delete(
 			String tableName,
 			List<ByteArrayId> rowId,
 			String columnFamily,
-			String columnQualifier ) {
+			String columnQualifier,
+			String... additionalAuthorizations ) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public boolean deleteAll(
+			String tableName,
+			String columnFamily,
+			String... additionalAuthorizations ) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public long rowCount(
+			String tableName,
+			String... additionalAuthorizations ) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

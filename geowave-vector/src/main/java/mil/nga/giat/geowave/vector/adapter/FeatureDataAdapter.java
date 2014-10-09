@@ -16,6 +16,7 @@ import mil.nga.giat.geowave.store.adapter.PersistentIndexFieldHandler;
 import mil.nga.giat.geowave.store.adapter.statistics.BoundingBoxDataStatistics;
 import mil.nga.giat.geowave.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.store.adapter.statistics.DataStatisticsVisibilityHandler;
+import mil.nga.giat.geowave.store.adapter.statistics.EmptyStatisticVisibility;
 import mil.nga.giat.geowave.store.adapter.statistics.FieldTypeStatisticVisibility;
 import mil.nga.giat.geowave.store.adapter.statistics.StatisticalDataAdapter;
 import mil.nga.giat.geowave.store.data.field.FieldReader;
@@ -188,7 +189,6 @@ public class FeatureDataAdapter extends
 			reprojectedType = persistedType;
 		}
 	}
-
 	private static List<NativeFieldHandler<SimpleFeature, Object>> typeToFieldHandlers(
 			final SimpleFeatureType type ) {
 		final List<NativeFieldHandler<SimpleFeature, Object>> nativeHandlers = new ArrayList<NativeFieldHandler<SimpleFeature, Object>>(
@@ -496,7 +496,7 @@ public class FeatureDataAdapter extends
 		if (BoundingBoxDataStatistics.STATS_ID.equals(statisticsId)) {
 			return GEOMETRY_VISIBILITY_HANDLER;
 		}
-		return null;
+		return new EmptyStatisticVisibility();
 	}
 
 	public boolean hasGeometricConstraints() {

@@ -34,9 +34,18 @@ public class MergingVisibilityCombiner extends
 		Key outputKey = null;
 		while (input.hasTop()) {
 			final Value val = input.getTopValue();
-			final Key currentKey = input.getTopKey();
+			final Key currentKey = new Key(input.getTopKey());
 			if (outputKey == null) {
 				outputKey = currentKey;
+			} else if (currentMergeable != null &&
+					   !outputKey.getRowData().equals(currentKey.getRowData())) {
+				output.append(
+						outputKey,
+						new Value(
+								PersistenceUtils.toBinary(currentMergeable)));
+				currentMergeable = null;
+				outputKey = currentKey;
+				continue;
 			}
 			else {
 				final Text combinedVisibility = new Text(

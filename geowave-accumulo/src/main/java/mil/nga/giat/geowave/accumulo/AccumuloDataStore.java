@@ -54,6 +54,7 @@ import mil.nga.giat.geowave.store.query.Query;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.BatchDeleter;
+import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.Scanner;
@@ -76,15 +77,17 @@ import com.google.common.collect.Iterators;
  * and AdapterStore based on the operations which will persist configuration
  * information to Accumulo tables, or an implementation of each of these stores
  * can be passed in.
- *
+ * 
  * A DataStore can both ingest and query data based on persisted indices and
  * data adapters. When the data is ingested it is explicitly given an index and
  * a data adapter which is then persisted to be used in subsequent queries.
  */
 public class AccumuloDataStore implements
-DataStore
+		DataStore
 {
 	private final static Logger LOGGER = Logger.getLogger(AccumuloDataStore.class);
+	private static final String WHOLE_ROW_ITERATOR_NAME = "GEOWAVE_WHOLE_ROW_ITERATOR";
+	private static final int WHOLE_ROW_ITERATOR_PRIORITY = 10;
 
 	protected final IndexStore indexStore;
 	protected final AdapterStore adapterStore;
@@ -97,11 +100,11 @@ DataStore
 		this(
 				new AccumuloIndexStore(
 						accumuloOperations),
-						new AccumuloAdapterStore(
-								accumuloOperations),
-								new AccumuloDataStatisticsStore(
-										accumuloOperations),
-										accumuloOperations);
+				new AccumuloAdapterStore(
+						accumuloOperations),
+				new AccumuloDataStatisticsStore(
+						accumuloOperations),
+				accumuloOperations);
 	}
 
 	public AccumuloDataStore(
@@ -110,12 +113,12 @@ DataStore
 		this(
 				new AccumuloIndexStore(
 						accumuloOperations),
-						new AccumuloAdapterStore(
-								accumuloOperations),
-								new AccumuloDataStatisticsStore(
-										accumuloOperations),
-										accumuloOperations,
-										accumuloOptions);
+				new AccumuloAdapterStore(
+						accumuloOperations),
+				new AccumuloDataStatisticsStore(
+						accumuloOperations),
+				accumuloOperations,
+				accumuloOptions);
 	}
 
 	public AccumuloDataStore(
@@ -229,24 +232,7 @@ DataStore
 				}
 			}
 
-			boolean persistStats = accumuloOptions.isPersistDataStatistics() && (writableAdapter instanceof StatisticalDataAdapter) && (statisticsStore != null);
-			List<DataStatisticsBuilder<T>> statisticsBuilders = null;
-			if (persistStats) {
-				final ByteArrayId[] statisticsIds = ((StatisticalDataAdapter<T>) writableAdapter).getSupportedStatisticsIds();
-				if ((statisticsIds != null) && (statisticsIds.length != 0)) {
-					persistStats = true;
-					statisticsBuilders = new ArrayList<DataStatisticsBuilder<T>>(
-							statisticsIds.length);
-					for (final ByteArrayId id : statisticsIds) {
-						statisticsBuilders.add(new DataStatisticsBuilder<T>(
-								(StatisticalDataAdapter) writableAdapter,
-								id));
-					}
-				}
-				else {
-					persistStats = false;
-				}
-			}
+			List<DataStatisticsBuilder<T>> statisticsBuilders = getStatsBuilders(writableAdapter);
 
 			writer = accumuloOperations.createWriter(
 					indexName,
@@ -262,8 +248,8 @@ DataStore
 			if (writableAdapter instanceof AttachedIteratorDataAdapter) {
 				if (!DataAdapterAndIndexCache.getInstance(
 						AttachedIteratorDataAdapter.ATTACHED_ITERATOR_CACHE_ID).add(
-								writableAdapter.getAdapterId(),
-								indexName)) {
+						writableAdapter.getAdapterId(),
+						indexName)) {
 					accumuloOperations.attachIterators(
 							indexName,
 							accumuloOptions.isCreateTable(),
@@ -293,15 +279,14 @@ DataStore
 
 				altIdxWriter.close();
 			}
-			if (persistStats) {
-				for (final DataStatisticsBuilder<T> builder : statisticsBuilders) {
-					builder.entryIngested(
-							entryInfo,
-							entry);
-					final Collection<DataStatistics<T>> statistics = builder.getStatistics();
-					for (final DataStatistics<T> s : statistics) {
-						statisticsStore.incorporateStatistics(s);
-					}
+
+			for (final DataStatisticsBuilder<T> builder : statisticsBuilders) {
+				builder.entryIngested(
+						entryInfo,
+						entry);
+				final Collection<DataStatistics<T>> statistics = builder.getStatistics();
+				for (final DataStatistics<T> s : statistics) {
+					statisticsStore.incorporateStatistics(s);
 				}
 			}
 
@@ -321,33 +306,6 @@ DataStore
 				accumuloOperations,
 				adapterStore,
 				0);
-	}
-
-	public <T> void deleteEntry(
-			final WritableDataAdapter<T> writableAdapter,
-			final Index index,
-			final T entry ) {
-
-		final ByteArrayId adapterId = writableAdapter.getAdapterId();
-		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
-		final String altIdxTableName = tableName + AccumuloUtils.ALT_INDEX_TABLE;
-		final boolean useAltIndex = accumuloOptions.isUseAltIndex();
-		if (useAltIndex && accumuloOperations.tableExists(altIdxTableName)) {
-			this.deleteEntry(
-					index,
-					writableAdapter.getDataId(entry),
-					adapterId);
-		}
-		else {
-			accumuloOperations.delete(
-					tableName,
-					AccumuloUtils.getRowIds(
-							writableAdapter,
-							index,
-							entry),
-							null,
-							null);
-		}
 	}
 
 	protected synchronized void store(
@@ -417,8 +375,8 @@ DataStore
 								}
 							},
 							null),
-							ingestCallback,
-							customFieldVisibilityWriter);
+					ingestCallback,
+					customFieldVisibilityWriter);
 		}
 		else {
 			ingestInternal(
@@ -475,8 +433,8 @@ DataStore
 			if (dataWriter instanceof AttachedIteratorDataAdapter) {
 				if (!DataAdapterAndIndexCache.getInstance(
 						AttachedIteratorDataAdapter.ATTACHED_ITERATOR_CACHE_ID).add(
-								dataWriter.getAdapterId(),
-								indexName)) {
+						dataWriter.getAdapterId(),
+						indexName)) {
 					accumuloOperations.attachIterators(
 							indexName,
 							accumuloOptions.isCreateTable(),
@@ -555,7 +513,7 @@ DataStore
 													index,
 													entry,
 													customFieldVisibilityWriter),
-													entry);
+											entry);
 								}
 							});
 				}
@@ -604,7 +562,7 @@ DataStore
 				query,
 				new Integer(
 						limit),
-						authorizations);
+				authorizations);
 	}
 
 	@Override
@@ -627,14 +585,14 @@ DataStore
 		store(adapter);
 		return ((CloseableIterator<T>) query(
 				Arrays.asList(new ByteArrayId[] {
-						adapter.getAdapterId()
+					adapter.getAdapterId()
 				}),
 				query,
 				new MemoryAdapterStore(
 						new DataAdapter[] {
-								adapter
+							adapter
 						}),
-						limit));
+				limit));
 	}
 
 	@Override
@@ -783,7 +741,8 @@ DataStore
 	public <T> T getEntry(
 			final Index index,
 			final ByteArrayId dataId,
-			final ByteArrayId adapterId ) {
+			final ByteArrayId adapterId,
+			final String...additionalAuthorizations) {
 		final String altIdxTableName = index.getId().getString() + AccumuloUtils.ALT_INDEX_TABLE;
 
 		if (accumuloOptions.isUseAltIndex() && accumuloOperations.tableExists(altIdxTableName)) {
@@ -821,79 +780,116 @@ DataStore
 		return null;
 	}
 
+	public <T> boolean deleteEntry(
+			final Index index,
+			final WritableDataAdapter<T> writableAdapter,			
+			final T entry,
+			final String... authorizations ) {
+
+		final ByteArrayId adapterId = writableAdapter.getAdapterId();
+		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
+		final String altIdxTableName = tableName + AccumuloUtils.ALT_INDEX_TABLE;
+		final boolean useAltIndex = accumuloOptions.isUseAltIndex() && accumuloOperations.tableExists(altIdxTableName);
+		final ByteArrayId dataId = writableAdapter.getDataId(entry);
+
+		final List<Entry<Key, Value>> rows = (useAltIndex) ? this.getEntryRows(
+				tableName,
+				getAltIndexRowIds(
+						altIdxTableName,
+						dataId,
+						adapterId),
+				adapterId) : getEntryRows(
+				tableName,
+				dataId,
+				adapterId);
+
+		final DeleteRowObserver observer = new DeleteRowObserver() {
+			boolean foundOne = false;
+
+			@Override
+			public void deleteRow(
+					Key key,
+					Value value ) {
+				if (!foundOne) recordDeletion(
+						getStatsBuilders(writableAdapter),
+						writableAdapter,
+						index,
+						dataId,
+						key.getColumnVisibility().toString(),
+						entry);
+				foundOne = true;
+			}
+		};
+		boolean success = rows.size() > 0 && delete(
+				tableName,
+				rows,
+				observer,
+				authorizations);
+
+		if (success && useAltIndex && !deleteAltIndexEntry(
+				altIdxTableName,
+				dataId,
+				adapterId)) {
+			success = false;
+		}
+
+		return success;
+	}
+
 	@Override
 	public boolean deleteEntry(
 			final Index index,
 			final ByteArrayId dataId,
-			final ByteArrayId adapterId ) {
+			final ByteArrayId adapterId,
+			final String... authorizations) {
 		final String tableName = index.getId().getString();
 		final String altIdxTableName = tableName + AccumuloUtils.ALT_INDEX_TABLE;
-		boolean success = true;
+		final boolean useAltIndex = accumuloOptions.isUseAltIndex() && accumuloOperations.tableExists(altIdxTableName);
+		@SuppressWarnings("unchecked")
+		final DataAdapter<Object> adapter = (DataAdapter<Object>) adapterStore.getAdapter(adapterId);
 
-		if (accumuloOptions.isUseAltIndex() && accumuloOperations.tableExists(altIdxTableName)) {
-			final List<ByteArrayId> rowIds = getAltIndexRowIds(
-					altIdxTableName,
-					dataId,
-					adapterId);
+		final List<Entry<Key, Value>> rows = (useAltIndex) ? this.getEntryRows(
+				tableName,
+				getAltIndexRowIds(
+						altIdxTableName,
+						dataId,
+						adapterId),
+				adapterId) : getEntryRows(
+				tableName,
+				dataId,
+				adapterId,
+				authorizations);
+				
+		
 
-			if ((rowIds != null) && !rowIds.isEmpty()) {
-				for (final ByteArrayId rowId : rowIds) {
-					if (!accumuloOperations.delete(
-							tableName,
-							rowId,
-							null,
-							null)) {
-						success = false;
-					}
-				}
-			}
-			else {
-				success = false;
-			}
+		boolean success = rows.size() > 0 && delete(
+				tableName,
+				rows,
+				createDecodingDeleteObserver(
+						getStatsBuilders(adapter),
+						adapter,
+						index));
 
-			if (!deleteAltIndexEntry(
-					altIdxTableName,
-					dataId,
-					adapterId)) {
-				success = false;
-			}
-		}
-		else {
-			final List<Entry<Key, Value>> rows = getEntryRows(
-					tableName,
-					dataId,
-					adapterId);
+		if (success && useAltIndex) deleteAltIndexEntry(
+				altIdxTableName,
+				dataId,
+				adapterId);
 
-			if ((rows != null) && !rows.isEmpty()) {
-				for (final Entry<Key, Value> row : rows) {
-					final ByteArrayId rowId = new ByteArrayId(
-							row.getKey().getRowData().getBackingArray());
-					if (!accumuloOperations.delete(
-							tableName,
-							rowId,
-							null,
-							null)) {
-						success = false;
-					}
-				}
-			}
-			else {
-				success = false;
-			}
-		}
 		return success;
+
 	}
 
 	protected List<Entry<Key, Value>> getEntryRows(
 			final String tableName,
 			final ByteArrayId dataId,
-			final ByteArrayId adapterId ) {
+			final ByteArrayId adapterId,
+			final String... authorizations) {
 		final List<Entry<Key, Value>> rows = new ArrayList<Entry<Key, Value>>();
 
 		ScannerBase scanner = null;
 		try {
 
-			scanner = accumuloOperations.createScanner(tableName);
+			scanner = accumuloOperations.createScanner(tableName,authorizations);
 
 			scanner.fetchColumnFamily(new Text(
 					adapterId.getBytes()));
@@ -917,6 +913,52 @@ DataStore
 					SingleEntryFilterIterator.DATA_ID,
 					ByteArrayUtils.byteArrayToString(dataId.getBytes()));
 			scanner.addScanIterator(filterIteratorSettings);
+
+			final Iterator<Map.Entry<Key, Value>> iterator = scanner.iterator();
+			while (iterator.hasNext()) {
+				final Entry<Key, Value> entry = iterator.next();
+				rows.add(entry);
+			}
+			scanner.close();
+		}
+		catch (final TableNotFoundException e) {
+			LOGGER.warn(
+					"Unable to query table '" + tableName + "'.  Table does not exist.",
+					e);
+			return null;
+		}
+
+		return rows;
+	}
+
+	protected List<Entry<Key, Value>> getEntryRows(
+			final String tableName,
+			List<ByteArrayId> rowIds,
+			final ByteArrayId adapterId,
+			final String... authorizations) {
+		final List<Entry<Key, Value>> rows = new ArrayList<Entry<Key, Value>>(
+				rowIds.size());
+
+		BatchScanner scanner = null;
+		try {
+
+			scanner = accumuloOperations.createBatchScanner(tableName,authorizations);
+
+			scanner.fetchColumnFamily(new Text(
+					adapterId.getBytes()));
+
+			final IteratorSetting rowIteratorSettings = new IteratorSetting(
+					SingleEntryFilterIterator.WHOLE_ROW_ITERATOR_PRIORITY,
+					SingleEntryFilterIterator.WHOLE_ROW_ITERATOR_NAME,
+					WholeRowIterator.class);
+			scanner.addScanIterator(rowIteratorSettings);
+
+			final List<Range> rowRanges = new ArrayList<Range>();
+			for (final ByteArrayId rowId : rowIds) {
+				rowRanges.add(Range.exact(new Text(
+						rowId.getBytes())));
+			}
+			scanner.setRanges(rowRanges);
 
 			final Iterator<Map.Entry<Key, Value>> iterator = scanner.iterator();
 			while (iterator.hasNext()) {
@@ -970,7 +1012,6 @@ DataStore
 				LOGGER.warn(
 						"Unable to query table '" + tableName + "'.  Table does not exist.",
 						e);
-				return null;
 			}
 		}
 
@@ -981,6 +1022,17 @@ DataStore
 			final String tableName,
 			final ByteArrayId dataId,
 			final ByteArrayId adapterId ) {
+		return this.deleteAltIndexEntry(
+				tableName,
+				dataId,
+				adapterStore.getAdapter(adapterId));
+	}
+
+	protected <T> boolean deleteAltIndexEntry(
+			final String tableName,
+			final ByteArrayId dataId,
+			final DataAdapter<T> writableAdapter ) {
+		final ByteArrayId adapterId = writableAdapter.getAdapterId();
 		boolean success = true;
 		BatchDeleter deleter = null;
 		try {
@@ -1000,8 +1052,8 @@ DataStore
 				if (!(Arrays.equals(
 						entry.getKey().getRowData().getBackingArray(),
 						dataId.getBytes()) && Arrays.equals(
-								entry.getKey().getColumnFamilyData().getBackingArray(),
-								adapterId.getBytes()))) {
+						entry.getKey().getColumnFamilyData().getBackingArray(),
+						adapterId.getBytes()))) {
 					success = false;
 					break;
 				}
@@ -1012,6 +1064,7 @@ DataStore
 			}
 
 			deleter.close();
+
 		}
 		catch (final TableNotFoundException | MutationsRejectedException e) {
 			LOGGER.warn(
@@ -1029,10 +1082,12 @@ DataStore
 	@Override
 	public CloseableIterator<?> getEntriesByPrefix(
 			final Index index,
-			final ByteArrayId rowPrefix ) {
+			final ByteArrayId rowPrefix,
+			String... additionalAuthorizations) {
 		final AccumuloRowPrefixQuery q = new AccumuloRowPrefixQuery(
 				index,
-				rowPrefix);
+				rowPrefix,
+				additionalAuthorizations);
 		return q.query(
 				accumuloOperations,
 				adapterStore);
@@ -1137,7 +1192,7 @@ DataStore
 
 		final AccumuloConstraintsQuery q = new AccumuloConstraintsQuery(
 				Arrays.asList(new ByteArrayId[] {
-						adapter.getAdapterId()
+					adapter.getAdapterId()
 				}),
 				index,
 				query.getIndexConstraints(index.getIndexStrategy()),
@@ -1147,23 +1202,172 @@ DataStore
 				accumuloOperations,
 				new MemoryAdapterStore(
 						new DataAdapter[] {
-								adapter
+							adapter
 						}),
-						limit);
+				limit);
 	}
 
 	public <T> void deleteEntries(
 			final DataAdapter<T> adapter,
-			final Index index ) {
+			final Index index,
+			final String...additionalAuthorizations) {
 		final String tableName = index.getId().getString();
 		final String altIdxTableName = tableName + AccumuloUtils.ALT_INDEX_TABLE;
 		final String adapterId = StringUtils.stringFromBinary(adapter.getAdapterId().getBytes());
-
-		accumuloOperations.deleteAll(
+				
+		final CloseableIterator<DataStatistics<?>> it = 
+				this.statisticsStore.getDataStatistics(adapter.getAdapterId());
+		
+		while (it.hasNext()) {
+			DataStatistics stats = it.next();
+			this.statisticsStore.removeStatistics(adapter.getAdapterId(), stats.getStatisticsId(),
+					additionalAuthorizations);
+		}
+		
+		deleteAll(
 				tableName,
 				adapterId);
-		accumuloOperations.deleteAll(
+		deleteAll(
 				altIdxTableName,
 				adapterId);
+	}
+
+	private <T> void recordDeletion(
+			final List<DataStatisticsBuilder<T>> statsBuilders,
+			final DataAdapter<T> adapter,
+			final Index index,
+			final ByteArrayId dataId,
+			final String visibility,
+			final T entry ) {
+
+		for (final DataStatisticsBuilder<T> builder : statsBuilders) {
+			builder.entryDeleted(
+					dataId.getBytes(),
+					visibility.getBytes(),
+					entry);
+			final Collection<DataStatistics<T>> statistics = builder.getStatistics();
+			for (final DataStatistics<T> s : statistics) {
+				statisticsStore.incorporateStatistics(s);
+			}
+		}
+	}
+
+	private <T> List<DataStatisticsBuilder<T>> getStatsBuilders(
+			final DataAdapter<T> adapter ) {
+		boolean persistStats = accumuloOptions.isPersistDataStatistics() && (adapter instanceof StatisticalDataAdapter) && (statisticsStore != null);
+		List<DataStatisticsBuilder<T>> statisticsBuilders = new ArrayList<DataStatisticsBuilder<T>>();
+		if (persistStats) {
+			final ByteArrayId[] statisticsIds = ((StatisticalDataAdapter<T>) adapter).getSupportedStatisticsIds();
+			if ((statisticsIds != null) && (statisticsIds.length != 0)) {
+				for (final ByteArrayId id : statisticsIds) {
+					statisticsBuilders.add(new DataStatisticsBuilder<T>(
+							(StatisticalDataAdapter) adapter,
+							id));
+				}
+			}
+		}
+		return statisticsBuilders;
+	}
+
+	private boolean deleteAll(
+			final String tableName,
+			final String columnFamily,
+			final String... additionalAuthorizations ) {
+		BatchDeleter deleter = null;
+		try {
+			deleter = accumuloOperations.createBatchDeleter(
+					tableName,
+					additionalAuthorizations);
+
+			deleter.setRanges(Arrays.asList(new Range()));
+			deleter.fetchColumnFamily(new Text(
+					columnFamily));			
+			deleter.delete();
+			return true;
+		}
+		catch (final TableNotFoundException | MutationsRejectedException e) {
+			LOGGER.warn(
+					"Unable to delete row from table [" + tableName + "].",
+					e);
+			return false;
+		}
+		finally {
+			if (deleter != null) {
+				deleter.close();
+			}
+		}
+
+	}
+
+	private boolean delete(
+			final String tableName,
+			final List<Entry<Key, Value>> rows,
+			final DeleteRowObserver deleteRowObserver,
+			final String... authorizations ) {
+
+		boolean success = true;
+		BatchDeleter deleter = null;
+		try {
+			deleter = accumuloOperations.createBatchDeleter(
+					tableName,
+					authorizations);
+			final List<Range> rowRanges = new ArrayList<Range>();
+			for (final Entry<Key, Value> rowData : rows) {
+				byte[] id = rowData.getKey().getRowData().getBackingArray();
+				rowRanges.add(Range.exact(new Text(
+						id)));
+				if (deleteRowObserver != null) {
+					deleteRowObserver.deleteRow(rowData.getKey(), rowData.getValue());
+				}
+			}
+			deleter.setRanges(rowRanges);
+
+			deleter.delete();
+
+			deleter.close();
+		}
+		catch (final TableNotFoundException | MutationsRejectedException e) {
+			LOGGER.warn(
+					"Unable to delete row from table [" + tableName + "].",
+					e);
+			if (deleter != null) {
+				deleter.close();
+			}
+			success = false;
+		}
+
+		return success;
+	}
+
+	private <T> DeleteRowObserver createDecodingDeleteObserver(
+			final List<DataStatisticsBuilder<T>> builders,
+			final DataAdapter<T> adapter,
+			final Index index ) {
+
+		return builders.isEmpty() ? null : new DeleteRowObserver() {
+			boolean foundOne = false;
+
+			@Override
+			public void deleteRow(
+					Key key,
+					Value value ) {
+				if (!foundOne) {
+					@SuppressWarnings("unchecked")
+					T rowEntry = (T) AccumuloUtils.decodeRow(
+							key,
+							value,
+							adapter,
+							index);
+					recordDeletion(
+							builders,
+							adapter,
+							index,
+							adapter.getDataId(rowEntry),
+							key.getColumnVisibility().toString(),
+							rowEntry);
+				}
+				foundOne = true;
+			}
+		};
 	}
 }

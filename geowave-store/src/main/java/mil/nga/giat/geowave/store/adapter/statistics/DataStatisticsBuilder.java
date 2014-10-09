@@ -5,11 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mil.nga.giat.geowave.index.ByteArrayId;
+import mil.nga.giat.geowave.store.DeleteCallback;
 import mil.nga.giat.geowave.store.IngestCallback;
 import mil.nga.giat.geowave.store.IngestEntryInfo;
 
 public class DataStatisticsBuilder<T> implements
-		IngestCallback<T>
+		IngestCallback<T>, DeleteCallback<T>
 {
 	private final StatisticalDataAdapter<T> adapter;
 	private final Map<ByteArrayId, DataStatistics<T>> statisticsMap = new HashMap<ByteArrayId, DataStatistics<T>>();
@@ -48,4 +49,24 @@ public class DataStatisticsBuilder<T> implements
 	public Collection<DataStatistics<T>> getStatistics() {
 		return statisticsMap.values();
 	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void entryDeleted(
+			byte[] dataId,
+			byte[] visibility,
+			T entry ) {
+		final ByteArrayId visibilityByteArray = new ByteArrayId(visibility);
+		DataStatistics<T> statistics = statisticsMap.get(visibilityByteArray);
+		if (statistics == null) {
+			statistics = adapter.createDataStatistics(statisticsId);
+			statistics.setVisibility(visibility);
+			statisticsMap.put(
+					visibilityByteArray,
+					statistics);
+		}
+		if (statistics instanceof DeleteCallback)
+		  ((DeleteCallback<T>)statistics).entryDeleted(dataId,visibility, entry);
+	}
+
 }

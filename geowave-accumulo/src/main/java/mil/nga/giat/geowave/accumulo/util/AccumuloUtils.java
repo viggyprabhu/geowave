@@ -376,6 +376,13 @@ public class AccumuloUtils
 		return mutations;
 	}
 
+	/**
+	 * 
+	 * @param dataWriter
+	 * @param index
+	 * @param entry
+	 * @return List of zero or more matches
+	 */
 	public static <T> List<ByteArrayId> getRowIds(
 			final WritableDataAdapter<T> dataWriter,
 			final Index index,
