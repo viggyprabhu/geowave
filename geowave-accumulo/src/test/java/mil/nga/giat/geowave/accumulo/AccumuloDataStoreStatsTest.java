@@ -14,7 +14,6 @@ import mil.nga.giat.geowave.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.store.CloseableIterator;
 import mil.nga.giat.geowave.store.adapter.AbstractDataAdapter;
-import mil.nga.giat.geowave.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.store.adapter.NativeFieldHandler;
 import mil.nga.giat.geowave.store.adapter.NativeFieldHandler.RowBuilder;
 import mil.nga.giat.geowave.store.adapter.PersistentIndexFieldHandler;
@@ -23,7 +22,6 @@ import mil.nga.giat.geowave.store.adapter.statistics.BoundingBoxDataStatistics;
 import mil.nga.giat.geowave.store.adapter.statistics.CountDataStatistics;
 import mil.nga.giat.geowave.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.store.adapter.statistics.DataStatisticsVisibilityHandler;
-import mil.nga.giat.geowave.store.adapter.statistics.EmptyStatisticVisibility;
 import mil.nga.giat.geowave.store.adapter.statistics.FieldTypeStatisticVisibility;
 import mil.nga.giat.geowave.store.adapter.statistics.StatisticalDataAdapter;
 import mil.nga.giat.geowave.store.data.PersistentValue;
@@ -39,7 +37,6 @@ import mil.nga.giat.geowave.store.dimension.GeometryWrapper;
 import mil.nga.giat.geowave.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.store.index.Index;
 import mil.nga.giat.geowave.store.index.IndexType;
-import mil.nga.giat.geowave.store.query.Query;
 import mil.nga.giat.geowave.store.query.SpatialQuery;
 
 import org.apache.accumulo.core.client.AccumuloException;
@@ -149,6 +146,21 @@ public class AccumuloDataStoreStatsTest
 
 	@Test
 	public void testWithOutAltIndex() {
+		accumuloOptions.setCreateTable(true);
+		accumuloOptions.setUseAltIndex(false);
+		accumuloOptions.setPersistDataStatistics(true);
+		runtest();
+	}
+	
+	@Test
+	public void testWithAltIndex() {
+		accumuloOptions.setCreateTable(true);
+		accumuloOptions.setUseAltIndex(true);
+		accumuloOptions.setPersistDataStatistics(true);
+		runtest();
+	}
+	
+	private void runtest() {
 
 		final Index index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 		final WritableDataAdapter<TestGeometry> adapter = new TestGeometryAdapter();
@@ -171,9 +183,7 @@ public class AccumuloDataStoreStatsTest
 					33)
 		});
 
-		accumuloOptions.setCreateTable(true);
-		accumuloOptions.setUseAltIndex(false);
-		accumuloOptions.setPersistDataStatistics(true);
+	
 
 		final ByteArrayId rowId0 = mockDataStore.ingest(
 				adapter,
@@ -312,7 +322,9 @@ public class AccumuloDataStoreStatsTest
 
 		mockDataStore.deleteEntries(
 				adapter,
-				index);
+				index,
+				"aaa",
+				"bbb");
 		it1 = mockDataStore.query(adapter,
 				index,
 				query,

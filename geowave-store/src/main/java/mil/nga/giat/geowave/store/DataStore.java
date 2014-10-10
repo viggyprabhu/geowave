@@ -211,28 +211,6 @@ public interface DataStore
 			final String... authorizations );
 
 	/**
-	 * Deletes the data element.
-	 * 
-	 * @param index
-	 *            The index to search for the entry.
-	 * @param writableAdapter
-	 *            The adapter ID to use for the query.
-	 * @param entry
-	 *            The physical entry to remove
-	 * @param authorizations
-	 *            additional authorizations to delete the entry
-	 * @return Returns true if the entry was found and deleted successfully.
-	 *         Returns false if the entry could not be found, if the entry could
-	 *         not be deleted, or if the entry in the alternate index could not
-	 *         be deleted.
-	 */
-	public <T> boolean deleteEntry(
-			final Index index,
-			final WritableDataAdapter<T> writableAdapter,
-			final T entry,
-			final String... authorizations );
-
-	/**
 	 * Returns all data with the given row ID prefix stored in the given index
 	 * 
 	 * @param index

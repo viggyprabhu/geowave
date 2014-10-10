@@ -53,20 +53,22 @@ public class DataStatisticsBuilder<T> implements
 	@SuppressWarnings("unchecked")
 	@Override
 	public void entryDeleted(
-			byte[] dataId,
-			byte[] visibility,
-			T entry ) {
-		final ByteArrayId visibilityByteArray = new ByteArrayId(visibility);
+			final IngestEntryInfo entryInfo,
+			final T entry ) {
+		final ByteArrayId visibilityByteArray = new ByteArrayId(
+				visibilityHandler.getVisibility(
+						entryInfo,
+						entry));
 		DataStatistics<T> statistics = statisticsMap.get(visibilityByteArray);
 		if (statistics == null) {
 			statistics = adapter.createDataStatistics(statisticsId);
-			statistics.setVisibility(visibility);
+			statistics.setVisibility(visibilityByteArray.getBytes());
 			statisticsMap.put(
 					visibilityByteArray,
 					statistics);
 		}
 		if (statistics instanceof DeleteCallback)
-		  ((DeleteCallback<T>)statistics).entryDeleted(dataId,visibility, entry);
+		  ((DeleteCallback<T>)statistics).entryDeleted(entryInfo, entry);
 	}
 
 }

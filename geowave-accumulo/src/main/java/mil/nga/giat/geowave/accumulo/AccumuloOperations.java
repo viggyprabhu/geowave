@@ -316,4 +316,13 @@ public interface AccumuloOperations
 	 */
 	public String[] getAuthorizations(
 			final String... additionalAuthorizations );
+
+	/**
+	 * 
+	 * Insure user has the given operations.
+	 */
+	public void insureAuthorization(
+			final String... authorizations )
+			throws AccumuloException,
+			AccumuloSecurityException;
 }

@@ -4,8 +4,6 @@ import java.nio.ByteBuffer;
 
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.index.Mergeable;
-import mil.nga.giat.geowave.store.DeleteCallback;
-import mil.nga.giat.geowave.store.IngestCallback;
 import mil.nga.giat.geowave.store.IngestEntryInfo;
 
 import com.vividsolutions.jts.geom.Envelope;

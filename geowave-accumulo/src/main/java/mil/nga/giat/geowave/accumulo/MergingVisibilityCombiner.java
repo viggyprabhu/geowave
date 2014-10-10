@@ -34,6 +34,7 @@ public class MergingVisibilityCombiner extends
 		Key outputKey = null;
 		while (input.hasTop()) {
 			final Value val = input.getTopValue();
+			// the SortedKeyValueIterator uses the same instance of topKey to hold keys (a wrapper)
 			final Key currentKey = new Key(input.getTopKey());
 			if (outputKey == null) {
 				outputKey = currentKey;
@@ -91,10 +92,10 @@ public class MergingVisibilityCombiner extends
 	private static byte[] combineVisibilities(
 			final byte[] vis1,
 			final byte[] vis2 ) {
-		if (vis1 == null) {
+		if (vis1 == null || vis1.length == 0) {
 			return vis2;
 		}
-		if (vis2 == null) {
+		if (vis2 == null || vis2.length == 0) {
 			return vis1;
 		}
 		return new ColumnVisibility(

@@ -21,7 +21,6 @@ public interface DeleteCallback<T>
 	 *            the entry that was ingested
 	 */
 	public void entryDeleted(
-			final byte[] dataId,
-			final byte[] visibility,
-			T entry );
+			final IngestEntryInfo entryInfo,
+			final T entry );
 }
