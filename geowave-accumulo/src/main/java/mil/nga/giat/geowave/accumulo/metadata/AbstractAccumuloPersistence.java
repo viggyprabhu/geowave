@@ -357,7 +357,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 				authorizations);
 	}
 
-	private BatchScanner getScanner(
+	protected BatchScanner getScanner(
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId,
 			final String... authorizations)
@@ -397,6 +397,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 		return scanner;
 	}
 
+			
 	protected boolean deleteObject(
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId,

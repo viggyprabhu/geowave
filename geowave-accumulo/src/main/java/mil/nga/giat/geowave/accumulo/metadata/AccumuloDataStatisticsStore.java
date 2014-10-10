@@ -192,7 +192,9 @@ public class AccumuloDataStatisticsStore extends
 	public CloseableIterator<DataStatistics<?>> getDataStatistics(
 			final ByteArrayId adapterId,
 			String... authorizations ) {
-		return getAllObjectsWithSecondaryId(adapterId,authorizations);
+		return getAllObjectsWithSecondaryId(
+				adapterId,
+				authorizations);
 	}
 
 	@Override

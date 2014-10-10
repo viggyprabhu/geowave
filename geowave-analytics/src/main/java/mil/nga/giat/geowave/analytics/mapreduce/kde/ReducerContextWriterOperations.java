@@ -27,21 +27,14 @@ public class ReducerContextWriterOperations implements
 				context,
 				tableName);
 	}
-
-	@Override
-	public BatchScanner createBatchScanner(
-			final String tableName )
-			throws TableNotFoundException {
-		return null;
+	
+	public void insureAuthorization(
+			final String... authorizations )
+			throws AccumuloException,
+			AccumuloSecurityException {
+		
 	}
-
-	@Override
-	public Scanner createScanner(
-			final String tableName )
-			throws TableNotFoundException {
-		return null;
-	}
-
+	
 	@Override
 	public Scanner createScanner(
 			final String tableName,
@@ -133,7 +126,6 @@ public class ReducerContextWriterOperations implements
 			String tableName,
 			String... additionalAuthorizations )
 			throws TableNotFoundException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -144,7 +136,6 @@ public class ReducerContextWriterOperations implements
 			String columnFamily,
 			String columnQualifier,
 			String... additionalAuthorizations ) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -153,15 +144,19 @@ public class ReducerContextWriterOperations implements
 			String tableName,
 			String columnFamily,
 			String... additionalAuthorizations ) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public long rowCount(
+	public long getRowCount(
 			String tableName,
 			String... additionalAuthorizations ) {
-		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	public String[] getAuthorizations(
+			String... additionalAuthorizations ) {
+		return additionalAuthorizations;
 	}
 }

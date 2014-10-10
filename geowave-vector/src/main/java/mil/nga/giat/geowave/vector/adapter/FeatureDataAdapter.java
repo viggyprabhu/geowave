@@ -14,9 +14,9 @@ import mil.nga.giat.geowave.store.adapter.NativeFieldHandler;
 import mil.nga.giat.geowave.store.adapter.NativeFieldHandler.RowBuilder;
 import mil.nga.giat.geowave.store.adapter.PersistentIndexFieldHandler;
 import mil.nga.giat.geowave.store.adapter.statistics.BoundingBoxDataStatistics;
+import mil.nga.giat.geowave.store.adapter.statistics.CountDataStatistics;
 import mil.nga.giat.geowave.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.store.adapter.statistics.DataStatisticsVisibilityHandler;
-import mil.nga.giat.geowave.store.adapter.statistics.EmptyStatisticVisibility;
 import mil.nga.giat.geowave.store.adapter.statistics.FieldTypeStatisticVisibility;
 import mil.nga.giat.geowave.store.adapter.statistics.StatisticalDataAdapter;
 import mil.nga.giat.geowave.store.data.field.FieldReader;
@@ -102,7 +102,8 @@ public class FeatureDataAdapter extends
 	private MathTransform transform;
 
 	private final static ByteArrayId[] SUPPORTED_STATS_IDS = new ByteArrayId[] {
-		BoundingBoxDataStatistics.STATS_ID
+		BoundingBoxDataStatistics.STATS_ID,
+		CountDataStatistics.STATS_ID
 	};
 	private final static DataStatisticsVisibilityHandler<SimpleFeature> GEOMETRY_VISIBILITY_HANDLER = new FieldTypeStatisticVisibility<SimpleFeature>(
 			GeometryWrapper.class);
@@ -487,16 +488,17 @@ public class FeatureDataAdapter extends
 			return new FeatureBoundingBoxStatistics(
 					getAdapterId());
 		}
+		else if (CountDataStatistics.STATS_ID.equals(statisticsId)) {
+			return new CountDataStatistics(
+					getAdapterId());
+		}
 		return null;
 	}
 
 	@Override
 	public DataStatisticsVisibilityHandler<SimpleFeature> getVisibilityHandler(
 			final ByteArrayId statisticsId ) {
-		if (BoundingBoxDataStatistics.STATS_ID.equals(statisticsId)) {
-			return GEOMETRY_VISIBILITY_HANDLER;
-		}
-		return new EmptyStatisticVisibility();
+	   return GEOMETRY_VISIBILITY_HANDLER;
 	}
 
 	public boolean hasGeometricConstraints() {

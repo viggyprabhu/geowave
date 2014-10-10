@@ -263,7 +263,7 @@ public class BasicAccumuloOperations implements
 		try {
 			rowIterator = new RowIterator(
 					connector.createScanner(
-							tableName,
+							getQualifiedTableName(tableName),
 							(this.authorization == null) ? new Authorizations(
 									additionalAuthorizations) : new Authorizations(
 									(String[]) ArrayUtils.add(
@@ -534,7 +534,8 @@ public class BasicAccumuloOperations implements
 			throws TableNotFoundException {
 		return connector.createScanner(
 				getQualifiedTableName(tableName),
-				new Authorizations(getAuthorizations(additionalAuthorizations)));
+				new Authorizations(
+						getAuthorizations(additionalAuthorizations)));
 	}
 
 	@Override
@@ -544,28 +545,33 @@ public class BasicAccumuloOperations implements
 			throws TableNotFoundException {
 		return connector.createBatchScanner(
 				getQualifiedTableName(tableName),
-				new Authorizations(getAuthorizations(additionalAuthorizations)),
+				new Authorizations(
+						getAuthorizations(additionalAuthorizations)),
 				numThreads);
 	}
 
+	@Override
 	public void insureAuthorization(
-			final String auth )
+			final String... authorizations )
 			throws AccumuloException,
 			AccumuloSecurityException {
 		Authorizations auths = connector.securityOperations().getUserAuthorizations(
 				connector.whoami());
-		if (!auths.contains(auth)) {
-			final List<byte[]> newSet = new ArrayList<byte[]>();
+		final List<byte[]> newSet = new ArrayList<byte[]>();
+		for (String auth : authorizations)
+			if (!auths.contains(auth)) {
+				newSet.add(auth.getBytes());
+			}
+		if (newSet.size() > 0) {
 			newSet.addAll(auths.getAuthorizations());
-			newSet.add(auth.getBytes());
 			connector.securityOperations().changeUserAuthorizations(
 					connector.whoami(),
 					new Authorizations(
 							newSet));
+			auths = connector.securityOperations().getUserAuthorizations(
+					connector.whoami());
+			LOGGER.trace(connector.whoami() + " has authorizationss" + ArrayUtils.toString(auths.getAuthorizations()));
 		}
-		auths = connector.securityOperations().getUserAuthorizations(
-				connector.whoami());
-		LOGGER.trace(connector.whoami() + " has authorizationss" + ArrayUtils.toString(auths.getAuthorizations()));
 	}
 
 	@Override
@@ -575,7 +581,8 @@ public class BasicAccumuloOperations implements
 			throws TableNotFoundException {
 		return connector.createBatchDeleter(
 				getQualifiedTableName(tableName),
-				new Authorizations(getAuthorizations(additionalAuthorizations)),
+				new Authorizations(
+						getAuthorizations(additionalAuthorizations)),
 				numThreads,
 				new BatchWriterConfig().setMaxWriteThreads(
 						numThreads).setMaxMemory(

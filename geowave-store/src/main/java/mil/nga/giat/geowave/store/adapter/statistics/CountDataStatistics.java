@@ -69,7 +69,7 @@ public class CountDataStatistics<T> extends
 		if (!isSet()) count = 0;
 		if ((statistics != null) && (statistics instanceof CountDataStatistics)) {
 			@SuppressWarnings("unchecked")
-			final CountDataStatistics<T> cStats = (CountDataStatistics<T>) statistics;			
+			final CountDataStatistics<T> cStats = (CountDataStatistics<T>) statistics;
 			if (cStats.isSet()) {
 				count = count + cStats.count;
 			}
@@ -78,9 +78,8 @@ public class CountDataStatistics<T> extends
 
 	@Override
 	public void entryDeleted(
-			byte[] dataId,
-			byte[] visibility,
-			T entry ) {
+			final IngestEntryInfo entryInfo,
+			final T entry ) {
 		if (!isSet()) count = 0;
 		count -= 1;
 

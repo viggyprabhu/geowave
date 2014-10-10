@@ -58,7 +58,6 @@ abstract public class AccumuloQuery
 		ScannerBase scanner;
 		try {
 			if (ranges == null || ranges.isEmpty()) {
-				// ((Scanner) scanner).s
 				scanner = accumuloOperations.createScanner(
 						tableName,
 						accumuloOperations.getAuthorizations(getAdditionalAuthorizations()));
@@ -93,9 +92,6 @@ abstract public class AccumuloQuery
 			e.printStackTrace();
 			return null;
 		}
-		// we are assuming we always have to ensure no duplicates
-		// and that the deduplication is the least expensive filter so we add it
-		// first
 		if ((adapterIds != null) && !adapterIds.isEmpty()) {
 			for (final ByteArrayId adapterId : adapterIds) {
 				scanner.fetchColumnFamily(new Text(
