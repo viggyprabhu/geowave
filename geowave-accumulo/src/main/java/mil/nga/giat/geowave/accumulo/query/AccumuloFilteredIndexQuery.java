@@ -3,11 +3,6 @@ package mil.nga.giat.geowave.accumulo.query;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.accumulo.core.client.ScannerBase;
-import org.apache.log4j.Logger;
-
-import com.google.common.collect.Iterators;
-
 import mil.nga.giat.geowave.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.accumulo.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.accumulo.util.CloseableIteratorWrapper.ScannerClosableWrapper;
@@ -20,41 +15,62 @@ import mil.nga.giat.geowave.store.filter.FilterList;
 import mil.nga.giat.geowave.store.filter.QueryFilter;
 import mil.nga.giat.geowave.store.index.Index;
 
-public abstract class AccumuloFilteredIndexQuery extends AccumuloQuery {
-	 private List<QueryFilter> clientFilters;
+import org.apache.accumulo.core.client.ScannerBase;
+import org.apache.log4j.Logger;
 
+import com.google.common.collect.Iterators;
 
-private final static Logger LOGGER = Logger.getLogger(AccumuloFilteredIndexQuery.class);
-	 
-	public AccumuloFilteredIndexQuery(Index index, List<QueryFilter> clientFilters) {
-		super(index);
+public abstract class AccumuloFilteredIndexQuery extends
+		AccumuloQuery
+{
+	protected List<QueryFilter> clientFilters;
+
+	private final static Logger LOGGER = Logger.getLogger(AccumuloFilteredIndexQuery.class);
+
+	public AccumuloFilteredIndexQuery(
+			final Index index,
+			final List<QueryFilter> clientFilters ) {
+		super(
+				index);
 		this.clientFilters = clientFilters;
 	}
 
-	public AccumuloFilteredIndexQuery(List<ByteArrayId> adapterIds, Index index,List<QueryFilter> clientFilters) {
-		super(adapterIds, index);
+	public AccumuloFilteredIndexQuery(
+			final List<ByteArrayId> adapterIds,
+			final Index index,
+			final List<QueryFilter> clientFilters ) {
+		super(
+				adapterIds,
+				index);
 		this.clientFilters = clientFilters;
 	}
 
-	public AccumuloFilteredIndexQuery(Index index) {
-		super(index);
+	public AccumuloFilteredIndexQuery(
+			final Index index ) {
+		super(
+				index);
 	}
 
-	public AccumuloFilteredIndexQuery(List<ByteArrayId> adapterIds, Index index) {
-		super(adapterIds, index);
+	public AccumuloFilteredIndexQuery(
+			final List<ByteArrayId> adapterIds,
+			final Index index ) {
+		super(
+				adapterIds,
+				index);
 	}
 
-	
 	protected List<QueryFilter> getClientFilters() {
 		return clientFilters;
 	}
 
-	protected void setClientFilters(List<QueryFilter> clientFilters) {
+	protected void setClientFilters(
+			final List<QueryFilter> clientFilters ) {
 		this.clientFilters = clientFilters;
 	}
 
-	protected abstract void addScanIteratorSettings(final ScannerBase scanner );
-	
+	protected abstract void addScanIteratorSettings(
+			final ScannerBase scanner );
+
 	@SuppressWarnings("rawtypes")
 	public CloseableIterator<?> query(
 			final AccumuloOperations accumuloOperations,
@@ -68,12 +84,9 @@ private final static Logger LOGGER = Logger.getLogger(AccumuloFilteredIndexQuery
 				accumuloOperations,
 				limit);
 		addScanIteratorSettings(scanner);
-		Iterator it = new EntryIteratorWrapper(
-				adapterStore,
-				index,
-				scanner.iterator(),
-				new FilterList<QueryFilter>(
-						clientFilters));
+		Iterator it = initIterator(
+				scanner,
+				adapterStore);
 		if ((limit != null) && (limit >= 0)) {
 			it = Iterators.limit(
 					it,
@@ -83,6 +96,17 @@ private final static Logger LOGGER = Logger.getLogger(AccumuloFilteredIndexQuery
 				new ScannerClosableWrapper(
 						scanner),
 				it);
+	}
+
+	protected Iterator initIterator(
+			final ScannerBase scanner,
+			final AdapterStore adapterStore ) {
+		return new EntryIteratorWrapper(
+				adapterStore,
+				index,
+				scanner.iterator(),
+				new FilterList<QueryFilter>(
+						clientFilters));
 	}
 
 }

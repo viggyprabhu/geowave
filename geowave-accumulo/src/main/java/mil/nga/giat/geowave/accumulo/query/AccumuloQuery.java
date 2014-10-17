@@ -51,12 +51,10 @@ abstract public class AccumuloQuery
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
 		ScannerBase scanner;
 		try {
-			if (ranges == null || ranges.isEmpty()) {
-				//((Scanner) scanner).s
-				scanner = accumuloOperations.createScanner(tableName, getAdditionalAuthorizations());
-			}
-			else if ((ranges != null) && (ranges.size() == 1)) {
-				scanner = accumuloOperations.createScanner(tableName, getAdditionalAuthorizations());
+			if ((ranges != null) && (ranges.size() == 1)) {
+				scanner = accumuloOperations.createScanner(
+						tableName,
+						getAdditionalAuthorizations());
 				final ByteArrayRange r = ranges.get(0);
 				if (r.isSingleValue()) {
 					((Scanner) scanner).setRange(Range.exact(new Text(
@@ -70,7 +68,9 @@ abstract public class AccumuloQuery
 				}
 			}
 			else {
-				scanner = accumuloOperations.createBatchScanner(tableName,getAdditionalAuthorizations());
+				scanner = accumuloOperations.createBatchScanner(
+						tableName,
+						getAdditionalAuthorizations());
 				((BatchScanner) scanner).setRanges(AccumuloUtils.byteArrayRangesToAccumuloRanges(ranges));
 			}
 		}
@@ -78,12 +78,8 @@ abstract public class AccumuloQuery
 			LOGGER.warn(
 					"Unable to query table '" + tableName + "'.  Table does not exist.",
 					e);
-			e.printStackTrace();
 			return null;
 		}
-		// we are assuming we always have to ensure no duplicates
-		// and that the deduplication is the least expensive filter so we add it
-		// first
 		if ((adapterIds != null) && !adapterIds.isEmpty()) {
 			for (final ByteArrayId adapterId : adapterIds) {
 				scanner.fetchColumnFamily(new Text(
@@ -92,6 +88,8 @@ abstract public class AccumuloQuery
 		}
 		return scanner;
 	}
-	
-	public String[] getAdditionalAuthorizations() { return new String[0]; }
+
+	public String[] getAdditionalAuthorizations() {
+		return new String[0];
+	}
 }

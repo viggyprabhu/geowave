@@ -10,8 +10,11 @@ import java.util.TreeSet;
 
 import mil.nga.giat.geowave.accumulo.AccumuloRowId;
 import mil.nga.giat.geowave.accumulo.Writer;
+import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveInputKey;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.index.ByteArrayRange;
+import mil.nga.giat.geowave.index.NumericIndexStrategy;
+import mil.nga.giat.geowave.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.store.IngestEntryInfo;
 import mil.nga.giat.geowave.store.IngestEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.store.adapter.AdapterPersistenceEncoding;
@@ -47,7 +50,7 @@ import org.apache.log4j.Logger;
  * A set of convenience methods for common operations on Accumulo within
  * GeoWave, such as conversions between GeoWave objects and corresponding
  * Accumulo objects.
- * 
+ *
  */
 public class AccumuloUtils
 {
@@ -94,7 +97,23 @@ public class AccumuloUtils
 			}
 			accumuloRanges.add(range);
 		}
+		if (accumuloRanges.isEmpty()) {
+			// implies full table scan
+			accumuloRanges.add(new Range());
+		}
 		return accumuloRanges;
+	}
+
+	public static List<ByteArrayRange> constraintsToByteArrayRanges(
+			final MultiDimensionalNumericData constraints,
+			final NumericIndexStrategy indexStrategy ) {
+		if ((constraints == null) || constraints.isEmpty()) {
+			return new ArrayList<ByteArrayRange>(); // implies in negative and
+													// positive infinity
+		}
+		else {
+			return indexStrategy.getQueryRanges(constraints);
+		}
 	}
 
 	public static String getQualifiedTableName(
@@ -130,6 +149,18 @@ public class AccumuloUtils
 				null,
 				clientFilter,
 				index);
+	}
+
+	public static GeoWaveInputKey accumuloKeyToGeoWaveKey(
+			final Key key ) {
+		final AccumuloRowId rowId = new AccumuloRowId(
+				key.getRow().copyBytes());
+		return new GeoWaveInputKey(
+				new ByteArrayId(
+						rowId.getAdapterId()),
+				new ByteArrayId(
+						rowId.getDataId()),
+				key);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -351,8 +382,8 @@ public class AccumuloUtils
 	}
 
 	private static <T> List<Mutation> buildMutations(
-			byte[] adapterId,
-			IngestEntryInfo ingestInfo ) {
+			final byte[] adapterId,
+			final IngestEntryInfo ingestInfo ) {
 		final List<Mutation> mutations = new ArrayList<Mutation>();
 		final List<FieldInfo> fieldInfoList = ingestInfo.getFieldInfo();
 		for (final ByteArrayId rowId : ingestInfo.getRowIds()) {
@@ -521,13 +552,16 @@ public class AccumuloUtils
 	private static final byte[] END_AND_BYTE = ")".getBytes();
 
 	private static byte[] merge(
-			byte vis1[],
-			byte vis2[] ) {
-		if (vis1 == null || vis1.length == 0)
+			final byte vis1[],
+			final byte vis2[] ) {
+		if ((vis1 == null) || (vis1.length == 0)) {
 			return vis2;
-		else if (vis2 == null || vis2.length == 0) return vis1;
+		}
+		else if ((vis2 == null) || (vis2.length == 0)) {
+			return vis1;
+		}
 
-		ByteBuffer buffer = ByteBuffer.allocate(vis1.length + 3 + vis2.length);
+		final ByteBuffer buffer = ByteBuffer.allocate(vis1.length + 3 + vis2.length);
 		buffer.putChar('(');
 		buffer.put(vis1);
 		buffer.putChar(')');
