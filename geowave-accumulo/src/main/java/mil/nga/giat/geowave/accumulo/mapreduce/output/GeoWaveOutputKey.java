@@ -1,5 +1,9 @@
 package mil.nga.giat.geowave.accumulo.mapreduce.output;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveKey;
 import mil.nga.giat.geowave.index.ByteArrayId;
 
@@ -13,7 +17,11 @@ import org.apache.hadoop.io.WritableComparator;
 public class GeoWaveOutputKey extends
 		GeoWaveKey
 {
-	private final ByteArrayId indexId;
+	private ByteArrayId indexId;
+
+	protected GeoWaveOutputKey() {
+		super();
+	}
 
 	public GeoWaveOutputKey(
 			final ByteArrayId adapterId,
@@ -86,5 +94,26 @@ public class GeoWaveOutputKey extends
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public void readFields(
+			final DataInput input )
+			throws IOException {
+		super.readFields(input);
+		final int indexIdLength = input.readInt();
+		final byte[] indexIdBytes = new byte[indexIdLength];
+		input.readFully(indexIdBytes);
+		indexId = new ByteArrayId(
+				indexIdBytes);
+	}
+
+	@Override
+	public void write(
+			final DataOutput output )
+			throws IOException {
+		super.write(output);
+		output.writeInt(indexId.getBytes().length);
+		output.write(indexId.getBytes());
 	}
 }
