@@ -1,8 +1,9 @@
-package mil.nga.giat.geowave.accumulo.mapreduce;
+package mil.nga.giat.geowave.accumulo.mapreduce.input;
 
+import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveKey;
 import mil.nga.giat.geowave.index.ByteArrayId;
 
-import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.WritableComparator;
 
 public class GeoWaveInputKey extends
 		GeoWaveKey
@@ -11,16 +12,34 @@ public class GeoWaveInputKey extends
 
 	public GeoWaveInputKey(
 			final ByteArrayId adapterId,
-			final ByteArrayId dataId,
-			final WritableComparable comparableDelegate ) {
+			final ByteArrayId dataId ) {
 		super(
-				adapterId,
-				comparableDelegate);
+				adapterId);
 		this.dataId = dataId;
 	}
 
 	public ByteArrayId getDataId() {
 		return dataId;
+	}
+
+	@Override
+	public int compareTo(
+			final GeoWaveKey o ) {
+		final int baseCompare = super.compareTo(o);
+		if (baseCompare != 0) {
+			return baseCompare;
+		}
+		if (o instanceof GeoWaveInputKey) {
+			final GeoWaveInputKey other = (GeoWaveInputKey) o;
+			return WritableComparator.compareBytes(
+					dataId.getBytes(),
+					0,
+					dataId.getBytes().length,
+					other.dataId.getBytes(),
+					0,
+					other.dataId.getBytes().length);
+		}
+		return 1;
 	}
 
 	@Override

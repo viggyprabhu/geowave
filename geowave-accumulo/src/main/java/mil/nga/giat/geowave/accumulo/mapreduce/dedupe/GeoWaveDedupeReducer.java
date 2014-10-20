@@ -1,7 +1,9 @@
-package mil.nga.giat.geowave.accumulo.mapreduce;
+package mil.nga.giat.geowave.accumulo.mapreduce.dedupe;
 
 import java.io.IOException;
 import java.util.Iterator;
+
+import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputKey;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;

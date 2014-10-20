@@ -1,7 +1,8 @@
-package mil.nga.giat.geowave.accumulo.mapreduce;
+package mil.nga.giat.geowave.accumulo.mapreduce.input;
 
 import java.util.Map;
 
+import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.index.ByteArrayUtils;
 import mil.nga.giat.geowave.index.PersistenceUtils;
 import mil.nga.giat.geowave.store.query.DistributableQuery;

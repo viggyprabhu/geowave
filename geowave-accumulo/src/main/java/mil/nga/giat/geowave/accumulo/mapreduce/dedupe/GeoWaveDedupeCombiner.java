@@ -1,8 +1,12 @@
-package mil.nga.giat.geowave.accumulo.mapreduce;
+package mil.nga.giat.geowave.accumulo.mapreduce.dedupe;
 
 import java.io.IOException;
 import java.util.Iterator;
 
+import mil.nga.giat.geowave.accumulo.mapreduce.HadoopDataAdapter;
+import mil.nga.giat.geowave.accumulo.mapreduce.JobContextAdapterStore;
+import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputFormat;
+import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputKey;
 import mil.nga.giat.geowave.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.store.adapter.DataAdapter;
 

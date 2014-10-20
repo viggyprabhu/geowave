@@ -1,6 +1,6 @@
 package mil.nga.giat.geowave.ingest;
 
-import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveOutputKey;
+import mil.nga.giat.geowave.accumulo.mapreduce.output.GeoWaveOutputKey;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.ingest.local.IngestRunData;
 import mil.nga.giat.geowave.store.adapter.AdapterStore;

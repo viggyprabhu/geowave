@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.accumulo.mapreduce;
+package mil.nga.giat.geowave.accumulo.mapreduce.input;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -14,6 +14,8 @@ import java.util.Map.Entry;
 import java.util.TreeSet;
 
 import mil.nga.giat.geowave.accumulo.AccumuloOperations;
+import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveConfiguratorBase;
+import mil.nga.giat.geowave.accumulo.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.accumulo.query.AccumuloRangeQuery;
 import mil.nga.giat.geowave.accumulo.util.AccumuloUtils;
@@ -402,7 +404,7 @@ public class GeoWaveInputFormat extends
 		}
 	}
 
-	protected static AccumuloOperations getAccumuloOperations(
+	public static AccumuloOperations getAccumuloOperations(
 			final JobContext context )
 			throws AccumuloException,
 			AccumuloSecurityException {

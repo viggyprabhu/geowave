@@ -1,6 +1,8 @@
-package mil.nga.giat.geowave.accumulo.mapreduce;
+package mil.nga.giat.geowave.accumulo.mapreduce.dedupe;
 
 import java.io.IOException;
+
+import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputKey;
 
 import org.apache.hadoop.mapreduce.Mapper;
 
@@ -19,5 +21,4 @@ public class GeoWaveIdentityMapper extends
 				key,
 				value);
 	}
-
 }

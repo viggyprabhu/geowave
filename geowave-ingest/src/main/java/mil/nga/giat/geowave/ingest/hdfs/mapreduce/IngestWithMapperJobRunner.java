@@ -1,6 +1,6 @@
 package mil.nga.giat.geowave.ingest.hdfs.mapreduce;
 
-import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveOutputKey;
+import mil.nga.giat.geowave.accumulo.mapreduce.output.GeoWaveOutputKey;
 import mil.nga.giat.geowave.ingest.AccumuloCommandLineOptions;
 
 import org.apache.hadoop.fs.Path;

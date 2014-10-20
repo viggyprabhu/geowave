@@ -1,4 +1,6 @@
-package mil.nga.giat.geowave.accumulo.mapreduce;
+package mil.nga.giat.geowave.accumulo.mapreduce.output;
+
+import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveConfiguratorBase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
@@ -12,7 +14,7 @@ public class GeoWaveOutputConfigurator extends
 {
 	/**
 	 * General configuration keys
-	 * 
+	 *
 	 */
 	public static Boolean canCreateIndex(
 			final Class<?> implementingClass,

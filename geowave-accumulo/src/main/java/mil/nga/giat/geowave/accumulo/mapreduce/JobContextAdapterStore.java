@@ -114,7 +114,7 @@ public class JobContextAdapterStore implements
 						}));
 	}
 
-	protected List<ByteArrayId> getAdapterIds() {
+	public List<ByteArrayId> getAdapterIds() {
 		final DataAdapter<?>[] userAdapters = GeoWaveConfiguratorBase.getDataAdapters(
 				CLASS,
 				context);
@@ -140,7 +140,7 @@ public class JobContextAdapterStore implements
 				adapterId);
 	}
 
-	protected static DataAdapter<?>[] getDataAdapters(
+	public static DataAdapter<?>[] getDataAdapters(
 			final JobContext context ) {
 		return GeoWaveConfiguratorBase.getDataAdapters(
 				CLASS,

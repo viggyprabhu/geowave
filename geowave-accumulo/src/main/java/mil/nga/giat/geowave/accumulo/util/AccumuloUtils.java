@@ -10,7 +10,7 @@ import java.util.TreeSet;
 
 import mil.nga.giat.geowave.accumulo.AccumuloRowId;
 import mil.nga.giat.geowave.accumulo.Writer;
-import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveInputKey;
+import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputKey;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.index.ByteArrayRange;
 import mil.nga.giat.geowave.index.NumericIndexStrategy;
@@ -159,8 +159,7 @@ public class AccumuloUtils
 				new ByteArrayId(
 						rowId.getAdapterId()),
 				new ByteArrayId(
-						rowId.getDataId()),
-				key);
+						rowId.getDataId()));
 	}
 
 	@SuppressWarnings("unchecked")

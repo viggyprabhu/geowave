@@ -129,7 +129,7 @@ public class JobContextIndexStore implements
 				indexId);
 	}
 
-	protected static Index[] getIndices(
+	public static Index[] getIndices(
 			final JobContext context ) {
 		return GeoWaveConfiguratorBase.getIndices(
 				CLASS,
