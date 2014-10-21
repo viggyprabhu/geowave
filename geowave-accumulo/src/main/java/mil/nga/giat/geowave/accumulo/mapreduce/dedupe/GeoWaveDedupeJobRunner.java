@@ -1,7 +1,13 @@
-package mil.nga.giat.geowave.examples.mapreduce.dedupe;
+package mil.nga.giat.geowave.accumulo.mapreduce.dedupe;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputFormat;
 import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputKey;
+import mil.nga.giat.geowave.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.store.index.Index;
+import mil.nga.giat.geowave.store.query.DistributableQuery;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -9,6 +15,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
@@ -54,8 +61,30 @@ public class GeoWaveDedupeJobRunner extends
 		job.setOutputValueClass(Writable.class);
 
 		job.setInputFormatClass(GeoWaveInputFormat.class);
-		job.setOutputFormatClass(SequenceFileOutputFormat.class);
-		job.setNumReduceTasks(8);
+		job.setOutputFormatClass(getOutputFormatClass());
+		job.setNumReduceTasks(getNumReduceTasks());
+		final List<DataAdapter<?>> adapters = getDataAdapters();
+		if ((adapters != null) && (adapters.size() > 0)) {
+			for (final DataAdapter<?> adapter : adapters) {
+				GeoWaveInputFormat.addDataAdapter(
+						job,
+						adapter);
+			}
+		}
+		final List<Index> indices = getIndices();
+		if ((indices != null) && (indices.size() > 0)) {
+			for (final Index index : indices) {
+				GeoWaveInputFormat.addIndex(
+						job,
+						index);
+			}
+		}
+		final DistributableQuery query = getQuery();
+		if (query != null) {
+			GeoWaveInputFormat.setQuery(
+					job,
+					query);
+		}
 
 		final FileSystem fs = FileSystem.get(conf);
 		fs.delete(
@@ -70,6 +99,26 @@ public class GeoWaveDedupeJobRunner extends
 		final boolean jobSuccess = job.waitForCompletion(true);
 
 		return (jobSuccess) ? 0 : 1;
+	}
+
+	protected List<DataAdapter<?>> getDataAdapters() {
+		return new ArrayList<DataAdapter<?>>();
+	}
+
+	protected List<Index> getIndices() {
+		return new ArrayList<Index>();
+	}
+
+	protected DistributableQuery getQuery() {
+		return null;
+	}
+
+	protected Class<? extends OutputFormat> getOutputFormatClass() {
+		return SequenceFileOutputFormat.class;
+	}
+
+	protected int getNumReduceTasks() {
+		return 8;
 	}
 
 	public static void main(

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
@@ -12,6 +14,9 @@ import java.util.zip.ZipInputStream;
 
 import mil.nga.giat.geowave.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.accumulo.BasicAccumuloOperations;
+import mil.nga.giat.geowave.store.query.Query;
+import mil.nga.giat.geowave.store.query.SpatialQuery;
+import mil.nga.giat.geowave.store.query.SpatialTemporalQuery;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -23,16 +28,20 @@ import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
+import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.io.Files;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
-public class GeowaveTestEnvironment
+public class GeoWaveTestEnvironment
 {
-	protected final static Logger LOGGER = Logger.getLogger(GeowaveTestEnvironment.class);
-	protected static final String TEST_NAMESPACE = "mil_nga_giat_geowave_test_GeoWaveIT";
-
+	private final static Logger LOGGER = Logger.getLogger(GeoWaveTestEnvironment.class);
+	protected static final String TEST_FILTER_START_TIME_ATTRIBUTE_NAME = "StartTime";
+	protected static final String TEST_FILTER_END_TIME_ATTRIBUTE_NAME = "EndTime";
+	protected static final String TEST_NAMESPACE = "mil_nga_giat_geowave_test";
+	protected static final String TEST_RESOURCE_PACKAGE = "mil/nga/giat/geowave/test/";
+	protected static final String TEST_CASE_BASE = "data/";
 	protected static final String DEFAULT_MINI_ACCUMULO_PASSWORD = "Ge0wave";
 	protected static AccumuloOperations accumuloOperations;
 	protected static String zookeeper;
@@ -64,9 +73,8 @@ public class GeowaveTestEnvironment
 				accumuloInstance = miniAccumulo.getInstanceName();
 				accumuloUser = "root";
 				accumuloPassword = DEFAULT_MINI_ACCUMULO_PASSWORD;
-				return;
 			}
-			catch (IOException  | InterruptedException e) {
+			catch (IOException | InterruptedException e) {
 				LOGGER.warn(
 						"Unable to start mini accumulo instance",
 						e);
@@ -92,14 +100,51 @@ public class GeowaveTestEnvironment
 			Assert.fail("Could not connect to Accumulo instance: '" + e.getLocalizedMessage() + "'");
 		}
 	}
-	
-	public Credentials getCredentials() {
-	  return new UsernamePasswordCredentials("admin","geoserver"); //"root","L.}GiBeC"); 	
+
+	protected long hashCentroid(
+			final Geometry geometry ) {
+		final Point centroid = geometry.getCentroid();
+		return Double.doubleToLongBits(centroid.getX()) + Double.doubleToLongBits(centroid.getY() * 31);
 	}
-	
-	public static void addAuthorization(String auth) {
+
+	protected Query savedFilterToQuery(
+			final SimpleFeature savedFilter ) {
+		final Geometry filterGeometry = (Geometry) savedFilter.getDefaultGeometry();
+		final Object startObj = savedFilter.getAttribute(TEST_FILTER_START_TIME_ATTRIBUTE_NAME);
+		final Object endObj = savedFilter.getAttribute(TEST_FILTER_END_TIME_ATTRIBUTE_NAME);
+
+		if ((startObj != null) && (endObj != null)) {
+			// if we can resolve start and end times, make it a spatial temporal
+			// query
+			Date startDate = null, endDate = null;
+			if (startObj instanceof Calendar) {
+				startDate = ((Calendar) startObj).getTime();
+			}
+			else if (startObj instanceof Date) {
+				startDate = (Date) startObj;
+			}
+			if (endObj instanceof Calendar) {
+				endDate = ((Calendar) endObj).getTime();
+			}
+			else if (startObj instanceof Date) {
+				endDate = (Date) endObj;
+			}
+			if ((startDate != null) && (endDate != null)) {
+				return new SpatialTemporalQuery(
+						startDate,
+						endDate,
+						filterGeometry);
+			}
+		}
+		// otherwise just return a spatial query
+		return new SpatialQuery(
+				filterGeometry);
+	}
+
+	public static void addAuthorization(
+			final String auth ) {
 		try {
-			((BasicAccumuloOperations)accumuloOperations).insureAuthorization(auth);
+			((BasicAccumuloOperations) accumuloOperations).insureAuthorization(auth);
 		}
 		catch (AccumuloException | AccumuloSecurityException e) {
 			LOGGER.warn(
@@ -113,7 +158,7 @@ public class GeowaveTestEnvironment
 	public static void cleanup() {
 		Assert.assertTrue(
 				"Index not deleted successfully",
-				accumuloOperations == null || accumuloOperations.deleteAll());
+				(accumuloOperations == null) || accumuloOperations.deleteAll());
 		if (miniAccumulo != null) {
 			try {
 				miniAccumulo.stop();
@@ -143,12 +188,11 @@ public class GeowaveTestEnvironment
 		return (str != null) && !str.isEmpty();
 	}
 
-	
 	/**
 	 * Unzips the contents of a zip input stream to a target output directory if
 	 * the file exists and is the same size as the zip entry, it is not
 	 * overwritten
-	 * 
+	 *
 	 * @param zipFile
 	 *            input zip file
 	 * @param output
@@ -222,13 +266,14 @@ public class GeowaveTestEnvironment
 			Assert.fail("Unable to extract test data: '" + e.getLocalizedMessage() + "'");
 		}
 	}
-	
+
 	static protected void replaceParameters(
-			Map<String, String> values,
-			File file ) throws IOException {
+			final Map<String, String> values,
+			final File file )
+			throws IOException {
 		{
 			String str = FileUtils.readFileToString(file);
-			for (Entry<String, String> entry : values.entrySet()) {
+			for (final Entry<String, String> entry : values.entrySet()) {
 				str = str.replaceAll(
 						entry.getKey(),
 						entry.getValue());

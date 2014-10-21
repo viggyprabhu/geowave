@@ -55,7 +55,7 @@ public class IngestFromHdfsDriver extends
 		final Configuration conf = new Configuration();
 		conf.set(
 				"fs.defaultFS",
-				"hdfs://" + hdfsOptions.getHdfsHostPort());
+				 hdfsOptions.getHdfsHostPort());
 		conf.set(
 				"fs.hdfs.impl",
 				org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());

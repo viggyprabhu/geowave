@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.examples.mapreduce.dedupe;
+package mil.nga.giat.geowave.accumulo.mapreduce.dedupe;
 
 import java.io.IOException;
 
