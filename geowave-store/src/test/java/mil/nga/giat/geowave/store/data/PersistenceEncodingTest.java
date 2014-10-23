@@ -50,7 +50,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
-public class PersistentEncodingTest
+public class PersistenceEncodingTest
 {
 
 	private final GeometryFactory factory = new GeometryFactory(
