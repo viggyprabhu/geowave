@@ -2,10 +2,6 @@ package mil.nga.giat.geowave.test;
 
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import mil.nga.giat.geowave.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.accumulo.metadata.AccumuloAdapterStore;
@@ -16,13 +12,10 @@ import mil.nga.giat.geowave.ingest.IngestMain;
 import mil.nga.giat.geowave.store.CloseableIterator;
 import mil.nga.giat.geowave.store.index.Index;
 import mil.nga.giat.geowave.store.index.IndexType;
+import mil.nga.giat.geowave.store.query.DistributableQuery;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -53,6 +46,14 @@ public class GeoWaveBasicIT extends
 	private static final String TEST_POLYGON_FILTER_FILE = TEST_FILTER_PACKAGE + "Polygon-Filter.shp";
 	private static final String TEST_BOX_TEMPORAL_FILTER_FILE = TEST_FILTER_PACKAGE + "Box-Temporal-Filter.shp";
 	private static final String TEST_POLYGON_TEMPORAL_FILTER_FILE = TEST_FILTER_PACKAGE + "Polygon-Temporal-Filter.shp";
+
+	@BeforeClass
+	public static void extractTestFiles() {
+		GeoWaveTestEnvironment.unZipFile(
+				GeoWaveBasicIT.class.getClassLoader().getResourceAsStream(
+						TEST_DATA_ZIP_RESOURCE_PATH),
+				TEST_CASE_BASE);
+	}
 
 	@Test
 	public void testIngestAndQuerySpatialPointsAndLines() {
@@ -171,14 +172,6 @@ public class GeoWaveBasicIT extends
 		}
 	}
 
-	@BeforeClass
-	public static void extractTestFiles() {
-		GeoWaveTestEnvironment.unZipFile(
-				GeoWaveBasicIT.class.getClassLoader().getResourceAsStream(
-						TEST_DATA_ZIP_RESOURCE_PATH),
-				TEST_CASE_BASE);
-	}
-
 	private void testIngest(
 			final IndexType indexType,
 			final String ingestFilePath ) {
@@ -220,68 +213,19 @@ public class GeoWaveBasicIT extends
 				new AccumuloDataStatisticsStore(
 						accumuloOperations),
 				accumuloOperations);
-		final Map<String, Object> map = new HashMap<String, Object>();
-		DataStore dataStore = null;
-		map.put(
-				"url",
-				savedFilterResource);
-		final SimpleFeature savedFilter;
-		SimpleFeatureIterator sfi = null;
-		try {
-			dataStore = DataStoreFinder.getDataStore(map);
-
-			// just grab the first feature and use it as a filter
-			sfi = dataStore.getFeatureSource(
-					dataStore.getNames().get(
-							0)).getFeatures().features();
-			savedFilter = sfi.next();
-
-		}
-		finally {
-			if (sfi != null) {
-				sfi.close();
-			}
-			dataStore.dispose();
-
-		}
 		// this file is the filtered dataset (using the previous file as a
 		// filter) so use it to ensure the query worked
-		final Set<Long> hashedCentroids = new HashSet<Long>();
-		int expectedResultCount = 0;
-		for (final URL expectedResultsResource : expectedResultsResources) {
-			map.put(
-					"url",
-					expectedResultsResource);
-			SimpleFeatureIterator featureIterator = null;
-			try {
-				dataStore = DataStoreFinder.getDataStore(map);
-				final SimpleFeatureCollection expectedResults = dataStore.getFeatureSource(
-						dataStore.getNames().get(
-								0)).getFeatures();
-
-				expectedResultCount += expectedResults.size();
-				// unwrap the expected results into a set of features IDs so its
-				// easy to
-				// check against
-				featureIterator = expectedResults.features();
-				while (featureIterator.hasNext()) {
-					hashedCentroids.add(hashCentroid((Geometry) featureIterator.next().getDefaultGeometry()));
-				}
-			}
-			finally {
-				featureIterator.close();
-				dataStore.dispose();
-			}
-		}
+		final DistributableQuery query = resourceToQuery(savedFilterResource);
 		final CloseableIterator<?> actualResults;
 		if (index == null) {
-			actualResults = geowaveStore.query(savedFilterToQuery(savedFilter));
+			actualResults = geowaveStore.query(query);
 		}
 		else {
 			actualResults = geowaveStore.query(
 					index,
-					savedFilterToQuery(savedFilter));
+					query);
 		}
+		final ExpectedResults expectedResults = getExpectedResults(expectedResultsResources);
 		int totalResults = 0;
 		while (actualResults.hasNext()) {
 			final Object obj = actualResults.next();
@@ -289,7 +233,7 @@ public class GeoWaveBasicIT extends
 				final SimpleFeature result = (SimpleFeature) obj;
 				Assert.assertTrue(
 						"Actual result '" + result.toString() + "' not found in expected result set",
-						hashedCentroids.contains(hashCentroid((Geometry) result.getDefaultGeometry())));
+						expectedResults.hashedCentroids.contains(hashCentroid((Geometry) result.getDefaultGeometry())));
 				totalResults++;
 			}
 			else {
@@ -297,11 +241,11 @@ public class GeoWaveBasicIT extends
 				Assert.fail("Actual result '" + obj.toString() + "' is not of type Simple Feature.");
 			}
 		}
-		if (expectedResultCount != totalResults) {
+		if (expectedResults.count != totalResults) {
 			accumuloOperations.deleteAll();
 		}
 		Assert.assertEquals(
-				expectedResultCount,
+				expectedResults.count,
 				totalResults);
 		actualResults.close();
 	}
@@ -321,36 +265,13 @@ public class GeoWaveBasicIT extends
 				new AccumuloDataStatisticsStore(
 						accumuloOperations),
 				accumuloOperations);
-		final Map<String, Object> map = new HashMap<String, Object>();
-		DataStore dataStore = null;
-		map.put(
-				"url",
-				savedFilterResource);
-		final SimpleFeature savedFilter;
-		SimpleFeatureIterator sfi = null;
-		try {
-			dataStore = DataStoreFinder.getDataStore(map);
-
-			// just grab the first feature and use it as a filter
-			sfi = dataStore.getFeatureSource(
-					dataStore.getNames().get(
-							0)).getFeatures().features();
-			savedFilter = sfi.next();
-
-		}
-		finally {
-			if (sfi != null) {
-				sfi.close();
-			}
-			dataStore.dispose();
-		}
-
+		final DistributableQuery query = resourceToQuery(savedFilterResource);
 		final Index index = indexType.createDefaultIndex();
 		final CloseableIterator<?> actualResults;
 
 		actualResults = geowaveStore.query(
 				index,
-				savedFilterToQuery(savedFilter));
+				query);
 
 		SimpleFeature testFeature = null;
 		while (actualResults.hasNext()) {

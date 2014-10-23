@@ -1,7 +1,10 @@
 package mil.nga.giat.geowave.accumulo.mapreduce.input;
 
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -19,6 +22,7 @@ import mil.nga.giat.geowave.accumulo.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.accumulo.query.AccumuloRangeQuery;
 import mil.nga.giat.geowave.accumulo.util.AccumuloUtils;
+import mil.nga.giat.geowave.accumulo.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.index.PersistenceUtils;
@@ -30,15 +34,21 @@ import mil.nga.giat.geowave.store.query.DistributableQuery;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.apache.accumulo.core.client.Instance;
+import org.apache.accumulo.core.client.TableDeletedException;
 import org.apache.accumulo.core.client.TableNotFoundException;
+import org.apache.accumulo.core.client.TableOfflineException;
+import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.core.client.impl.TabletLocator;
 import org.apache.accumulo.core.client.mapreduce.lib.util.ConfiguratorBase;
+import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.KeyExtent;
 import org.apache.accumulo.core.data.PartialKey;
 import org.apache.accumulo.core.data.Range;
+import org.apache.accumulo.core.master.state.tables.TableState;
 import org.apache.accumulo.core.security.thrift.TCredentials;
 import org.apache.accumulo.core.util.UtilWaitThread;
 import org.apache.commons.collections.IteratorUtils;
@@ -52,6 +62,8 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
+import com.google.common.collect.Iterators;
 
 public class GeoWaveInputFormat extends
 		InputFormat<GeoWaveInputKey, Object>
@@ -111,6 +123,24 @@ public class GeoWaveInputFormat extends
 				CLASS,
 				job,
 				adapter);
+	}
+
+	public static void setMinimumSplitCount(
+			final Job job,
+			final Integer minSplits ) {
+		GeoWaveInputConfigurator.setMinimumSplitCount(
+				CLASS,
+				job,
+				minSplits);
+	}
+
+	public static void setMaximumSplitCount(
+			final Job job,
+			final Integer maxSplits ) {
+		GeoWaveInputConfigurator.setMaximumSplitCount(
+				CLASS,
+				job,
+				maxSplits);
 	}
 
 	public static void setQuery(
@@ -185,26 +215,52 @@ public class GeoWaveInputFormat extends
 	/**
 	 * Initializes an Accumulo {@link TabletLocator} based on the configuration.
 	 *
-	 * @param context
-	 *            the Hadoop context for the configured job
+	 * @param instance
+	 *            the accumulo instance
+	 * @param tableName
+	 *            the accumulo table name
 	 * @return an Accumulo tablet locator
 	 * @throws TableNotFoundException
 	 *             if the table name set on the configuration doesn't exist
 	 * @since 1.5.0
 	 */
 	protected static TabletLocator getTabletLocator(
-			final JobContext context,
+			final Instance instance,
 			final String tableName )
 			throws TableNotFoundException {
-		return GeoWaveInputConfigurator.getTabletLocator(
-				CLASS,
-				context,
-				tableName);
+		return TabletLocator.getInstance(
+				instance,
+				new Text(
+						Tables.getTableId(
+								instance,
+								tableName)));
+
 	}
 
 	protected static String getInstanceName(
 			final JobContext context ) {
 		return GeoWaveConfiguratorBase.getInstanceName(
+				CLASS,
+				context);
+	}
+
+	protected static Integer getMinimumSplitCount(
+			final JobContext context ) {
+		return GeoWaveInputConfigurator.getMinimumSplitCount(
+				CLASS,
+				context);
+	}
+
+	protected static Integer getMaximumSplitCount(
+			final JobContext context ) {
+		return GeoWaveInputConfigurator.getMaximumSplitCount(
+				CLASS,
+				context);
+	}
+
+	protected static Instance getInstance(
+			final JobContext context ) {
+		return GeoWaveInputConfigurator.getInstance(
 				CLASS,
 				context);
 	}
@@ -224,38 +280,77 @@ public class GeoWaveInputFormat extends
 		final DistributableQuery query = getQuery(context);
 		final String tableNamespace = getTableNamespace(context);
 		for (final Index index : indices) {
-			if (!query.isSupported(index)) {
+			if ((query != null) && !query.isSupported(index)) {
 				continue;
 			}
 			final String tableName = AccumuloUtils.getQualifiedTableName(
 					tableNamespace,
 					index.getId().getString());
 			final NumericIndexStrategy indexStrategy = index.getIndexStrategy();
-			final MultiDimensionalNumericData indexConstraints = query.getIndexConstraints(indexStrategy);
-			final TreeSet<Range> ranges = AccumuloUtils.byteArrayRangesToAccumuloRanges(AccumuloUtils.constraintsToByteArrayRanges(
-					indexConstraints,
-					indexStrategy));
+			final TreeSet<Range> ranges;
+			//TODO set the ranges to at least min splits
+			if (query != null) {
+				final MultiDimensionalNumericData indexConstraints = query.getIndexConstraints(indexStrategy);
+				ranges = AccumuloUtils.byteArrayRangesToAccumuloRanges(AccumuloUtils.constraintsToByteArrayRanges(
+						indexConstraints,
+						indexStrategy));
+			}
+			else {
+				ranges = new TreeSet<Range>();
+				ranges.add(new Range());
+			}
 
 			// get the metadata information for these ranges
 			final Map<String, Map<KeyExtent, List<Range>>> binnedRanges = new HashMap<String, Map<KeyExtent, List<Range>>>();
 			TabletLocator tl;
 			try {
+				final Instance instance = getInstance(context);
 				tl = getTabletLocator(
-						context,
+						instance,
 						tableName);
 				// its possible that the cache could contain complete, but
 				// old information about a tables tablets... so clear it
 				tl.invalidateCache();
+				final String instanceId = instance.getInstanceID();
+				final ByteArrayOutputStream backingByteArray = new ByteArrayOutputStream();
+				final DataOutputStream output = new DataOutputStream(
+						backingByteArray);
+				new PasswordToken(
+						getPassword(context)).write(output);
+				output.close();
+				final ByteBuffer buffer = ByteBuffer.wrap(backingByteArray.toByteArray());
+				final TCredentials credentials = new TCredentials(
+						getUserName(context),
+						PasswordToken.class.getCanonicalName(),
+						buffer,
+						instanceId);
+				String tableId = null;
+				final List<Range> rangeList = new ArrayList<Range>(
+						ranges);
 				while (!tl.binRanges(
-						new ArrayList<Range>(
-								ranges),
+						rangeList,
 						binnedRanges,
-						new TCredentials(
-								getUserName(context),
-								PasswordToken.class.getCanonicalName(),
-								ByteBuffer.wrap(new PasswordToken(
-										getPassword(context)).getPassword()),
-								getInstanceName(context))).isEmpty()) {
+						credentials).isEmpty()) {
+					if (!(instance instanceof MockInstance)) {
+						if (tableId == null) {
+							tableId = Tables.getTableId(
+									instance,
+									tableName);
+						}
+						if (!Tables.exists(
+								instance,
+								tableId)) {
+							throw new TableDeletedException(
+									tableId);
+						}
+						if (Tables.getTableState(
+								instance,
+								tableId) == TableState.OFFLINE) {
+							throw new TableOfflineException(
+									instance,
+									tableId);
+						}
+					}
 					binnedRanges.clear();
 					LOGGER.warn("Unable to locate bins for specified ranges. Retrying.");
 					UtilWaitThread.sleep(100 + (int) (Math.random() * 100));
@@ -267,8 +362,6 @@ public class GeoWaveInputFormat extends
 				throw new IOException(
 						e);
 			}
-
-			final HashMap<Range, ArrayList<String>> splitsToAdd = new HashMap<Range, ArrayList<String>>();
 
 			final HashMap<String, String> hostNameCache = new HashMap<String, String>();
 
@@ -286,27 +379,17 @@ public class GeoWaveInputFormat extends
 				}
 
 				for (final Entry<KeyExtent, List<Range>> extentRanges : tserverBin.getValue().entrySet()) {
+					final Range ke = extentRanges.getKey().toDataRange();
 					for (final Range r : extentRanges.getValue()) {
-						// don't divide ranges
-						ArrayList<String> locations = splitsToAdd.get(r);
-						if (locations == null) {
-							locations = new ArrayList<String>(
-									1);
-						}
-						locations.add(location);
-						splitsToAdd.put(
-								r,
-								locations);
+						//TODO merge splits on the same tablet to fit within max splits
+//						splits.add(new RangeInputSplit(
+//								index,
+//								ke.clip(r),
+//								new String[] {
+//									location
+//								}));
 					}
 				}
-			}
-
-			for (final Entry<Range, ArrayList<String>> entry : splitsToAdd.entrySet()) {
-				splits.add(new RangeInputSplit(
-						index,
-						entry.getKey(),
-						entry.getValue().toArray(
-								new String[0])));
 			}
 		}
 		return splits;
@@ -319,7 +402,7 @@ public class GeoWaveInputFormat extends
 			throws IOException,
 			InterruptedException {
 		LOGGER.setLevel(getLogLevel(context));
-		return null;
+		return new GeoWaveRecordReader<Object>();
 	}
 
 	public static void addIndex(
@@ -439,37 +522,39 @@ public class GeoWaveInputFormat extends
 			Writable
 	{
 		private Index index;
-		private Range range;
+		private Range[] ranges;
 		private String[] locations;
 
 		public RangeInputSplit() {
-			range = new Range();
+			ranges = new Range[] {
+				new Range()
+			};
 			locations = new String[0];
 		}
 
 		public RangeInputSplit(
 				final RangeInputSplit split )
 				throws IOException {
-			setRange(split.getRange());
+			setRanges(split.getRanges());
 			setLocations(split.getLocations());
 		}
 
 		protected RangeInputSplit(
 				final Index index,
-				final Range range,
+				final Range[] range,
 				final String[] locations ) {
 			this.index = index;
-			this.range = range;
+			ranges = ranges;
 			this.locations = locations;
 		}
 
-		public Range getRange() {
-			return range;
+		public Range[] getRanges() {
+			return ranges;
 		}
 
-		public void setRange(
-				final Range range ) {
-			this.range = range;
+		public void setRanges(
+				final Range[] ranges ) {
+			this.ranges = ranges;
 		}
 
 		public Index getIndex() {
@@ -524,39 +609,40 @@ public class GeoWaveInputFormat extends
 		}
 
 		public float getProgress(
+				Range range,
 				final Key currentKey ) {
-			if (currentKey == null) {
-				return 0f;
-			}
-			if ((range.getStartKey() != null) && (range.getEndKey() != null)) {
-				if (!range.getStartKey().equals(
-						range.getEndKey(),
-						PartialKey.ROW)) {
-					// just look at the row progress
-					return getProgress(
-							range.getStartKey().getRowData(),
-							range.getEndKey().getRowData(),
-							currentKey.getRowData());
-				}
-				else if (!range.getStartKey().equals(
-						range.getEndKey(),
-						PartialKey.ROW_COLFAM)) {
-					// just look at the column family progress
-					return getProgress(
-							range.getStartKey().getColumnFamilyData(),
-							range.getEndKey().getColumnFamilyData(),
-							currentKey.getColumnFamilyData());
-				}
-				else if (!range.getStartKey().equals(
-						range.getEndKey(),
-						PartialKey.ROW_COLFAM_COLQUAL)) {
-					// just look at the column qualifier progress
-					return getProgress(
-							range.getStartKey().getColumnQualifierData(),
-							range.getEndKey().getColumnQualifierData(),
-							currentKey.getColumnQualifierData());
-				}
-			}
+//			if (currentKey == null) {
+//				return 0f;
+//			}
+//			if ((range.getStartKey() != null) && (range.getEndKey() != null)) {
+//				if (!range.getStartKey().equals(
+//						range.getEndKey(),
+//						PartialKey.ROW)) {
+//					// just look at the row progress
+//					return getProgress(
+//							range.getStartKey().getRowData(),
+//							range.getEndKey().getRowData(),
+//							currentKey.getRowData());
+//				}
+//				else if (!range.getStartKey().equals(
+//						range.getEndKey(),
+//						PartialKey.ROW_COLFAM)) {
+//					// just look at the column family progress
+//					return getProgress(
+//							range.getStartKey().getColumnFamilyData(),
+//							range.getEndKey().getColumnFamilyData(),
+//							currentKey.getColumnFamilyData());
+//				}
+//				else if (!range.getStartKey().equals(
+//						range.getEndKey(),
+//						PartialKey.ROW_COLFAM_COLQUAL)) {
+//					// just look at the column qualifier progress
+//					return getProgress(
+//							range.getStartKey().getColumnQualifierData(),
+//							range.getEndKey().getColumnQualifierData(),
+//							currentKey.getColumnQualifierData());
+//				}
+//			}
 			// if we can't figure it out, then claim no progress
 			return 0f;
 		}
@@ -569,33 +655,34 @@ public class GeoWaveInputFormat extends
 		@Override
 		public long getLength()
 				throws IOException {
-			final Text startRow = range.isInfiniteStartKey() ? new Text(
-					new byte[] {
-						Byte.MIN_VALUE
-					}) : range.getStartKey().getRow();
-			final Text stopRow = range.isInfiniteStopKey() ? new Text(
-					new byte[] {
-						Byte.MAX_VALUE
-					}) : range.getEndKey().getRow();
-			final int maxCommon = Math.min(
-					7,
-					Math.min(
-							startRow.getLength(),
-							stopRow.getLength()));
-			long diff = 0;
-
-			final byte[] start = startRow.getBytes();
-			final byte[] stop = stopRow.getBytes();
-			for (int i = 0; i < maxCommon; ++i) {
-				diff |= 0xff & (start[i] ^ stop[i]);
-				diff <<= Byte.SIZE;
-			}
-
-			if (startRow.getLength() != stopRow.getLength()) {
-				diff |= 0xff;
-			}
-
-			return diff + 1;
+//			final Text startRow = range.isInfiniteStartKey() ? new Text(
+//					new byte[] {
+//						Byte.MIN_VALUE
+//					}) : range.getStartKey().getRow();
+//			final Text stopRow = range.isInfiniteStopKey() ? new Text(
+//					new byte[] {
+//						Byte.MAX_VALUE
+//					}) : range.getEndKey().getRow();
+//			final int maxCommon = Math.min(
+//					7,
+//					Math.min(
+//							startRow.getLength(),
+//							stopRow.getLength()));
+//			long diff = 0;
+//
+//			final byte[] start = startRow.getBytes();
+//			final byte[] stop = stopRow.getBytes();
+//			for (int i = 0; i < maxCommon; ++i) {
+//				diff |= 0xff & (start[i] ^ stop[i]);
+//				diff <<= Byte.SIZE;
+//			}
+//
+//			if (startRow.getLength() != stopRow.getLength()) {
+//				diff |= 0xff;
+//			}
+//
+//			return diff + 1;
+			return 0;
 		}
 
 		@Override
@@ -613,7 +700,19 @@ public class GeoWaveInputFormat extends
 		public void readFields(
 				final DataInput in )
 				throws IOException {
-			range.readFields(in);
+			final int numRanges = in.readInt();
+			final Range[] ranges = new Range[numRanges];
+			for (int i = 0; i < numRanges; i++) {
+				try {
+					ranges[i] = Range.class.newInstance();
+					ranges[i].readFields(in);
+				}
+				catch (InstantiationException | IllegalAccessException e) {
+					throw new IOException(
+							"Unable to instantiate range",
+							e);
+				}
+			}
 			final int numLocs = in.readInt();
 			locations = new String[numLocs];
 			for (int i = 0; i < numLocs; ++i) {
@@ -632,7 +731,10 @@ public class GeoWaveInputFormat extends
 		public void write(
 				final DataOutput out )
 				throws IOException {
-			range.write(out);
+			out.writeInt(ranges.length);
+			for (final Range range : ranges) {
+				range.write(out);
+			}
 			out.writeInt(locations.length);
 			for (final String location : locations) {
 				out.writeUTF(location);
@@ -643,7 +745,7 @@ public class GeoWaveInputFormat extends
 		}
 	}
 
-	protected abstract static class RecordReaderBase<T> extends
+	protected static class GeoWaveRecordReader<T> extends
 			RecordReader<GeoWaveInputKey, T>
 	{
 		protected long numKeysRead;
@@ -674,20 +776,35 @@ public class GeoWaveInputFormat extends
 				final String[] additionalAuthorizations = getAuthorizations(attempt);
 
 				numKeysRead = 0;
-
-				iterator = new AccumuloRangeQuery(
-						adapterStore.getAdapterIds(),
-						split.index,
-						split.range,
-						query.createFilters(split.index.getIndexModel()),
-						additionalAuthorizations).query(
-						operations,
-						adapterStore,
-						null);
+				final List<CloseableIterator<?>> iterators = new ArrayList<CloseableIterator<?>>();
+				for (final Range r : split.ranges) {
+					iterators.add(new AccumuloRangeQuery(
+							adapterStore.getAdapterIds(),
+							split.index,
+							r,
+							query.createFilters(split.index.getIndexModel()),
+							additionalAuthorizations).query(
+							operations,
+							adapterStore,
+							null));
+				}
+				// concatenate iterators
+				iterator = new CloseableIteratorWrapper<Object>(
+						new Closeable() {
+							@Override
+							public void close()
+									throws IOException {
+								for (final CloseableIterator<?> it : iterators) {
+									it.close();
+								}
+							}
+						},
+						Iterators.concat(iterators.iterator()));
 			}
 			catch (AccumuloException | AccumuloSecurityException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOGGER.error(
+						"Unable to query accumulo for range input split",
+						e);
 			}
 		}
 
@@ -736,7 +853,8 @@ public class GeoWaveInputFormat extends
 			if ((numKeysRead > 0) && (currentAccumuloKey == null)) {
 				return 1.0f;
 			}
-			return split.getProgress(currentAccumuloKey);
+			return 0;
+//			return split.getProgress(currentAccumuloKey);
 		}
 
 		@Override

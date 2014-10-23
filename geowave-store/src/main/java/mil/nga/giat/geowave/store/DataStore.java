@@ -169,10 +169,11 @@ public interface DataStore
 	 *            The index to search for the entry.
 	 * @param dataId
 	 *            The data ID to use for the query.
-	 *
 	 * @param adapterId
 	 *            The adapter ID to use for the query.
-	 *
+	 * @param authorizations
+	 *            additional authorizations to fetch the entry	           
+	 * 
 	 * @return The entry that was ingested with the given data ID and adapter
 	 *         ID. This combination of data ID and adapter ID is the one
 	 *         assigned to the entry on ingest into the given index. Null is
@@ -182,7 +183,8 @@ public interface DataStore
 	public <T> T getEntry(
 			final Index index,
 			final ByteArrayId dataId,
-			final ByteArrayId adapterId );
+			final ByteArrayId adapterId,
+			final String...additionalAuthorizations);
 
 	/**
 	 * Deletes the data element associated with the given data ID and adapter ID
@@ -192,10 +194,10 @@ public interface DataStore
 	 *            The index to search for the entry.
 	 * @param dataId
 	 *            The data ID to use for the query.
-	 *
 	 * @param adapterId
 	 *            The adapter ID to use for the query.
-	 *
+	 * @param authorizations
+	 *            additional authorizations to delete the entry
 	 * @return Returns true if the entry was found and deleted successfully.
 	 *         Returns false if the entry could not be found, if the entry could
 	 *         not be deleted, or if the entry in the alternate index could not
@@ -204,7 +206,8 @@ public interface DataStore
 	public boolean deleteEntry(
 			final Index index,
 			final ByteArrayId dataId,
-			final ByteArrayId adapterId );
+			final ByteArrayId adapterId,
+			final String... authorizations );
 
 	/**
 	 * Returns all data with the given row ID prefix stored in the given index
@@ -213,14 +216,17 @@ public interface DataStore
 	 *            The index to search for the entry.
 	 * @param rowPrefix
 	 *            A prefix for the row ID to use as the query.
-	 *
+	 * @param additionalAuthorizations
+	 * 		      additional authorizations to any data store specific defaults  
+	 * 
 	 * @return All entries that were ingested with a row ID that is prefixed by
 	 *         the given rowPrefix. The "row ID" is the one assigned to the
 	 *         entry on ingest into the given index.
 	 */
 	public <T> CloseableIterator<T> getEntriesByPrefix(
 			final Index index,
-			final ByteArrayId rowPrefix );
+			final ByteArrayId rowPrefix,
+			final String...authorizations);
 
 	/**
 	 * Returns all data in this data store that matches the query parameter and

@@ -42,7 +42,7 @@ public class IngestFromHdfsDriver extends
 	}
 
 	private static synchronized ExecutorService getSingletonExecutorService() {
-		if (singletonExecutor == null) {
+		if (singletonExecutor == null || singletonExecutor.isShutdown()) {
 			singletonExecutor = Executors.newFixedThreadPool(NUM_CONCURRENT_JOBS);
 		}
 		return singletonExecutor;

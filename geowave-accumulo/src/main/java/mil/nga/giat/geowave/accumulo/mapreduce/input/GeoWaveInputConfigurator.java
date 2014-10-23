@@ -8,12 +8,8 @@ import mil.nga.giat.geowave.index.PersistenceUtils;
 import mil.nga.giat.geowave.store.query.DistributableQuery;
 
 import org.apache.accumulo.core.client.Instance;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.ZooKeeperInstance;
-import org.apache.accumulo.core.client.impl.Tables;
-import org.apache.accumulo.core.client.impl.TabletLocator;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 
@@ -22,7 +18,9 @@ public class GeoWaveInputConfigurator extends
 {
 	protected static enum InputConfig {
 		QUERY,
-		AUTHORIZATION
+		AUTHORIZATION,
+		MIN_SPLITS,
+		MAX_SPLITS
 	}
 
 	private static DistributableQuery getQueryInternal(
@@ -38,6 +36,40 @@ public class GeoWaveInputConfigurator extends
 			return PersistenceUtils.fromBinary(
 					queryBytes,
 					DistributableQuery.class);
+		}
+		return null;
+	}
+
+	private static Integer getMinimumSplitCountInternal(
+			final Class<?> implementingClass,
+			final Configuration configuration ) {
+		return getIntegerConfigInternal(
+				implementingClass,
+				configuration,
+				InputConfig.MIN_SPLITS);
+	}
+
+	private static Integer getMaximumSplitCountInternal(
+			final Class<?> implementingClass,
+			final Configuration configuration ) {
+		return getIntegerConfigInternal(
+				implementingClass,
+				configuration,
+				InputConfig.MAX_SPLITS);
+	}
+
+	private static Integer getIntegerConfigInternal(
+			final Class<?> implementingClass,
+			final Configuration configuration,
+			final InputConfig inputConfig ) {
+		final String str = configuration.get(
+				enumToConfKey(
+						implementingClass,
+						inputConfig),
+				"");
+		if ((str != null) && !str.isEmpty()) {
+			final Integer retVal = Integer.parseInt(str);
+			return retVal;
 		}
 		return null;
 	}
@@ -60,6 +92,66 @@ public class GeoWaveInputConfigurator extends
 							implementingClass,
 							InputConfig.QUERY),
 					ByteArrayUtils.byteArrayToString(PersistenceUtils.toBinary(query)));
+		}
+		else {
+			job.getConfiguration().unset(
+					enumToConfKey(
+							implementingClass,
+							InputConfig.QUERY));
+		}
+	}
+
+	public static Integer getMinimumSplitCount(
+			final Class<?> implementingClass,
+			final JobContext context ) {
+		return getMinimumSplitCountInternal(
+				implementingClass,
+				getConfiguration(context));
+	}
+
+	public static void setMinimumSplitCount(
+			final Class<?> implementingClass,
+			final Job job,
+			final Integer minSplits ) {
+		if (minSplits != null) {
+			job.getConfiguration().set(
+					enumToConfKey(
+							implementingClass,
+							InputConfig.MIN_SPLITS),
+					minSplits.toString());
+		}
+		else {
+			job.getConfiguration().unset(
+					enumToConfKey(
+							implementingClass,
+							InputConfig.MIN_SPLITS));
+		}
+	}
+
+	public static Integer getMaximumSplitCount(
+			final Class<?> implementingClass,
+			final JobContext context ) {
+		return getMaximumSplitCountInternal(
+				implementingClass,
+				getConfiguration(context));
+	}
+
+	public static void setMaximumSplitCount(
+			final Class<?> implementingClass,
+			final Job job,
+			final Integer maxSplits ) {
+		if (maxSplits != null) {
+			job.getConfiguration().set(
+					enumToConfKey(
+							implementingClass,
+							InputConfig.MAX_SPLITS),
+					maxSplits.toString());
+		}
+		else {
+			job.getConfiguration().unset(
+					enumToConfKey(
+							implementingClass,
+							InputConfig.MAX_SPLITS));
 		}
 	}
 
@@ -101,30 +193,14 @@ public class GeoWaveInputConfigurator extends
 	public static Instance getInstance(
 			final Class<?> implementingClass,
 			final JobContext context ) {
-		final String instanceName = GeoWaveConfiguratorBase.getZookeeperUrl(
+		final String instanceName = GeoWaveConfiguratorBase.getInstanceName(
 				implementingClass,
 				context);
-		final String zookeeperUrl = GeoWaveConfiguratorBase.getInstanceName(
+		final String zookeeperUrl = GeoWaveConfiguratorBase.getZookeeperUrl(
 				implementingClass,
 				context);
 		return new ZooKeeperInstance(
 				instanceName,
 				zookeeperUrl);
-	}
-
-	public static TabletLocator getTabletLocator(
-			final Class<?> implementingClass,
-			final JobContext context,
-			final String tableName )
-			throws TableNotFoundException {
-		final Instance instance = getInstance(
-				implementingClass,
-				context);
-		return TabletLocator.getInstance(
-				instance,
-				new Text(
-						Tables.getTableId(
-								instance,
-								tableName)));
 	}
 }

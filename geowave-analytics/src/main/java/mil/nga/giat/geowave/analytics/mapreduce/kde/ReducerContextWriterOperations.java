@@ -29,17 +29,11 @@ public class ReducerContextWriterOperations implements
 	}
 
 	@Override
-	public BatchScanner createBatchScanner(
-			final String tableName )
-			throws TableNotFoundException {
-		return null;
-	}
+	public void insureAuthorization(
+			final String... authorizations )
+			throws AccumuloException,
+			AccumuloSecurityException {
 
-	@Override
-	public Scanner createScanner(
-			final String tableName )
-			throws TableNotFoundException {
-		return null;
 	}
 
 	@Override
@@ -77,13 +71,6 @@ public class ReducerContextWriterOperations implements
 	}
 
 	@Override
-	public boolean deleteAll(
-			final String tableName,
-			final String columnFamily ) {
-		return false;
-	}
-
-	@Override
 	public boolean tableExists(
 			final String tableName ) {
 		return false;
@@ -116,39 +103,56 @@ public class ReducerContextWriterOperations implements
 	}
 
 	@Override
-	public BatchDeleter createBatchDeleter(
-			final String tableName )
+	public boolean attachIterators(
+			final String tableName,
+			final boolean createTable,
+			final IteratorConfig[] iterators )
+			throws TableNotFoundException {
+		return false;
+	}
+
+	@Override
+	public void createTable(
+			final String tableName ) {}
+
+	@Override
+	public BatchScanner createBatchScanner(
+			final String tableName,
+			final String... additionalAuthorizations )
 			throws TableNotFoundException {
 		return null;
 	}
 
 	@Override
-	public boolean attachIterators(
-			String tableName,
-			boolean createTable,
-			IteratorConfig[] iterators )
-			throws TableNotFoundException {
-		return false;
-	}
-
-	public void createTable(
-			String tableName ) {}
-
-	@Override
-	public BatchScanner createBatchScanner(
-			String tableName,
-			String... additionalAuthorizations )
+	public BatchDeleter createBatchDeleter(
+			final String tableName,
+			final String... additionalAuthorizations )
 			throws TableNotFoundException {
 		return null;
 	}
 
 	@Override
 	public boolean delete(
-			String tableName,
-			List<ByteArrayId> rowId,
-			String columnFamily,
-			String columnQualifier ) {
-		// TODO Auto-generated method stub
+			final String tableName,
+			final List<ByteArrayId> rowId,
+			final String columnFamily,
+			final String columnQualifier,
+			final String... additionalAuthorizations ) {
 		return false;
+	}
+
+	@Override
+	public boolean deleteAll(
+			final String tableName,
+			final String columnFamily,
+			final String... additionalAuthorizations ) {
+		return false;
+	}
+
+	@Override
+	public long getRowCount(
+			final String tableName,
+			final String... additionalAuthorizations ) {
+		return 0;
 	}
 }

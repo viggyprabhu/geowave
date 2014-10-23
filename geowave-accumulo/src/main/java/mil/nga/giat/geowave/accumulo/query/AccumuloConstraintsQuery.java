@@ -29,7 +29,6 @@ public class AccumuloConstraintsQuery extends
 {
 	protected final MultiDimensionalNumericData constraints;
 	protected final List<DistributableQueryFilter> distributableFilters;
-	protected final String[] authorizations;
 
 	public AccumuloConstraintsQuery(
 			final Index index,
@@ -84,10 +83,10 @@ public class AccumuloConstraintsQuery extends
 			final String[] authorizations ) {
 		super(
 				adapterIds,
-				index);
+				index,
+				authorizations);
 		this.constraints = constraints;
 		final SplitFilterLists lists = splitList(queryFilters);
-		this.authorizations = authorizations;
 		final List<QueryFilter> clientFilters = lists.clientFilters;
 		// add dedupe filters to the front of both lists so that the
 		// de-duplication is performed before any more complex filtering
@@ -139,11 +138,6 @@ public class AccumuloConstraintsQuery extends
 		return AccumuloUtils.constraintsToByteArrayRanges(
 				constraints,
 				index.getIndexStrategy());
-	}
-
-	@Override
-	public String[] getAdditionalAuthorizations() {
-		return authorizations;
 	}
 
 	private static SplitFilterLists splitList(

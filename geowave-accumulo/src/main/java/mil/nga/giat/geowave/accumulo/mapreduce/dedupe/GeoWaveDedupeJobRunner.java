@@ -30,6 +30,9 @@ public class GeoWaveDedupeJobRunner extends
 	protected String instance;
 	protected String zookeeper;
 	protected String namespace;
+	protected List<DataAdapter<?>> adapters = new ArrayList<DataAdapter<?>>();
+	protected List<Index> indices = new ArrayList<Index>();
+	protected DistributableQuery query = null;
 
 	/**
 	 * Main method to execute the MapReduce analytic.
@@ -63,7 +66,6 @@ public class GeoWaveDedupeJobRunner extends
 		job.setInputFormatClass(GeoWaveInputFormat.class);
 		job.setOutputFormatClass(getOutputFormatClass());
 		job.setNumReduceTasks(getNumReduceTasks());
-		final List<DataAdapter<?>> adapters = getDataAdapters();
 		if ((adapters != null) && (adapters.size() > 0)) {
 			for (final DataAdapter<?> adapter : adapters) {
 				GeoWaveInputFormat.addDataAdapter(
@@ -71,7 +73,6 @@ public class GeoWaveDedupeJobRunner extends
 						adapter);
 			}
 		}
-		final List<Index> indices = getIndices();
 		if ((indices != null) && (indices.size() > 0)) {
 			for (final Index index : indices) {
 				GeoWaveInputFormat.addIndex(
@@ -79,7 +80,6 @@ public class GeoWaveDedupeJobRunner extends
 						index);
 			}
 		}
-		final DistributableQuery query = getQuery();
 		if (query != null) {
 			GeoWaveInputFormat.setQuery(
 					job,
@@ -87,30 +87,41 @@ public class GeoWaveDedupeJobRunner extends
 		}
 
 		final FileSystem fs = FileSystem.get(conf);
+		final Path outputPath = getHdfsOutputPath();
 		fs.delete(
-				new Path(
-						"/tmp/" + namespace + "_dedupe"),
+				outputPath,
 				true);
 		FileOutputFormat.setOutputPath(
 				job,
-				new Path(
-						"/tmp/" + namespace + "_dedupe"));
+				outputPath);
 
 		final boolean jobSuccess = job.waitForCompletion(true);
 
 		return (jobSuccess) ? 0 : 1;
 	}
 
-	protected List<DataAdapter<?>> getDataAdapters() {
-		return new ArrayList<DataAdapter<?>>();
+	public void addDataAdapter(
+			final DataAdapter<?> adapter ) {
+		adapters.add(adapter);
 	}
 
-	protected List<Index> getIndices() {
-		return new ArrayList<Index>();
+	public void addIndex(
+			final Index index ) {
+		indices.add(index);
 	}
 
-	protected DistributableQuery getQuery() {
-		return null;
+	public void setQuery(
+			final DistributableQuery query ) {
+		this.query = query;
+	}
+
+	protected String getHdfsOutputBase() {
+		return "/tmp";
+	}
+
+	protected Path getHdfsOutputPath() {
+		return new Path(
+				getHdfsOutputBase() + "/" + namespace + "_dedupe");
 	}
 
 	protected Class<? extends OutputFormat> getOutputFormatClass() {

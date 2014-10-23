@@ -70,7 +70,7 @@ public class GpxIngestPlugin implements
 
 	private final static String TAG_SEPARATOR = " ||| ";
 
-	private Map<Long, GpxTrack> metadata;
+	private Map<Long, GpxTrack> metadata = null;
 	private static long currentFreeTrackId = 0;
 
 	private final SimpleFeatureBuilder pointBuilder;
@@ -87,7 +87,6 @@ public class GpxIngestPlugin implements
 	private final Index[] supportedIndices;
 
 	public GpxIngestPlugin() {
-
 		pointType = GpxUtils.createGPXPointDataType();
 		waypointType = GpxUtils.createGPXWaypointDataType();
 		trackType = GpxUtils.createGPXTrackDataType();
@@ -125,9 +124,10 @@ public class GpxIngestPlugin implements
 		final File f = new File(
 				baseDirectory,
 				"metadata.xml");
+		metadata = null;
 		if (!f.exists()) {
-			LOGGER.warn("No metadata file found - looked at: " + f.getAbsolutePath());
-			LOGGER.warn("No metadata will be loaded");
+			LOGGER.info("No metadata file found - looked at: " + f.getAbsolutePath());
+			LOGGER.info("No metadata will be loaded");			
 		}
 		else {
 			try {

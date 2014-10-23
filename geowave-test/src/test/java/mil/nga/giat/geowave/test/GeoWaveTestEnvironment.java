@@ -4,17 +4,22 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import mil.nga.giat.geowave.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.accumulo.BasicAccumuloOperations;
-import mil.nga.giat.geowave.store.query.Query;
+import mil.nga.giat.geowave.store.CloseableIterator;
+import mil.nga.giat.geowave.store.query.DistributableQuery;
 import mil.nga.giat.geowave.store.query.SpatialQuery;
 import mil.nga.giat.geowave.store.query.SpatialTemporalQuery;
 
@@ -25,6 +30,10 @@ import org.apache.accumulo.minicluster.MiniAccumuloConfig;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.log4j.Logger;
+import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFinder;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -101,13 +110,120 @@ public class GeoWaveTestEnvironment
 		}
 	}
 
-	protected long hashCentroid(
+	protected static long hashCentroid(
 			final Geometry geometry ) {
 		final Point centroid = geometry.getCentroid();
 		return Double.doubleToLongBits(centroid.getX()) + Double.doubleToLongBits(centroid.getY() * 31);
 	}
 
-	protected Query savedFilterToQuery(
+	protected static class ExpectedResults
+	{
+		protected Set<Long> hashedCentroids;
+		protected int count;
+
+		protected ExpectedResults(
+				final Set<Long> hashedCentroids,
+				final int count ) {
+			this.hashedCentroids = hashedCentroids;
+			this.count = count;
+		}
+	}
+
+	protected static ExpectedResults getExpectedResults(
+			final CloseableIterator<?> results )
+			throws IOException {
+		final Set<Long> hashedCentroids = new HashSet<Long>();
+		int expectedResultCount = 0;
+		try {
+			while (results.hasNext()) {
+				final Object obj = results.next();
+				if (obj instanceof SimpleFeature) {
+					expectedResultCount++;
+					final SimpleFeature feature = (SimpleFeature) obj;
+					hashedCentroids.add(hashCentroid((Geometry) feature.getDefaultGeometry()));
+				}
+			}
+		}
+		finally {
+			results.close();
+		}
+		return new ExpectedResults(
+				hashedCentroids,
+				expectedResultCount);
+	}
+
+	protected static ExpectedResults getExpectedResults(
+			final URL[] expectedResultsResources )
+			throws IOException {
+		final Map<String, Object> map = new HashMap<String, Object>();
+		DataStore dataStore = null;
+		final Set<Long> hashedCentroids = new HashSet<Long>();
+		int expectedResultCount = 0;
+		for (final URL expectedResultsResource : expectedResultsResources) {
+			map.put(
+					"url",
+					expectedResultsResource);
+			SimpleFeatureIterator featureIterator = null;
+			try {
+				dataStore = DataStoreFinder.getDataStore(map);
+				final SimpleFeatureCollection expectedResults = dataStore.getFeatureSource(
+						dataStore.getNames().get(
+								0)).getFeatures();
+
+				expectedResultCount += expectedResults.size();
+				// unwrap the expected results into a set of features IDs so its
+				// easy to check against
+				featureIterator = expectedResults.features();
+				while (featureIterator.hasNext()) {
+					hashedCentroids.add(hashCentroid((Geometry) featureIterator.next().getDefaultGeometry()));
+				}
+			}
+			finally {
+				featureIterator.close();
+				dataStore.dispose();
+			}
+		}
+		return new ExpectedResults(
+				hashedCentroids,
+				expectedResultCount);
+	}
+
+	protected static DistributableQuery resourceToQuery(
+			final URL filterResource )
+			throws IOException {
+		return featureToQuery(resourceToFeature(filterResource));
+	}
+
+	protected static SimpleFeature resourceToFeature(
+			final URL filterResource )
+			throws IOException {
+		final Map<String, Object> map = new HashMap<String, Object>();
+		DataStore dataStore = null;
+		map.put(
+				"url",
+				filterResource);
+		final SimpleFeature savedFilter;
+		SimpleFeatureIterator sfi = null;
+		try {
+			dataStore = DataStoreFinder.getDataStore(map);
+
+			// just grab the first feature and use it as a filter
+			sfi = dataStore.getFeatureSource(
+					dataStore.getNames().get(
+							0)).getFeatures().features();
+			savedFilter = sfi.next();
+
+		}
+		finally {
+			if (sfi != null) {
+				sfi.close();
+			}
+			dataStore.dispose();
+		}
+		return savedFilter;
+	}
+
+	protected static DistributableQuery featureToQuery(
 			final SimpleFeature savedFilter ) {
 		final Geometry filterGeometry = (Geometry) savedFilter.getDefaultGeometry();
 		final Object startObj = savedFilter.getAttribute(TEST_FILTER_START_TIME_ATTRIBUTE_NAME);
@@ -183,7 +299,7 @@ public class GeoWaveTestEnvironment
 		}
 	}
 
-	private static boolean isSet(
+	protected static boolean isSet(
 			final String str ) {
 		return (str != null) && !str.isEmpty();
 	}

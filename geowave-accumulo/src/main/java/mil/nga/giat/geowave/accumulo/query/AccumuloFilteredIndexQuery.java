@@ -29,34 +29,42 @@ public abstract class AccumuloFilteredIndexQuery extends
 
 	public AccumuloFilteredIndexQuery(
 			final Index index,
-			final List<QueryFilter> clientFilters ) {
+			final List<QueryFilter> clientFilters,
+			final String... authorizations ) {
 		super(
-				index);
+				index,
+				authorizations);
 		this.clientFilters = clientFilters;
 	}
 
 	public AccumuloFilteredIndexQuery(
 			final List<ByteArrayId> adapterIds,
 			final Index index,
-			final List<QueryFilter> clientFilters ) {
+			final List<QueryFilter> clientFilters,
+			final String... authorizations ) {
 		super(
 				adapterIds,
-				index);
+				index,
+				authorizations);
 		this.clientFilters = clientFilters;
 	}
 
 	public AccumuloFilteredIndexQuery(
-			final Index index ) {
+			final Index index,
+			final String... authorizations ) {
 		super(
-				index);
+				index,
+				authorizations);
 	}
 
 	public AccumuloFilteredIndexQuery(
 			final List<ByteArrayId> adapterIds,
-			final Index index ) {
+			final Index index,
+			final String... authorizations ) {
 		super(
 				adapterIds,
-				index);
+				index,
+				authorizations);
 	}
 
 	protected List<QueryFilter> getClientFilters() {
@@ -87,7 +95,7 @@ public abstract class AccumuloFilteredIndexQuery extends
 		Iterator it = initIterator(
 				scanner,
 				adapterStore);
-		if ((limit != null) && (limit >= 0)) {
+		if ((limit != null) && (limit > 0)) {
 			it = Iterators.limit(
 					it,
 					limit);

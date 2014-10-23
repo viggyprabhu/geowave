@@ -28,18 +28,24 @@ abstract public class AccumuloQuery
 	protected final List<ByteArrayId> adapterIds;
 	protected final Index index;
 
+	private final String[] authorizations;
+
 	public AccumuloQuery(
-			final Index index ) {
+			final Index index,
+			final String... authorizations ) {
 		this(
 				null,
-				index);
+				index,
+				authorizations);
 	}
 
 	public AccumuloQuery(
 			final List<ByteArrayId> adapterIds,
-			final Index index ) {
+			final Index index,
+			final String... authorizations ) {
 		this.adapterIds = adapterIds;
 		this.index = index;
+		this.authorizations = authorizations;
 	}
 
 	abstract protected List<ByteArrayRange> getRanges();
@@ -90,6 +96,6 @@ abstract public class AccumuloQuery
 	}
 
 	public String[] getAdditionalAuthorizations() {
-		return new String[0];
+		return authorizations;
 	}
 }
