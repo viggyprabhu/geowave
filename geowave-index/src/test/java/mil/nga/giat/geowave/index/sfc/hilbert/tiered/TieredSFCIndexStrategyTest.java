@@ -86,6 +86,7 @@ public class TieredSFCIndexStrategyTest
 				13,
 				ids1.get(
 						0).getBytes().length);
+		
 
 		// same bin
 		indexedData = new BasicNumericDataset(
@@ -190,6 +191,11 @@ public class TieredSFCIndexStrategyTest
 				10,
 				ids1.get(
 						0).getBytes().length);
+		
+		for (ByteArrayId id : ids1) {
+			MultiDimensionalNumericData md = strategy.getRangeForId(id);
+			assertTrue(this.checkCoverage(indexedData, md));
+		}
 
 		// different bin bin
 		indexedData = new BasicNumericDataset(
@@ -259,4 +265,22 @@ public class TieredSFCIndexStrategyTest
 						length));
 	}
 
+	
+	/** 
+	 * Tool can be used custom index strategies to check if the tiles actual intersect with the provided bounding box.
+	 * @param boxRangeData
+	 * @param innerTile
+	 * @return
+	 */
+	private boolean checkCoverage(MultiDimensionalNumericData boxRangeData, MultiDimensionalNumericData innerTile) {
+		for (int i =0 ; i < boxRangeData.getDimensionCount(); i++) {
+			double t0 = innerTile.getDataPerDimension()[i].getMax() - boxRangeData.getDataPerDimension()[i].getMin();
+			double t1 = boxRangeData.getDataPerDimension()[i].getMax() - innerTile.getDataPerDimension()[i].getMin();
+			if(Math.abs(t0 - t1) > (t0 + t1)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 }
