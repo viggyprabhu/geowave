@@ -10,8 +10,8 @@ import mil.nga.giat.geowave.store.adapter.DataAdapter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configuration.IntegerRanges;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.RawComparator;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.JobID;
@@ -27,11 +27,11 @@ import org.apache.hadoop.security.Credentials;
 public class NativeReduceContext<KEYIN, VALUEIN> implements
 		ReduceContext<KEYIN, VALUEIN, GeoWaveInputKey, Object>
 {
-	private final ReduceContext<KEYIN, VALUEIN, GeoWaveInputKey, Writable> writableContext;
+	private final ReduceContext<KEYIN, VALUEIN, GeoWaveInputKey, ObjectWritable> writableContext;
 	private final AdapterStore adapterStore;
 
 	public NativeReduceContext(
-			final ReduceContext<KEYIN, VALUEIN, GeoWaveInputKey, Writable> writableContext,
+			final ReduceContext<KEYIN, VALUEIN, GeoWaveInputKey, ObjectWritable> writableContext,
 			final AdapterStore adapterStore ) {
 		this.writableContext = writableContext;
 		this.adapterStore = adapterStore;
@@ -50,7 +50,8 @@ public class NativeReduceContext<KEYIN, VALUEIN> implements
 			if ((adapter != null) && (adapter instanceof HadoopDataAdapter)) {
 				writableContext.write(
 						key,
-						((HadoopDataAdapter) value).toWritable(value));
+						new ObjectWritable(
+								((HadoopDataAdapter) value).toWritable(value)));
 			}
 		}
 	}

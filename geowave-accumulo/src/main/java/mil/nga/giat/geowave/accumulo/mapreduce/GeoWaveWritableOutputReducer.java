@@ -8,13 +8,13 @@ import mil.nga.giat.geowave.store.adapter.AdapterStore;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mapreduce.ReduceContext;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
 
 public abstract class GeoWaveWritableOutputReducer<KEYIN, VALUEIN> extends
-		Reducer<KEYIN, VALUEIN, GeoWaveInputKey, Writable>
+		Reducer<KEYIN, VALUEIN, GeoWaveInputKey, ObjectWritable>
 {
 	protected static final Logger LOGGER = Logger.getLogger(GeoWaveWritableOutputReducer.class);
 	protected AdapterStore adapterStore;
@@ -23,7 +23,7 @@ public abstract class GeoWaveWritableOutputReducer<KEYIN, VALUEIN> extends
 	protected void reduce(
 			final KEYIN key,
 			final Iterable<VALUEIN> values,
-			final Reducer<KEYIN, VALUEIN, GeoWaveInputKey, Writable>.Context context )
+			final Reducer<KEYIN, VALUEIN, GeoWaveInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
 		reduceWritableValues(
@@ -35,7 +35,7 @@ public abstract class GeoWaveWritableOutputReducer<KEYIN, VALUEIN> extends
 	protected void reduceWritableValues(
 			final KEYIN key,
 			final Iterable<VALUEIN> values,
-			final Reducer<KEYIN, VALUEIN, GeoWaveInputKey, Writable>.Context context )
+			final Reducer<KEYIN, VALUEIN, GeoWaveInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
 		reduceNativeValues(
@@ -55,7 +55,7 @@ public abstract class GeoWaveWritableOutputReducer<KEYIN, VALUEIN> extends
 
 	@Override
 	protected void setup(
-			final Reducer<KEYIN, VALUEIN, GeoWaveInputKey, Writable>.Context context )
+			final Reducer<KEYIN, VALUEIN, GeoWaveInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
 		try {

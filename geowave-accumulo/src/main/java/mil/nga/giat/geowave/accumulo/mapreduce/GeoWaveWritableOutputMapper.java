@@ -8,13 +8,14 @@ import mil.nga.giat.geowave.store.adapter.AdapterStore;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.MapContext;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 public abstract class GeoWaveWritableOutputMapper<KEYIN, VALUEIN> extends
-		Mapper<KEYIN, VALUEIN, GeoWaveInputKey, Writable>
+		Mapper<KEYIN, VALUEIN, GeoWaveInputKey, ObjectWritable>
 {
 	protected static final Logger LOGGER = Logger.getLogger(GeoWaveWritableOutputMapper.class);
 	protected AdapterStore adapterStore;
@@ -23,7 +24,7 @@ public abstract class GeoWaveWritableOutputMapper<KEYIN, VALUEIN> extends
 	protected void map(
 			final KEYIN key,
 			final VALUEIN value,
-			final Mapper<KEYIN, VALUEIN, GeoWaveInputKey, Writable>.Context context )
+			final Mapper<KEYIN, VALUEIN, GeoWaveInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
 		mapWritableValue(
@@ -35,7 +36,7 @@ public abstract class GeoWaveWritableOutputMapper<KEYIN, VALUEIN> extends
 	protected void mapWritableValue(
 			final KEYIN key,
 			final VALUEIN value,
-			final Mapper<KEYIN, VALUEIN, GeoWaveInputKey, Writable>.Context context )
+			final Mapper<KEYIN, VALUEIN, GeoWaveInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
 		mapNativeValue(
@@ -55,7 +56,7 @@ public abstract class GeoWaveWritableOutputMapper<KEYIN, VALUEIN> extends
 
 	@Override
 	protected void setup(
-			final Mapper<KEYIN, VALUEIN, GeoWaveInputKey, Writable>.Context context )
+			final Mapper<KEYIN, VALUEIN, GeoWaveInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
 		try {

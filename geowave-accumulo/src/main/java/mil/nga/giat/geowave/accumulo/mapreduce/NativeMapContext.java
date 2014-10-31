@@ -10,8 +10,8 @@ import mil.nga.giat.geowave.store.adapter.DataAdapter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configuration.IntegerRanges;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.RawComparator;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -28,11 +28,11 @@ import org.apache.hadoop.security.Credentials;
 public class NativeMapContext<KEYIN, VALUEIN> implements
 		MapContext<KEYIN, VALUEIN, GeoWaveInputKey, Object>
 {
-	private final MapContext<KEYIN, VALUEIN, GeoWaveInputKey, Writable> context;
+	private final MapContext<KEYIN, VALUEIN, GeoWaveInputKey, ObjectWritable> context;
 	private final AdapterStore adapterStore;
 
 	public NativeMapContext(
-			final MapContext<KEYIN, VALUEIN, GeoWaveInputKey, Writable> context,
+			final MapContext<KEYIN, VALUEIN, GeoWaveInputKey, ObjectWritable> context,
 			final AdapterStore adapterStore ) {
 		this.context = context;
 		this.adapterStore = adapterStore;
@@ -142,7 +142,8 @@ public class NativeMapContext<KEYIN, VALUEIN> implements
 			if ((adapter != null) && (adapter instanceof HadoopDataAdapter)) {
 				context.write(
 						key,
-						((HadoopDataAdapter) value).toWritable(value));
+						new ObjectWritable(
+								((HadoopDataAdapter) adapter).toWritable(value)));
 			}
 		}
 	}

@@ -40,18 +40,6 @@ public class AccumuloRangeQuery extends
 	}
 
 	@Override
-	protected Iterator initIterator(
-			final ScannerBase scanner,
-			final AdapterStore adapterStore ) {
-		return new EntryWithKeyIteratorWrapper(
-				adapterStore,
-				index,
-				scanner.iterator(),
-				new FilterList<QueryFilter>(
-						clientFilters));
-	}
-
-	@Override
 	protected ScannerBase getScanner(
 			final AccumuloOperations accumuloOperations,
 			final Integer limit ) {

@@ -13,7 +13,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -33,6 +33,8 @@ public class GeoWaveDedupeJobRunner extends
 	protected List<DataAdapter<?>> adapters = new ArrayList<DataAdapter<?>>();
 	protected List<Index> indices = new ArrayList<Index>();
 	protected DistributableQuery query = null;
+	protected Integer minInputSplits = null;
+	protected Integer maxInputSplits = null;
 
 	/**
 	 * Main method to execute the MapReduce analytic.
@@ -59,9 +61,9 @@ public class GeoWaveDedupeJobRunner extends
 		job.setCombinerClass(GeoWaveDedupeCombiner.class);
 		job.setReducerClass(GeoWaveDedupeReducer.class);
 		job.setMapOutputKeyClass(GeoWaveInputKey.class);
-		job.setMapOutputValueClass(Writable.class);
+		job.setMapOutputValueClass(ObjectWritable.class);
 		job.setOutputKeyClass(GeoWaveInputKey.class);
-		job.setOutputValueClass(Writable.class);
+		job.setOutputValueClass(ObjectWritable.class);
 
 		job.setInputFormatClass(GeoWaveInputFormat.class);
 		job.setOutputFormatClass(getOutputFormatClass());
@@ -85,6 +87,16 @@ public class GeoWaveDedupeJobRunner extends
 					job,
 					query);
 		}
+		if (minInputSplits != null) {
+			GeoWaveInputFormat.setMinimumSplitCount(
+					job,
+					minInputSplits);
+		}
+		if (maxInputSplits != null) {
+			GeoWaveInputFormat.setMaximumSplitCount(
+					job,
+					maxInputSplits);
+		}
 
 		final FileSystem fs = FileSystem.get(conf);
 		final Path outputPath = getHdfsOutputPath();
@@ -98,6 +110,16 @@ public class GeoWaveDedupeJobRunner extends
 		final boolean jobSuccess = job.waitForCompletion(true);
 
 		return (jobSuccess) ? 0 : 1;
+	}
+
+	public void setMaxInputSplits(
+			final int maxInputSplits ) {
+		this.maxInputSplits = maxInputSplits;
+	}
+
+	public void setMinInputSplits(
+			final int minInputSplits ) {
+		this.minInputSplits = minInputSplits;
 	}
 
 	public void addDataAdapter(

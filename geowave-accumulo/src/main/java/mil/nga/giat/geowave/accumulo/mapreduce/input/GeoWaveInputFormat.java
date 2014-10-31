@@ -1,33 +1,31 @@
 package mil.nga.giat.geowave.accumulo.mapreduce.input;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeSet;
 
 import mil.nga.giat.geowave.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.accumulo.mapreduce.JobContextAdapterStore;
+import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputFormat.IntermediateSplitInfo.RangeLocationPair;
 import mil.nga.giat.geowave.accumulo.metadata.AccumuloIndexStore;
-import mil.nga.giat.geowave.accumulo.query.AccumuloRangeQuery;
 import mil.nga.giat.geowave.accumulo.util.AccumuloUtils;
-import mil.nga.giat.geowave.accumulo.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.index.NumericIndexStrategy;
-import mil.nga.giat.geowave.index.PersistenceUtils;
 import mil.nga.giat.geowave.index.sfc.data.MultiDimensionalNumericData;
-import mil.nga.giat.geowave.store.CloseableIterator;
 import mil.nga.giat.geowave.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.store.index.Index;
 import mil.nga.giat.geowave.store.query.DistributableQuery;
@@ -43,17 +41,16 @@ import org.apache.accumulo.core.client.impl.TabletLocator;
 import org.apache.accumulo.core.client.mapreduce.lib.util.ConfiguratorBase;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
+import org.apache.accumulo.core.data.ArrayByteSequence;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.KeyExtent;
-import org.apache.accumulo.core.data.PartialKey;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.master.state.tables.TableState;
 import org.apache.accumulo.core.security.thrift.TCredentials;
 import org.apache.accumulo.core.util.UtilWaitThread;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
@@ -63,13 +60,12 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import com.google.common.collect.Iterators;
-
 public class GeoWaveInputFormat extends
 		InputFormat<GeoWaveInputKey, Object>
 {
 	private static final Class<?> CLASS = GeoWaveInputFormat.class;
 	protected static final Logger LOGGER = Logger.getLogger(CLASS);
+	private static final BigInteger TWO = BigInteger.valueOf(2L);
 
 	/**
 	 * Configures a {@link AccumuloOperations} for this job.
@@ -275,10 +271,61 @@ public class GeoWaveInputFormat extends
 			InterruptedException {
 		LOGGER.setLevel(getLogLevel(context));
 		validateOptions(context);
+		final Integer minSplits = getMinimumSplitCount(context);
+		final Integer maxSplits = getMaximumSplitCount(context);
+		final TreeSet<IntermediateSplitInfo> splits = getIntermediateSplits(
+				context,
+				maxSplits);
+		// this is an incremental algorithm, it may be better use the target
+		// split count to drive it (ie. to get 3 splits this will split 1 large
+		// range into two down the middle and then split one of those ranges
+		// down the middle to get 3, rather than splitting one range into
+		// thirds)
+		if ((minSplits != null) && (splits.size() < minSplits)) {
+			// set the ranges to at least min splits
+			do {
+				// remove the highest range, split it into 2 and add both back,
+				// increasing the size by 1
+				final IntermediateSplitInfo highestSplit = splits.pollLast();
+				final IntermediateSplitInfo otherSplit = highestSplit.split();
+				splits.add(highestSplit);
+				splits.add(otherSplit);
+			}
+			while (splits.size() < minSplits);
+		}
+		else if (((maxSplits != null) && (maxSplits > 0)) && (splits.size() > maxSplits)) {
+			// merge splits to fit within max splits
+			do {
+				// this is the naive approach, remove the lowest two ranges and
+				// merge them, decreasing the size by 1
+
+				// TODO Ideally merge takes into account locations (as well as
+				// possibly the index as a secondary criteria) to limit the
+				// number of locations/indices
+				final IntermediateSplitInfo lowestSplit = splits.pollFirst();
+				final IntermediateSplitInfo nextLowestSplit = splits.pollFirst();
+				lowestSplit.merge(nextLowestSplit);
+				splits.add(lowestSplit);
+			}
+			while (splits.size() > maxSplits);
+		}
+		final List<InputSplit> retVal = new ArrayList<InputSplit>();
+		for (final IntermediateSplitInfo split : splits) {
+			retVal.add(split.toFinalSplit());
+		}
+
+		return retVal;
+	}
+
+	private TreeSet<IntermediateSplitInfo> getIntermediateSplits(
+			final JobContext context,
+			final Integer maxSplits )
+			throws IOException {
 		final Index[] indices = getIndices(context);
-		final List<InputSplit> splits = new ArrayList<InputSplit>();
 		final DistributableQuery query = getQuery(context);
 		final String tableNamespace = getTableNamespace(context);
+
+		final TreeSet<IntermediateSplitInfo> splits = new TreeSet<IntermediateSplitInfo>();
 		for (final Index index : indices) {
 			if ((query != null) && !query.isSupported(index)) {
 				continue;
@@ -288,12 +335,19 @@ public class GeoWaveInputFormat extends
 					index.getId().getString());
 			final NumericIndexStrategy indexStrategy = index.getIndexStrategy();
 			final TreeSet<Range> ranges;
-			//TODO set the ranges to at least min splits
 			if (query != null) {
 				final MultiDimensionalNumericData indexConstraints = query.getIndexConstraints(indexStrategy);
-				ranges = AccumuloUtils.byteArrayRangesToAccumuloRanges(AccumuloUtils.constraintsToByteArrayRanges(
-						indexConstraints,
-						indexStrategy));
+				if ((maxSplits != null) && (maxSplits > 0)) {
+					ranges = AccumuloUtils.byteArrayRangesToAccumuloRanges(AccumuloUtils.constraintsToByteArrayRanges(
+							indexConstraints,
+							indexStrategy,
+							maxSplits));
+				}
+				else {
+					ranges = AccumuloUtils.byteArrayRangesToAccumuloRanges(AccumuloUtils.constraintsToByteArrayRanges(
+							indexConstraints,
+							indexStrategy));
+				}
 			}
 			else {
 				ranges = new TreeSet<Range>();
@@ -301,7 +355,7 @@ public class GeoWaveInputFormat extends
 			}
 
 			// get the metadata information for these ranges
-			final Map<String, Map<KeyExtent, List<Range>>> binnedRanges = new HashMap<String, Map<KeyExtent, List<Range>>>();
+			final Map<String, Map<KeyExtent, List<Range>>> tserverBinnedRanges = new HashMap<String, Map<KeyExtent, List<Range>>>();
 			TabletLocator tl;
 			try {
 				final Instance instance = getInstance(context);
@@ -329,7 +383,7 @@ public class GeoWaveInputFormat extends
 						ranges);
 				while (!tl.binRanges(
 						rangeList,
-						binnedRanges,
+						tserverBinnedRanges,
 						credentials).isEmpty()) {
 					if (!(instance instanceof MockInstance)) {
 						if (tableId == null) {
@@ -351,7 +405,7 @@ public class GeoWaveInputFormat extends
 									tableId);
 						}
 					}
-					binnedRanges.clear();
+					tserverBinnedRanges.clear();
 					LOGGER.warn("Unable to locate bins for specified ranges. Retrying.");
 					UtilWaitThread.sleep(100 + (int) (Math.random() * 100));
 					// sleep randomly between 100 and 200 ms
@@ -362,37 +416,550 @@ public class GeoWaveInputFormat extends
 				throw new IOException(
 						e);
 			}
-
 			final HashMap<String, String> hostNameCache = new HashMap<String, String>();
-
-			for (final Entry<String, Map<KeyExtent, List<Range>>> tserverBin : binnedRanges.entrySet()) {
-				final String ip = tserverBin.getKey().split(
+			for (final Entry<String, Map<KeyExtent, List<Range>>> tserverBin : tserverBinnedRanges.entrySet()) {
+				final String tabletServer = tserverBin.getKey();
+				final String ipAddress = tabletServer.split(
 						":",
 						2)[0];
-				String location = hostNameCache.get(ip);
+
+				String location = hostNameCache.get(ipAddress);
 				if (location == null) {
-					final InetAddress inetAddress = InetAddress.getByName(ip);
+					final InetAddress inetAddress = InetAddress.getByName(ipAddress);
 					location = inetAddress.getHostName();
 					hostNameCache.put(
-							ip,
+							ipAddress,
 							location);
 				}
-
 				for (final Entry<KeyExtent, List<Range>> extentRanges : tserverBin.getValue().entrySet()) {
-					final Range ke = extentRanges.getKey().toDataRange();
-					for (final Range r : extentRanges.getValue()) {
-						//TODO merge splits on the same tablet to fit within max splits
-//						splits.add(new RangeInputSplit(
-//								index,
-//								ke.clip(r),
-//								new String[] {
-//									location
-//								}));
+					final Range keyExtent = extentRanges.getKey().toDataRange();
+					final Map<Index, List<RangeLocationPair>> splitInfo = new HashMap<Index, List<RangeLocationPair>>();
+					final List<RangeLocationPair> rangeList = new ArrayList<RangeLocationPair>();
+					for (final Range range : extentRanges.getValue()) {
+						rangeList.add(new RangeLocationPair(
+								keyExtent.clip(range),
+								location));
 					}
+					splitInfo.put(
+							index,
+							rangeList);
+					splits.add(new IntermediateSplitInfo(
+							splitInfo));
 				}
 			}
 		}
 		return splits;
+	}
+
+	protected static class IntermediateSplitInfo implements
+			Comparable<IntermediateSplitInfo>
+	{
+		protected static class IndexRangeLocation
+		{
+			private final RangeLocationPair rangeLocationPair;
+			private final Index index;
+
+			public IndexRangeLocation(
+					final RangeLocationPair rangeLocationPair,
+					final Index index ) {
+				this.rangeLocationPair = rangeLocationPair;
+				this.index = index;
+			}
+		}
+
+		protected static class RangeLocationPair
+		{
+			private final Range range;
+			private final String location;
+			private final Map<Integer, BigInteger> rangePerCardinalityCache = new HashMap<Integer, BigInteger>();
+
+			public RangeLocationPair(
+					final Range range,
+					final String location ) {
+				this.location = location;
+				this.range = range;
+			}
+
+			protected BigInteger getRangeAtCardinality(
+					final int cardinality ) {
+				final BigInteger rangeAtCardinality = rangePerCardinalityCache.get(cardinality);
+				if (rangeAtCardinality != null) {
+					return rangeAtCardinality;
+				}
+				return calcRange(cardinality);
+
+			}
+
+			private BigInteger calcRange(
+					final int cardinality ) {
+				final BigInteger r = getRange(
+						range,
+						cardinality);
+				rangePerCardinalityCache.put(
+						cardinality,
+						r);
+				return r;
+			}
+		}
+
+		private final Map<Index, List<RangeLocationPair>> splitInfo;
+		private final Map<Integer, BigInteger> totalRangePerCardinalityCache = new HashMap<Integer, BigInteger>();
+
+		public IntermediateSplitInfo(
+				final Map<Index, List<RangeLocationPair>> splitInfo ) {
+			this.splitInfo = splitInfo;
+		}
+
+		private synchronized void merge(
+				final IntermediateSplitInfo split ) {
+			clearCache();
+			for (final Entry<Index, List<RangeLocationPair>> e : split.splitInfo.entrySet()) {
+				List<RangeLocationPair> thisList = splitInfo.get(e.getKey());
+				if (thisList == null) {
+					thisList = new ArrayList<RangeLocationPair>();
+					splitInfo.put(
+							e.getKey(),
+							thisList);
+				}
+				thisList.addAll(e.getValue());
+			}
+		}
+
+		private synchronized IntermediateSplitInfo split() {
+			final int maxCardinality = getMaxCardinality();
+			final BigInteger totalRange = getTotalRangeAtCardinality(maxCardinality);
+
+			// generically you'd want the split to be as limiting to total
+			// locations as possible and then as limiting as possible to total
+			// indices, but in this case split() is only called when all ranges
+			// are in the same location and the same index
+
+			// and you want it to split the ranges into two by total range
+			final TreeSet<IndexRangeLocation> orderedSplits = new TreeSet<IndexRangeLocation>(
+					new Comparator<IndexRangeLocation>() {
+
+						@Override
+						public int compare(
+								final IndexRangeLocation o1,
+								final IndexRangeLocation o2 ) {
+							final BigInteger range1 = o1.rangeLocationPair.getRangeAtCardinality(maxCardinality);
+							final BigInteger range2 = o2.rangeLocationPair.getRangeAtCardinality(maxCardinality);
+							int retVal = range1.compareTo(range2);
+							if (retVal == 0) {
+								// we really want to avoid equality because
+								retVal = Long.compare(
+										o1.hashCode(),
+										o2.hashCode());
+								if (retVal == 0) {
+									// what the heck, give it one last insurance
+									// that they're not equal even though its
+									// extremely unlikely
+									retVal = Long.compare(
+											o1.rangeLocationPair.rangePerCardinalityCache.hashCode(),
+											o2.rangeLocationPair.rangePerCardinalityCache.hashCode());
+								}
+							}
+							return retVal;
+						}
+					});
+			for (final Entry<Index, List<RangeLocationPair>> ranges : splitInfo.entrySet()) {
+				for (final RangeLocationPair p : ranges.getValue()) {
+					orderedSplits.add(new IndexRangeLocation(
+							p,
+							ranges.getKey()));
+				}
+			}
+			IndexRangeLocation pairToSplit;
+			BigInteger targetRange = totalRange.divide(TWO);
+			final Map<Index, List<RangeLocationPair>> otherSplitInfo = new HashMap<Index, List<RangeLocationPair>>();
+			do {
+				// this will get the least value at or above the target range
+				final BigInteger compareRange = targetRange;
+				pairToSplit = orderedSplits.ceiling(new IndexRangeLocation(
+						new RangeLocationPair(
+								null,
+								null) {
+
+							@Override
+							protected BigInteger getRangeAtCardinality(
+									final int cardinality ) {
+								return compareRange;
+							}
+
+						},
+						null));
+				// there are no elements greater than the target, so take the
+				// largest element and adjust the target
+				if (pairToSplit == null) {
+					final IndexRangeLocation highestRange = orderedSplits.pollLast();
+					List<RangeLocationPair> rangeList = otherSplitInfo.get(highestRange.index);
+					if (rangeList == null) {
+						rangeList = new ArrayList<RangeLocationPair>();
+						otherSplitInfo.put(
+								highestRange.index,
+								rangeList);
+					}
+					rangeList.add(highestRange.rangeLocationPair);
+					targetRange = targetRange.subtract(highestRange.rangeLocationPair.getRangeAtCardinality(maxCardinality));
+				}
+			}
+			while ((pairToSplit == null) && !orderedSplits.isEmpty());
+
+			if (pairToSplit == null) {
+				// this should never happen!
+				LOGGER.error("Unable to identify splits");
+				// but if it does, just take the first range off of this and
+				// split it in half if this is left as empty
+				clearCache();
+				return splitSingleRange(maxCardinality);
+			}
+
+			// now we just carve the pair to split by the amount we are over
+			// the target range
+			final BigInteger currentRange = pairToSplit.rangeLocationPair.getRangeAtCardinality(maxCardinality);
+			final BigInteger rangeExceeded = currentRange.subtract(targetRange);
+			if (rangeExceeded.compareTo(BigInteger.ZERO) > 0) {
+				// remove pair to split from ordered splits and split it to
+				// attempt to match the target range, adding the appropriate
+				// sides of the range to this info's ordered splits and the
+				// other's splits
+				orderedSplits.remove(pairToSplit);
+				final BigInteger end = getEnd(
+						pairToSplit.rangeLocationPair.range,
+						maxCardinality);
+				final byte[] splitKey = getKeyFromBigInteger(
+						end.subtract(rangeExceeded),
+						maxCardinality);
+				List<RangeLocationPair> rangeList = otherSplitInfo.get(pairToSplit.index);
+				if (rangeList == null) {
+					rangeList = new ArrayList<RangeLocationPair>();
+					otherSplitInfo.put(
+							pairToSplit.index,
+							rangeList);
+				}
+				rangeList.add(new RangeLocationPair(
+						new Range(
+								pairToSplit.rangeLocationPair.range.getStartKey(),
+								pairToSplit.rangeLocationPair.range.isStartKeyInclusive(),
+								new Key(
+										new Text(
+												splitKey)),
+								false),
+						pairToSplit.rangeLocationPair.location));
+				orderedSplits.add(new IndexRangeLocation(
+						new RangeLocationPair(
+								new Range(
+										new Key(
+												new Text(
+														splitKey)),
+										true,
+										pairToSplit.rangeLocationPair.range.getEndKey(),
+										pairToSplit.rangeLocationPair.range.isEndKeyInclusive()),
+								pairToSplit.rangeLocationPair.location),
+						pairToSplit.index));
+			}
+			else if (orderedSplits.size() > 1) {
+				// add pair to split to other split and remove it from
+				// orderedSplits
+				orderedSplits.remove(pairToSplit);
+				List<RangeLocationPair> rangeList = otherSplitInfo.get(pairToSplit.index);
+				if (rangeList == null) {
+					rangeList = new ArrayList<RangeLocationPair>();
+					otherSplitInfo.put(
+							pairToSplit.index,
+							rangeList);
+				}
+				rangeList.add(pairToSplit.rangeLocationPair);
+			}
+
+			// clear splitinfo and set it to ordered splits (what is left of the
+			// splits that haven't been placed in the other split info)
+			splitInfo.clear();
+			for (final IndexRangeLocation split : orderedSplits) {
+				List<RangeLocationPair> rangeList = splitInfo.get(split.index);
+				if (rangeList == null) {
+					rangeList = new ArrayList<RangeLocationPair>();
+					splitInfo.put(
+							split.index,
+							rangeList);
+				}
+				rangeList.add(split.rangeLocationPair);
+			}
+			clearCache();
+			return new IntermediateSplitInfo(
+					otherSplitInfo);
+		}
+
+		private IntermediateSplitInfo splitSingleRange(
+				final int maxCardinality ) {
+			final Map<Index, List<RangeLocationPair>> otherSplitInfo = new HashMap<Index, List<RangeLocationPair>>();
+			final List<RangeLocationPair> otherRangeList = new ArrayList<RangeLocationPair>();
+			final Iterator<Entry<Index, List<RangeLocationPair>>> it = splitInfo.entrySet().iterator();
+			while (it.hasNext()) {
+				final Entry<Index, List<RangeLocationPair>> e = it.next();
+				final List<RangeLocationPair> rangeList = e.getValue();
+				if (!rangeList.isEmpty()) {
+					final RangeLocationPair p = rangeList.remove(0);
+					if (rangeList.isEmpty()) {
+						if (!it.hasNext()) {
+							// if this is empty now, divide the split in
+							// half
+							final BigInteger range = p.getRangeAtCardinality(maxCardinality);
+							final BigInteger start = getStart(
+									p.range,
+									maxCardinality);
+							final byte[] splitKey = getKeyFromBigInteger(
+									start.add(range.divide(TWO)),
+									maxCardinality);
+							rangeList.add(new RangeLocationPair(
+									new Range(
+											p.range.getStartKey(),
+											p.range.isStartKeyInclusive(),
+											new Key(
+													new Text(
+															splitKey)),
+											false),
+									p.location));
+							otherRangeList.add(new RangeLocationPair(
+									new Range(
+											new Key(
+													new Text(
+															splitKey)),
+											true,
+											p.range.getEndKey(),
+											p.range.isEndKeyInclusive()),
+									p.location));
+							otherSplitInfo.put(
+									e.getKey(),
+									otherRangeList);
+							return new IntermediateSplitInfo(
+									otherSplitInfo);
+						}
+						else {
+							// otherwise remove this entry
+							it.remove();
+						}
+					}
+					otherRangeList.add(p);
+					otherSplitInfo.put(
+							e.getKey(),
+							otherRangeList);
+					return new IntermediateSplitInfo(
+							otherSplitInfo);
+				}
+			}
+			// this can only mean there are no ranges
+			LOGGER.error("Attempting to split ranges on empty range");
+			return new IntermediateSplitInfo(
+					otherSplitInfo);
+		}
+
+		private GeoWaveInputSplit toFinalSplit() {
+			final Map<Index, List<Range>> rangesPerIndex = new HashMap<Index, List<Range>>();
+			final Set<String> locations = new HashSet<String>();
+			for (final Entry<Index, List<RangeLocationPair>> entry : splitInfo.entrySet()) {
+				final List<Range> ranges = new ArrayList<Range>(
+						entry.getValue().size());
+				for (final RangeLocationPair pair : entry.getValue()) {
+					locations.add(pair.location);
+					ranges.add(pair.range);
+				}
+				rangesPerIndex.put(
+						entry.getKey(),
+						ranges);
+			}
+			return new GeoWaveInputSplit(
+					rangesPerIndex,
+					locations.toArray(new String[] {}));
+		}
+
+		private int getMaxCardinality() {
+			int maxCardinality = 1;
+			for (final List<RangeLocationPair> pList : splitInfo.values()) {
+				for (final RangeLocationPair p : pList) {
+					maxCardinality = Math.max(
+							maxCardinality,
+							getMaxCardinalityFromRange(p.range));
+				}
+			}
+			return maxCardinality;
+		}
+
+		@Override
+		public int compareTo(
+				final IntermediateSplitInfo o ) {
+			final int maxCardinality = Math.max(
+					getMaxCardinality(),
+					o.getMaxCardinality());
+			final BigInteger thisTotal = getTotalRangeAtCardinality(maxCardinality);
+			final BigInteger otherTotal = o.getTotalRangeAtCardinality(maxCardinality);
+			int retVal = thisTotal.compareTo(otherTotal);
+			if (retVal == 0) {
+				// because this is used by the treeset, we really want to avoid
+				// equality
+				retVal = Long.compare(
+						hashCode(),
+						o.hashCode());
+				// what the heck, give it one last insurance
+				// that they're not equal even though its
+				// extremely unlikely
+				if (retVal == 0) {
+					retVal = Long.compare(
+							totalRangePerCardinalityCache.hashCode(),
+							o.totalRangePerCardinalityCache.hashCode());
+				}
+			}
+			return retVal;
+		}
+
+		private synchronized BigInteger getTotalRangeAtCardinality(
+				final int cardinality ) {
+			final BigInteger totalRange = totalRangePerCardinalityCache.get(cardinality);
+			if (totalRange != null) {
+				return totalRange;
+			}
+			return calculateTotalRangeForCardinality(cardinality);
+		}
+
+		private synchronized BigInteger calculateTotalRangeForCardinality(
+				final int cardinality ) {
+			BigInteger sum = BigInteger.ZERO;
+			for (final List<RangeLocationPair> pairList : splitInfo.values()) {
+				for (final RangeLocationPair pair : pairList) {
+					sum = sum.add(pair.getRangeAtCardinality(cardinality));
+				}
+			}
+			totalRangePerCardinalityCache.put(
+					cardinality,
+					sum);
+			return sum;
+		}
+
+		private synchronized void clearCache() {
+			totalRangePerCardinalityCache.clear();
+		}
+	}
+
+	protected static int getMaxCardinalityFromRange(
+			final Range range ) {
+		int maxCardinality = 0;
+		final Key start = range.getStartKey();
+		if (start != null) {
+			maxCardinality = Math.max(
+					maxCardinality,
+					start.getRowData().length());
+		}
+		final Key end = range.getEndKey();
+		if (end != null) {
+			maxCardinality = Math.max(
+					maxCardinality,
+					end.getRowData().length());
+		}
+		return maxCardinality;
+	}
+
+	protected static byte[] getKeyFromBigInteger(
+			final BigInteger value,
+			final int numBytes ) {
+		final byte[] valueBytes = value.toByteArray();
+		final byte[] bytes = new byte[numBytes];
+		for (int i = 0; i < numBytes; i++) {
+			// start from the right
+			if (i < valueBytes.length) {
+				bytes[bytes.length - i - 1] = valueBytes[valueBytes.length - i - 1];
+			}
+			else {
+				// prepend anything outside of the BigInteger value with 0
+				bytes[bytes.length - i - 1] = 0;
+			}
+		}
+		return bytes;
+	}
+
+	protected static byte[] extractBytes(
+			final ByteSequence seq,
+			final int numBytes ) {
+		return extractBytes(
+				seq,
+				numBytes,
+				false);
+	}
+
+	protected static byte[] extractBytes(
+			final ByteSequence seq,
+			final int numBytes,
+			final boolean infiniteEndKey ) {
+		final byte[] bytes = new byte[numBytes + 2];
+		bytes[0] = 1;
+		bytes[1] = 0;
+		for (int i = 0; i < numBytes; i++) {
+			if (i >= seq.length()) {
+				if (infiniteEndKey) {
+					// -1 is 0xff
+					bytes[i + 2] = -1;
+				}
+				else {
+					bytes[i + 2] = 0;
+				}
+			}
+			else {
+				bytes[i + 2] = seq.byteAt(i);
+			}
+		}
+		return bytes;
+	}
+
+	protected static BigInteger getRange(
+			final Range range,
+			final int cardinality ) {
+		return getEnd(
+				range,
+				cardinality).subtract(
+				getStart(
+						range,
+						cardinality));
+	}
+
+	protected static BigInteger getStart(
+			final Range range,
+			final int cardinality ) {
+		final Key start = range.getStartKey();
+		byte[] startBytes;
+		if (!range.isInfiniteStartKey() && (start != null)) {
+			startBytes = extractBytes(
+					start.getRowData(),
+					cardinality);
+		}
+		else {
+			startBytes = extractBytes(
+					new ArrayByteSequence(
+							new byte[] {}),
+					cardinality);
+		}
+		return new BigInteger(
+				startBytes);
+	}
+
+	protected static BigInteger getEnd(
+			final Range range,
+			final int cardinality ) {
+		final Key end = range.getEndKey();
+		byte[] endBytes;
+		if (!range.isInfiniteStopKey() && (end != null)) {
+			endBytes = extractBytes(
+					end.getRowData(),
+					cardinality);
+		}
+		else {
+			endBytes = extractBytes(
+					new ArrayByteSequence(
+							new byte[] {}),
+					cardinality,
+					true);
+		}
+
+		return new BigInteger(
+				endBytes);
 	}
 
 	@Override
@@ -511,364 +1078,5 @@ public class GeoWaveInputFormat extends
 		return new JobContextAdapterStore(
 				context,
 				accumuloOperations);
-	}
-
-	/**
-	 * The Class RangeInputSplit. Encapsulates an Accumulo range for use in Map
-	 * Reduce jobs.
-	 */
-	public static class RangeInputSplit extends
-			InputSplit implements
-			Writable
-	{
-		private Index index;
-		private Range[] ranges;
-		private String[] locations;
-
-		public RangeInputSplit() {
-			ranges = new Range[] {
-				new Range()
-			};
-			locations = new String[0];
-		}
-
-		public RangeInputSplit(
-				final RangeInputSplit split )
-				throws IOException {
-			setRanges(split.getRanges());
-			setLocations(split.getLocations());
-		}
-
-		protected RangeInputSplit(
-				final Index index,
-				final Range[] range,
-				final String[] locations ) {
-			this.index = index;
-			ranges = ranges;
-			this.locations = locations;
-		}
-
-		public Range[] getRanges() {
-			return ranges;
-		}
-
-		public void setRanges(
-				final Range[] ranges ) {
-			this.ranges = ranges;
-		}
-
-		public Index getIndex() {
-			return index;
-		}
-
-		public void setIndex(
-				final Index index ) {
-			this.index = index;
-		}
-
-		private static byte[] extractBytes(
-				final ByteSequence seq,
-				final int numBytes ) {
-			final byte[] bytes = new byte[numBytes + 1];
-			bytes[0] = 0;
-			for (int i = 0; i < numBytes; i++) {
-				if (i >= seq.length()) {
-					bytes[i + 1] = 0;
-				}
-				else {
-					bytes[i + 1] = seq.byteAt(i);
-				}
-			}
-			return bytes;
-		}
-
-		public static float getProgress(
-				final ByteSequence start,
-				final ByteSequence end,
-				final ByteSequence position ) {
-			final int maxDepth = Math.min(
-					Math.max(
-							end.length(),
-							start.length()),
-					position.length());
-			final BigInteger startBI = new BigInteger(
-					extractBytes(
-							start,
-							maxDepth));
-			final BigInteger endBI = new BigInteger(
-					extractBytes(
-							end,
-							maxDepth));
-			final BigInteger positionBI = new BigInteger(
-					extractBytes(
-							position,
-							maxDepth));
-			return (float) (positionBI.subtract(
-					startBI).doubleValue() / endBI.subtract(
-					startBI).doubleValue());
-		}
-
-		public float getProgress(
-				Range range,
-				final Key currentKey ) {
-//			if (currentKey == null) {
-//				return 0f;
-//			}
-//			if ((range.getStartKey() != null) && (range.getEndKey() != null)) {
-//				if (!range.getStartKey().equals(
-//						range.getEndKey(),
-//						PartialKey.ROW)) {
-//					// just look at the row progress
-//					return getProgress(
-//							range.getStartKey().getRowData(),
-//							range.getEndKey().getRowData(),
-//							currentKey.getRowData());
-//				}
-//				else if (!range.getStartKey().equals(
-//						range.getEndKey(),
-//						PartialKey.ROW_COLFAM)) {
-//					// just look at the column family progress
-//					return getProgress(
-//							range.getStartKey().getColumnFamilyData(),
-//							range.getEndKey().getColumnFamilyData(),
-//							currentKey.getColumnFamilyData());
-//				}
-//				else if (!range.getStartKey().equals(
-//						range.getEndKey(),
-//						PartialKey.ROW_COLFAM_COLQUAL)) {
-//					// just look at the column qualifier progress
-//					return getProgress(
-//							range.getStartKey().getColumnQualifierData(),
-//							range.getEndKey().getColumnQualifierData(),
-//							currentKey.getColumnQualifierData());
-//				}
-//			}
-			// if we can't figure it out, then claim no progress
-			return 0f;
-		}
-
-		/**
-		 * This implementation of length is only an estimate, it does not
-		 * provide exact values. Do not have your code rely on this return
-		 * value.
-		 */
-		@Override
-		public long getLength()
-				throws IOException {
-//			final Text startRow = range.isInfiniteStartKey() ? new Text(
-//					new byte[] {
-//						Byte.MIN_VALUE
-//					}) : range.getStartKey().getRow();
-//			final Text stopRow = range.isInfiniteStopKey() ? new Text(
-//					new byte[] {
-//						Byte.MAX_VALUE
-//					}) : range.getEndKey().getRow();
-//			final int maxCommon = Math.min(
-//					7,
-//					Math.min(
-//							startRow.getLength(),
-//							stopRow.getLength()));
-//			long diff = 0;
-//
-//			final byte[] start = startRow.getBytes();
-//			final byte[] stop = stopRow.getBytes();
-//			for (int i = 0; i < maxCommon; ++i) {
-//				diff |= 0xff & (start[i] ^ stop[i]);
-//				diff <<= Byte.SIZE;
-//			}
-//
-//			if (startRow.getLength() != stopRow.getLength()) {
-//				diff |= 0xff;
-//			}
-//
-//			return diff + 1;
-			return 0;
-		}
-
-		@Override
-		public String[] getLocations()
-				throws IOException {
-			return locations;
-		}
-
-		public void setLocations(
-				final String[] locations ) {
-			this.locations = locations;
-		}
-
-		@Override
-		public void readFields(
-				final DataInput in )
-				throws IOException {
-			final int numRanges = in.readInt();
-			final Range[] ranges = new Range[numRanges];
-			for (int i = 0; i < numRanges; i++) {
-				try {
-					ranges[i] = Range.class.newInstance();
-					ranges[i].readFields(in);
-				}
-				catch (InstantiationException | IllegalAccessException e) {
-					throw new IOException(
-							"Unable to instantiate range",
-							e);
-				}
-			}
-			final int numLocs = in.readInt();
-			locations = new String[numLocs];
-			for (int i = 0; i < numLocs; ++i) {
-				locations[i] = in.readUTF();
-			}
-
-			final int indexLength = in.readInt();
-			final byte[] indexBytes = new byte[indexLength];
-			in.readFully(indexBytes);
-			index = PersistenceUtils.fromBinary(
-					indexBytes,
-					Index.class);
-		}
-
-		@Override
-		public void write(
-				final DataOutput out )
-				throws IOException {
-			out.writeInt(ranges.length);
-			for (final Range range : ranges) {
-				range.write(out);
-			}
-			out.writeInt(locations.length);
-			for (final String location : locations) {
-				out.writeUTF(location);
-			}
-			final byte[] indexBytes = PersistenceUtils.toBinary(index);
-			out.writeInt(indexBytes.length);
-			out.write(indexBytes);
-		}
-	}
-
-	protected static class GeoWaveRecordReader<T> extends
-			RecordReader<GeoWaveInputKey, T>
-	{
-		protected long numKeysRead;
-		protected CloseableIterator<?> iterator;
-		protected Key currentAccumuloKey = null;
-		protected GeoWaveInputKey currentGeoWaveKey = null;
-		protected T currentValue = null;
-		protected RangeInputSplit split;
-
-		/**
-		 * Initialize a scanner over the given input split using this task
-		 * attempt configuration.
-		 */
-		@Override
-		public void initialize(
-				final InputSplit inSplit,
-				final TaskAttemptContext attempt )
-				throws IOException {
-			split = (RangeInputSplit) inSplit;
-
-			try {
-				final AccumuloOperations operations = getAccumuloOperations(attempt);
-
-				final JobContextAdapterStore adapterStore = getDataAdapterStore(
-						attempt,
-						operations);
-				final DistributableQuery query = getQuery(attempt);
-				final String[] additionalAuthorizations = getAuthorizations(attempt);
-
-				numKeysRead = 0;
-				final List<CloseableIterator<?>> iterators = new ArrayList<CloseableIterator<?>>();
-				for (final Range r : split.ranges) {
-					iterators.add(new AccumuloRangeQuery(
-							adapterStore.getAdapterIds(),
-							split.index,
-							r,
-							query.createFilters(split.index.getIndexModel()),
-							additionalAuthorizations).query(
-							operations,
-							adapterStore,
-							null));
-				}
-				// concatenate iterators
-				iterator = new CloseableIteratorWrapper<Object>(
-						new Closeable() {
-							@Override
-							public void close()
-									throws IOException {
-								for (final CloseableIterator<?> it : iterators) {
-									it.close();
-								}
-							}
-						},
-						Iterators.concat(iterators.iterator()));
-			}
-			catch (AccumuloException | AccumuloSecurityException e) {
-				LOGGER.error(
-						"Unable to query accumulo for range input split",
-						e);
-			}
-		}
-
-		@Override
-		public void close() {
-			if (iterator != null) {
-				try {
-					iterator.close();
-				}
-				catch (final IOException e) {
-					LOGGER.warn(
-							"Unable to close iterator",
-							e);
-				}
-			}
-		}
-
-		@Override
-		public boolean nextKeyValue()
-				throws IOException,
-				InterruptedException {
-			if (iterator != null) {
-				if (iterator.hasNext()) {
-					++numKeysRead;
-					final Object value = iterator.next();
-					if (value instanceof Entry) {
-						final Entry<Key, T> entry = (Entry<Key, T>) value;
-						currentAccumuloKey = entry.getKey();
-						if (currentAccumuloKey == null) {
-							currentGeoWaveKey = null;
-						}
-						else {
-							currentGeoWaveKey = AccumuloUtils.accumuloKeyToGeoWaveKey(currentAccumuloKey);
-						}
-						currentValue = entry.getValue();
-					}
-					return true;
-				}
-			}
-			return false;
-		}
-
-		@Override
-		public float getProgress()
-				throws IOException {
-			if ((numKeysRead > 0) && (currentAccumuloKey == null)) {
-				return 1.0f;
-			}
-			return 0;
-//			return split.getProgress(currentAccumuloKey);
-		}
-
-		@Override
-		public GeoWaveInputKey getCurrentKey()
-				throws IOException,
-				InterruptedException {
-			return currentGeoWaveKey;
-		}
-
-		@Override
-		public T getCurrentValue()
-				throws IOException,
-				InterruptedException {
-			return currentValue;
-		}
 	}
 }

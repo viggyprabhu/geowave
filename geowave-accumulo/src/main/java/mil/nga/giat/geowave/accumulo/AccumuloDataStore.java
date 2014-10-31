@@ -6,10 +6,13 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import mil.nga.giat.geowave.accumulo.metadata.AccumuloAdapterStore;
 import mil.nga.giat.geowave.accumulo.metadata.AccumuloDataStatisticsStore;
@@ -69,6 +72,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 
 /**
@@ -230,7 +235,7 @@ public class AccumuloDataStore implements
 				}
 			}
 
-			List<DataStatisticsBuilder<T>> statisticsBuilders = getStatsBuilders(writableAdapter);
+			final List<DataStatisticsBuilder<T>> statisticsBuilders = getStatsBuilders(writableAdapter);
 
 			writer = accumuloOperations.createWriter(
 					indexName,
@@ -644,7 +649,7 @@ public class AccumuloDataStore implements
 		@SuppressWarnings("unchecked")
 		final DataAdapter<Object> adapter = (DataAdapter<Object>) adapterStore.getAdapter(adapterId);
 
-		final Entry<Key, Value> row = (useAltIndex) ? this.getEntryRowWithRowId(
+		final Entry<Key, Value> row = (useAltIndex) ? getEntryRowWithRowId(
 				tableName,
 				getAltIndexRowId(
 						altIdxTableName,
@@ -657,7 +662,7 @@ public class AccumuloDataStore implements
 				adapterId,
 				authorizations);
 
-		boolean success = row != null && delete(
+		final boolean success = (row != null) && delete(
 				tableName,
 				Arrays.asList(row),
 				createDecodingDeleteObserver(
@@ -666,10 +671,12 @@ public class AccumuloDataStore implements
 						index),
 				authorizations);
 
-		if (success && useAltIndex) deleteAltIndexEntry(
-				altIdxTableName,
-				dataId,
-				adapterId);
+		if (success && useAltIndex) {
+			deleteAltIndexEntry(
+					altIdxTableName,
+					dataId,
+					adapterId);
+		}
 
 		return success;
 
@@ -733,16 +740,19 @@ public class AccumuloDataStore implements
 			final ByteArrayId adapterId,
 			final String... authorizations ) {
 
-		if (rowId == null) return null;
+		if (rowId == null) {
+			return null;
+		}
 		Scanner scanner = null;
 		try {
 
 			scanner = accumuloOperations.createScanner(
 					tableName,
 					authorizations);
-	
-			scanner.setRange(Range.exact(new Text(rowId.getBytes())));
-			
+
+			scanner.setRange(Range.exact(new Text(
+					rowId.getBytes())));
+
 			scanner.setBatchSize(1);
 
 			final IteratorSetting iteratorSettings = new IteratorSetting(
@@ -750,7 +760,7 @@ public class AccumuloDataStore implements
 					QueryFilterIterator.WHOLE_ROW_ITERATOR_NAME,
 					WholeRowIterator.class);
 			scanner.addScanIterator(iteratorSettings);
-			
+
 			final Iterator<Map.Entry<Key, Value>> iterator = scanner.iterator();
 			if (iterator.hasNext()) {
 				return iterator.next();
@@ -762,7 +772,9 @@ public class AccumuloDataStore implements
 					e);
 		}
 		finally {
-			if (scanner != null) scanner.close();
+			if (scanner != null) {
+				scanner.close();
+			}
 		}
 
 		return null;
@@ -797,7 +809,9 @@ public class AccumuloDataStore implements
 						e);
 			}
 			finally {
-				if (scanner != null) scanner.close();
+				if (scanner != null) {
+					scanner.close();
+				}
 			}
 		}
 
@@ -858,7 +872,7 @@ public class AccumuloDataStore implements
 	public CloseableIterator<?> getEntriesByPrefix(
 			final Index index,
 			final ByteArrayId rowPrefix,
-			String... additionalAuthorizations ) {
+			final String... additionalAuthorizations ) {
 		final AccumuloRowPrefixQuery q = new AccumuloRowPrefixQuery(
 				index,
 				rowPrefix,
@@ -986,6 +1000,7 @@ public class AccumuloDataStore implements
 		// query the indices that are supported for this query object, and these
 		// data adapter Ids
 		final List<CloseableIterator<?>> results = new ArrayList<CloseableIterator<?>>();
+		int indexCount = 0;
 		while (indices.hasNext()) {
 			final Index index = indices.next();
 			final AccumuloConstraintsQuery accumuloQuery;
@@ -1009,9 +1024,13 @@ public class AccumuloDataStore implements
 			results.add(accumuloQuery.query(
 					accumuloOperations,
 					adapterStore,
-					limit));
+					limit,
+					true));
+			indexCount++;
 
 		}
+		final Iterator baseIterator = Iterators.concat(results.iterator());
+		final IteratorFilterTransformer ft = new IteratorFilterTransformer();
 		// concatenate iterators
 		return new CloseableIteratorWrapper<Object>(
 				new Closeable() {
@@ -1023,7 +1042,52 @@ public class AccumuloDataStore implements
 						}
 					}
 				},
-				Iterators.concat(results.iterator()));
+				Iterators.filter(
+						Iterators.transform(
+								baseIterator,
+								ft),
+						ft));
+	}
+
+	private static class IteratorFilterTransformer implements
+			Function<Entry<Key, Object>, Object>,
+			Predicate<Object>
+	{
+		private final Map<ByteArrayId, Set<ByteArrayId>> adapterIdToVisitedDataIdMap = new HashMap<ByteArrayId, Set<ByteArrayId>>();
+		private boolean nextValuePasses = true;
+
+		@Override
+		public boolean apply(
+				final Object input ) {
+			// unfortunately because filtering is done after the transform, this
+			// has to be passed from the transform
+			return nextValuePasses;
+		}
+
+		@Override
+		public Object apply(
+				final Entry<Key, Object> input ) {
+			final AccumuloRowId rowId = new AccumuloRowId(
+					input.getKey().getRow().getBytes());
+			final ByteArrayId adapterId = new ByteArrayId(
+					rowId.getAdapterId());
+			final ByteArrayId dataId = new ByteArrayId(
+					rowId.getDataId());
+			nextValuePasses = true;
+			Set<ByteArrayId> visitedDataIds = adapterIdToVisitedDataIdMap.get(adapterId);
+			if (visitedDataIds == null) {
+				visitedDataIds = new HashSet<ByteArrayId>();
+				adapterIdToVisitedDataIdMap.put(
+						adapterId,
+						visitedDataIds);
+			}
+			else if (visitedDataIds.contains(dataId)) {
+				nextValuePasses = false;
+			}
+			visitedDataIds.add(dataId);
+			return input.getValue();
+		}
+
 	}
 
 	@Override
@@ -1152,11 +1216,11 @@ public class AccumuloDataStore implements
 		final String altIdxTableName = tableName + AccumuloUtils.ALT_INDEX_TABLE;
 		final String adapterId = StringUtils.stringFromBinary(adapter.getAdapterId().getBytes());
 
-		final CloseableIterator<DataStatistics<?>> it = this.statisticsStore.getDataStatistics(adapter.getAdapterId());
+		final CloseableIterator<DataStatistics<?>> it = statisticsStore.getDataStatistics(adapter.getAdapterId());
 
 		while (it.hasNext()) {
-			DataStatistics stats = it.next();
-			this.statisticsStore.removeStatistics(
+			final DataStatistics stats = it.next();
+			statisticsStore.removeStatistics(
 					adapter.getAdapterId(),
 					stats.getStatisticsId(),
 					additionalAuthorizations);
@@ -1189,8 +1253,8 @@ public class AccumuloDataStore implements
 
 	private <T> List<DataStatisticsBuilder<T>> getStatsBuilders(
 			final DataAdapter<T> adapter ) {
-		boolean persistStats = accumuloOptions.isPersistDataStatistics() && (adapter instanceof StatisticalDataAdapter) && (statisticsStore != null);
-		List<DataStatisticsBuilder<T>> statisticsBuilders = new ArrayList<DataStatisticsBuilder<T>>();
+		final boolean persistStats = accumuloOptions.isPersistDataStatistics() && (adapter instanceof StatisticalDataAdapter) && (statisticsStore != null);
+		final List<DataStatisticsBuilder<T>> statisticsBuilders = new ArrayList<DataStatisticsBuilder<T>>();
 		if (persistStats) {
 			final ByteArrayId[] statisticsIds = ((StatisticalDataAdapter<T>) adapter).getSupportedStatisticsIds();
 			if ((statisticsIds != null) && (statisticsIds.length != 0)) {
@@ -1236,7 +1300,7 @@ public class AccumuloDataStore implements
 
 	/**
 	 * Delete rows associated with a single entry
-	 * 
+	 *
 	 * @param tableName
 	 * @param rows
 	 * @param deleteRowObserver
@@ -1257,7 +1321,7 @@ public class AccumuloDataStore implements
 			int count = 0;
 			final List<Range> rowRanges = new ArrayList<Range>();
 			for (final Entry<Key, Value> rowData : rows) {
-				byte[] id = rowData.getKey().getRowData().getBackingArray();
+				final byte[] id = rowData.getKey().getRowData().getBackingArray();
 				rowRanges.add(Range.exact(new Text(
 						id)));
 				if (deleteRowObserver != null) {
@@ -1299,11 +1363,11 @@ public class AccumuloDataStore implements
 
 			@Override
 			public void deleteRow(
-					Key key,
-					Value value ) {
+					final Key key,
+					final Value value ) {
 				if (!foundOne) {
 					@SuppressWarnings("unchecked")
-					Pair<T, IngestEntryInfo> rowData = AccumuloUtils.decodeRow(
+					final Pair<T, IngestEntryInfo> rowData = AccumuloUtils.decodeRow(
 							key,
 							value,
 							adapter,
@@ -1318,9 +1382,11 @@ public class AccumuloDataStore implements
 			}
 		};
 	}
-	
+
 	private interface DeleteRowObserver
 	{
-		public void deleteRow(Key key, Value value);
+		public void deleteRow(
+				Key key,
+				Value value );
 	}
 }

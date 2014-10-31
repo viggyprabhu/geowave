@@ -9,6 +9,7 @@ import mil.nga.giat.geowave.store.adapter.DataAdapter;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.ReduceContext;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -18,7 +19,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
 public abstract class GeoWaveReducer extends
-		Reducer<GeoWaveInputKey, Writable, GeoWaveInputKey, Writable>
+		Reducer<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, ObjectWritable>
 {
 	protected static final Logger LOGGER = Logger.getLogger(GeoWaveReducer.class);
 	protected AdapterStore adapterStore;
@@ -26,8 +27,8 @@ public abstract class GeoWaveReducer extends
 	@Override
 	protected void reduce(
 			final GeoWaveInputKey key,
-			final Iterable<Writable> values,
-			final Reducer<GeoWaveInputKey, Writable, GeoWaveInputKey, Writable>.Context context )
+			final Iterable<ObjectWritable> values,
+			final Reducer<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
 		reduceWritableValues(
@@ -38,8 +39,8 @@ public abstract class GeoWaveReducer extends
 
 	protected void reduceWritableValues(
 			final GeoWaveInputKey key,
-			final Iterable<Writable> values,
-			final Reducer<GeoWaveInputKey, Writable, GeoWaveInputKey, Writable>.Context context )
+			final Iterable<ObjectWritable> values,
+			final Reducer<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
 		if (adapterStore != null) {
@@ -47,11 +48,11 @@ public abstract class GeoWaveReducer extends
 			if ((adapter != null) && (adapter instanceof HadoopDataAdapter)) {
 				final Iterable<Object> transformedValues = Iterables.transform(
 						values,
-						new Function<Writable, Object>() {
+						new Function<ObjectWritable, Object>() {
 							@Override
 							public Object apply(
-									final Writable writable ) {
-								return ((HadoopDataAdapter) adapter).fromWritable(writable);
+									final ObjectWritable writable ) {
+								return ((HadoopDataAdapter) adapter).fromWritable((Writable) writable.get());
 							}
 						});
 				reduceNativeValues(
@@ -67,13 +68,13 @@ public abstract class GeoWaveReducer extends
 	protected abstract void reduceNativeValues(
 			final GeoWaveInputKey key,
 			final Iterable<Object> values,
-			final ReduceContext<GeoWaveInputKey, Writable, GeoWaveInputKey, Object> context )
+			final ReduceContext<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, Object> context )
 			throws IOException,
 			InterruptedException;
 
 	@Override
 	protected void setup(
-			final Reducer<GeoWaveInputKey, Writable, GeoWaveInputKey, Writable>.Context context )
+			final Reducer<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
 		try {

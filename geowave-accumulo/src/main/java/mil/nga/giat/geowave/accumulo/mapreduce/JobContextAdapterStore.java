@@ -119,7 +119,19 @@ public class JobContextAdapterStore implements
 				CLASS,
 				context);
 		if ((userAdapters == null) || (userAdapters.length <= 0)) {
-			return IteratorUtils.toList(getAdapters());
+			return IteratorUtils.toList(IteratorUtils.transformedIterator(
+					getAdapters(),
+					new Transformer() {
+
+						@Override
+						public Object transform(
+								final Object input ) {
+							if (input instanceof DataAdapter) {
+								return ((DataAdapter) input).getAdapterId();
+							}
+							return input;
+						}
+					}));
 		}
 		else {
 			final List<ByteArrayId> retVal = new ArrayList<ByteArrayId>(

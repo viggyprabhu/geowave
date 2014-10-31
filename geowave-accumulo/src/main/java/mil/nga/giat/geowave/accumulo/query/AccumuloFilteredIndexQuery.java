@@ -7,6 +7,7 @@ import mil.nga.giat.geowave.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.accumulo.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.accumulo.util.CloseableIteratorWrapper.ScannerClosableWrapper;
 import mil.nga.giat.geowave.accumulo.util.EntryIteratorWrapper;
+import mil.nga.giat.geowave.accumulo.util.EntryWithKeyIteratorWrapper;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.index.StringUtils;
 import mil.nga.giat.geowave.store.CloseableIterator;
@@ -24,7 +25,6 @@ public abstract class AccumuloFilteredIndexQuery extends
 		AccumuloQuery
 {
 	protected List<QueryFilter> clientFilters;
-
 	private final static Logger LOGGER = Logger.getLogger(AccumuloFilteredIndexQuery.class);
 
 	public AccumuloFilteredIndexQuery(
@@ -79,11 +79,23 @@ public abstract class AccumuloFilteredIndexQuery extends
 	protected abstract void addScanIteratorSettings(
 			final ScannerBase scanner );
 
-	@SuppressWarnings("rawtypes")
 	public CloseableIterator<?> query(
 			final AccumuloOperations accumuloOperations,
 			final AdapterStore adapterStore,
 			final Integer limit ) {
+		return query(
+				accumuloOperations,
+				adapterStore,
+				limit,
+				false);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public CloseableIterator<?> query(
+			final AccumuloOperations accumuloOperations,
+			final AdapterStore adapterStore,
+			final Integer limit,
+			final boolean withKeys ) {
 		if (!accumuloOperations.tableExists(StringUtils.stringFromBinary(index.getId().getBytes()))) {
 			LOGGER.warn("Table does not exist " + StringUtils.stringFromBinary(index.getId().getBytes()));
 			return new CloseableIterator.Empty();
@@ -94,7 +106,8 @@ public abstract class AccumuloFilteredIndexQuery extends
 		addScanIteratorSettings(scanner);
 		Iterator it = initIterator(
 				scanner,
-				adapterStore);
+				adapterStore,
+				withKeys);
 		if ((limit != null) && (limit > 0)) {
 			it = Iterators.limit(
 					it,
@@ -108,7 +121,16 @@ public abstract class AccumuloFilteredIndexQuery extends
 
 	protected Iterator initIterator(
 			final ScannerBase scanner,
-			final AdapterStore adapterStore ) {
+			final AdapterStore adapterStore,
+			final boolean withKeys ) {
+		if (withKeys) {
+			return new EntryWithKeyIteratorWrapper(
+					adapterStore,
+					index,
+					scanner.iterator(),
+					new FilterList<QueryFilter>(
+							clientFilters));
+		}
 		return new EntryIteratorWrapper(
 				adapterStore,
 				index,

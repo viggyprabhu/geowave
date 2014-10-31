@@ -18,6 +18,7 @@ import mil.nga.giat.geowave.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveWritableInputMapper;
 import mil.nga.giat.geowave.accumulo.mapreduce.dedupe.GeoWaveDedupeJobRunner;
+import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputFormat;
 import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputKey;
 import mil.nga.giat.geowave.accumulo.metadata.AccumuloAdapterStore;
 import mil.nga.giat.geowave.accumulo.metadata.AccumuloDataStatisticsStore;
@@ -38,7 +39,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
@@ -72,6 +73,8 @@ public class GeoWaveMapReduceIT extends
 	private static final String HDFS_BASE_DIRECTORY = "test_tmp";
 	private static final String DEFAULT_JOB_TRACKER = "local";
 	private static final String EXPECTED_RESULTS_KEY = "EXPECTED_RESULTS";
+	private static final int MIN_INPUT_SPLITS = 4;
+	private static final int MAX_INPUT_SPLITS = 8;
 	protected static String jobtracker;
 	protected static String hdfs;
 	protected static boolean hdfsProtocol;
@@ -228,43 +231,6 @@ public class GeoWaveMapReduceIT extends
 				null);
 	}
 
-	private void runTestJob(
-			final ExpectedResults expectedResults,
-			final DistributableQuery query,
-			final DataAdapter<?>[] adapters,
-			final Index[] indices )
-			throws Exception {
-		final TestJobRunner jobRunner = new TestJobRunner(
-				expectedResults);
-		if (query != null) {
-			jobRunner.setQuery(query);
-		}
-		if ((adapters != null) && (adapters.length > 0)) {
-			for (final DataAdapter<?> adapter : adapters) {
-				jobRunner.addDataAdapter(adapter);
-			}
-		}
-		if ((indices != null) && (indices.length > 0)) {
-			for (final Index index : indices) {
-				jobRunner.addIndex(index);
-			}
-		}
-		final Configuration conf = getConfiguration();
-		final int res = ToolRunner.run(
-				conf,
-				jobRunner,
-				new String[] {
-					zookeeper,
-					accumuloInstance,
-					accumuloUser,
-					accumuloPassword,
-					TEST_NAMESPACE
-				});
-		Assert.assertEquals(
-				0,
-				res);
-	}
-
 	@Test
 	public void testIngestOsmGpxMultipleIndices()
 			throws Exception {
@@ -349,6 +315,45 @@ public class GeoWaveMapReduceIT extends
 				null);
 	}
 
+	private void runTestJob(
+			final ExpectedResults expectedResults,
+			final DistributableQuery query,
+			final DataAdapter<?>[] adapters,
+			final Index[] indices )
+			throws Exception {
+		final TestJobRunner jobRunner = new TestJobRunner(
+				expectedResults);
+		jobRunner.setMinInputSplits(MIN_INPUT_SPLITS);
+		jobRunner.setMaxInputSplits(MAX_INPUT_SPLITS);
+		if (query != null) {
+			jobRunner.setQuery(query);
+		}
+		if ((adapters != null) && (adapters.length > 0)) {
+			for (final DataAdapter<?> adapter : adapters) {
+				jobRunner.addDataAdapter(adapter);
+			}
+		}
+		if ((indices != null) && (indices.length > 0)) {
+			for (final Index index : indices) {
+				jobRunner.addIndex(index);
+			}
+		}
+		final Configuration conf = getConfiguration();
+		final int res = ToolRunner.run(
+				conf,
+				jobRunner,
+				new String[] {
+					zookeeper,
+					accumuloInstance,
+					accumuloUser,
+					accumuloPassword,
+					TEST_NAMESPACE
+				});
+		Assert.assertEquals(
+				0,
+				res);
+	}
+
 	private static class TestJobRunner extends
 			GeoWaveDedupeJobRunner
 	{
@@ -373,6 +378,7 @@ public class GeoWaveMapReduceIT extends
 			// filtered results which should match the expected results
 			// resources
 			final Configuration conf = super.getConf();
+
 			final ByteBuffer buf = ByteBuffer.allocate((8 * expectedResults.hashedCentroids.size()) + 4);
 			buf.putInt(expectedResults.hashedCentroids.size());
 			for (final Long hashedCentroid : expectedResults.hashedCentroids) {
@@ -383,18 +389,34 @@ public class GeoWaveMapReduceIT extends
 					ByteArrayUtils.byteArrayToString(buf.array()));
 			final Job job = new Job(
 					conf);
+			job.setJarByClass(this.getClass());
+
+			job.setJobName("GeoWave Test (" + namespace + ")");
 			job.setInputFormatClass(SequenceFileInputFormat.class);
 			job.setMapperClass(VerifyExpectedResultsMapper.class);
 			job.setMapOutputKeyClass(NullWritable.class);
 			job.setMapOutputValueClass(NullWritable.class);
 			job.setOutputFormatClass(NullOutputFormat.class);
 			job.setNumReduceTasks(0);
+
+			GeoWaveInputFormat.setAccumuloOperationsInfo(
+					job,
+					zookeeper,
+					instance,
+					user,
+					password,
+					namespace);
 			FileInputFormat.setInputPaths(
 					job,
 					getHdfsOutputPath());
 
 			final boolean job2success = job.waitForCompletion(true);
 			final Counters jobCounters = job.getCounters();
+			final Counter expectedCnt = jobCounters.findCounter(ResultCounterType.EXPECTED);
+			Assert.assertNotNull(expectedCnt);
+			Assert.assertEquals(
+					expectedResults.count,
+					expectedCnt.getValue());
 			final Counter errorCnt = jobCounters.findCounter(ResultCounterType.ERROR);
 			if (errorCnt != null) {
 				Assert.assertEquals(
@@ -407,11 +429,6 @@ public class GeoWaveMapReduceIT extends
 						0L,
 						unexpectedCnt.getValue());
 			}
-			final Counter expectedCnt = jobCounters.findCounter(ResultCounterType.EXPECTED);
-			Assert.assertNotNull(expectedCnt);
-			Assert.assertEquals(
-					expectedResults.count,
-					expectedCnt.getValue());
 			return job2success ? 0 : 1;
 		}
 	}
@@ -425,17 +442,16 @@ public class GeoWaveMapReduceIT extends
 		protected void mapNativeValue(
 				final GeoWaveInputKey key,
 				final Object value,
-				final Mapper<GeoWaveInputKey, Writable, NullWritable, NullWritable>.Context context )
+				final Mapper<GeoWaveInputKey, ObjectWritable, NullWritable, NullWritable>.Context context )
 				throws IOException,
 				InterruptedException {
-			final ResultCounterType resultType;
+			ResultCounterType resultType = ResultCounterType.ERROR;
 			if (value instanceof SimpleFeature) {
 				final SimpleFeature result = (SimpleFeature) value;
-				resultType = expectedHashedCentroids.contains(hashCentroid((Geometry) result.getDefaultGeometry())) ? ResultCounterType.EXPECTED : ResultCounterType.UNEXPECTED;
-
-			}
-			else {
-				resultType = ResultCounterType.ERROR;
+				final Geometry geometry = (Geometry) result.getDefaultGeometry();
+				if (!geometry.isEmpty()) {
+					resultType = expectedHashedCentroids.contains(hashCentroid(geometry)) ? ResultCounterType.EXPECTED : ResultCounterType.UNEXPECTED;
+				}
 			}
 			context.getCounter(
 					resultType).increment(
@@ -444,7 +460,7 @@ public class GeoWaveMapReduceIT extends
 
 		@Override
 		protected void setup(
-				final Mapper<GeoWaveInputKey, Writable, NullWritable, NullWritable>.Context context )
+				final Mapper<GeoWaveInputKey, ObjectWritable, NullWritable, NullWritable>.Context context )
 				throws IOException,
 				InterruptedException {
 			super.setup(context);

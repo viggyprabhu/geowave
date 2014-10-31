@@ -5,23 +5,23 @@ import java.util.Iterator;
 
 import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputKey;
 
-import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 public class GeoWaveDedupeCombiner extends
-		Reducer<GeoWaveInputKey, Writable, GeoWaveInputKey, Writable>
+		Reducer<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, ObjectWritable>
 {
 
 	@Override
 	protected void reduce(
 			final GeoWaveInputKey key,
-			final Iterable<Writable> values,
-			final Reducer<GeoWaveInputKey, Writable, GeoWaveInputKey, Writable>.Context context )
+			final Iterable<ObjectWritable> values,
+			final Reducer<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
-		final Iterator<Writable> it = values.iterator();
+		final Iterator<ObjectWritable> it = values.iterator();
 		while (it.hasNext()) {
-			final Writable next = it.next();
+			final ObjectWritable next = it.next();
 			if (next != null) {
 				context.write(
 						key,

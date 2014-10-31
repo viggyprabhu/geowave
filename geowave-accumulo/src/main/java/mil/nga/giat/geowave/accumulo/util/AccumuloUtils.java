@@ -118,6 +118,21 @@ public class AccumuloUtils
 		}
 	}
 
+	public static List<ByteArrayRange> constraintsToByteArrayRanges(
+			final MultiDimensionalNumericData constraints,
+			final NumericIndexStrategy indexStrategy,
+			final int maxRanges ) {
+		if ((constraints == null) || constraints.isEmpty()) {
+			return new ArrayList<ByteArrayRange>(); // implies in negative and
+													// positive infinity
+		}
+		else {
+			return indexStrategy.getQueryRanges(
+					constraints,
+					maxRanges);
+		}
+	}
+
 	public static String getQualifiedTableName(
 			final String tableNamespace,
 			final String unqualifiedTableName ) {
@@ -144,7 +159,7 @@ public class AccumuloUtils
 			final DataAdapter<?> adapter,
 			final QueryFilter clientFilter,
 			final Index index ) {
-		Pair<?, IngestEntryInfo> pair = decodeRow(
+		final Pair<?, IngestEntryInfo> pair = decodeRow(
 				key,
 				value,
 				adapter,
@@ -153,14 +168,14 @@ public class AccumuloUtils
 				index);
 		return pair != null ? pair.getLeft() : null;
 	}
-	
+
 	public static Object decodeRow(
 			final Key key,
 			final Value value,
 			final AdapterStore adapterStore,
 			final QueryFilter clientFilter,
 			final Index index ) {
-		Pair<Object, IngestEntryInfo> pair =  decodeRow(
+		final Pair<Object, IngestEntryInfo> pair = decodeRow(
 				key,
 				value,
 				null,
@@ -221,7 +236,8 @@ public class AccumuloUtils
 			adapterMatchVerified = true;
 			adapterId = null;
 		}
-		final List<FieldInfo> fieldInfoList = new ArrayList<FieldInfo>(rowMapping.size());
+		final List<FieldInfo> fieldInfoList = new ArrayList<FieldInfo>(
+				rowMapping.size());
 
 		for (final Entry<Key, Value> entry : rowMapping.entrySet()) {
 			// the column family is the data element's type ID
@@ -248,7 +264,7 @@ public class AccumuloUtils
 			// first check if this field is part of the index model
 			final FieldReader<? extends CommonIndexValue> indexFieldReader = index.getIndexModel().getReader(
 					fieldId);
-			byte byteValue[] = entry.getValue().get();
+			final byte byteValue[] = entry.getValue().get();
 			if (indexFieldReader != null) {
 				final CommonIndexValue indexValue = indexFieldReader.readField(byteValue);
 				indexValue.setVisibility(entry.getKey().getColumnVisibilityData().getBackingArray());
@@ -300,7 +316,8 @@ public class AccumuloUtils
 							encodedRow,
 							index),
 					new IngestEntryInfo(
-							Arrays.asList(new ByteArrayId(rowData.getBackingArray())),
+							Arrays.asList(new ByteArrayId(
+									rowData.getBackingArray())),
 							fieldInfoList));
 		}
 		return null;
@@ -444,7 +461,7 @@ public class AccumuloUtils
 	}
 
 	/**
-	 * 
+	 *
 	 * @param dataWriter
 	 * @param index
 	 * @param entry

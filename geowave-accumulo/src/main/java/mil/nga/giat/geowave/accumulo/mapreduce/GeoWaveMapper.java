@@ -9,13 +9,14 @@ import mil.nga.giat.geowave.store.adapter.DataAdapter;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.MapContext;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 public abstract class GeoWaveMapper extends
-		Mapper<GeoWaveInputKey, Writable, GeoWaveInputKey, Writable>
+		Mapper<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, ObjectWritable>
 {
 	protected static final Logger LOGGER = Logger.getLogger(GeoWaveWritableInputMapper.class);
 	protected AdapterStore adapterStore;
@@ -23,8 +24,8 @@ public abstract class GeoWaveMapper extends
 	@Override
 	protected void map(
 			final GeoWaveInputKey key,
-			final Writable value,
-			final Mapper<GeoWaveInputKey, Writable, GeoWaveInputKey, Writable>.Context context )
+			final ObjectWritable value,
+			final Mapper<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
 		mapWritableValue(
@@ -35,8 +36,8 @@ public abstract class GeoWaveMapper extends
 
 	protected void mapWritableValue(
 			final GeoWaveInputKey key,
-			final Writable value,
-			final Mapper<GeoWaveInputKey, Writable, GeoWaveInputKey, Writable>.Context context )
+			final ObjectWritable value,
+			final Mapper<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
 		if (adapterStore != null) {
@@ -44,8 +45,8 @@ public abstract class GeoWaveMapper extends
 			if ((adapter != null) && (adapter instanceof HadoopDataAdapter)) {
 				mapNativeValue(
 						key,
-						((HadoopDataAdapter) adapter).fromWritable(value),
-						new NativeMapContext<GeoWaveInputKey, Writable>(
+						((HadoopDataAdapter) adapter).fromWritable((Writable) value.get()),
+						new NativeMapContext<GeoWaveInputKey, ObjectWritable>(
 								context,
 								adapterStore));
 			}
@@ -55,13 +56,13 @@ public abstract class GeoWaveMapper extends
 	protected abstract void mapNativeValue(
 			final GeoWaveInputKey key,
 			final Object value,
-			final MapContext<GeoWaveInputKey, Writable, GeoWaveInputKey, Object> context )
+			final MapContext<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, Object> context )
 			throws IOException,
 			InterruptedException;
 
 	@Override
 	protected void setup(
-			final Mapper<GeoWaveInputKey, Writable, GeoWaveInputKey, Writable>.Context context )
+			final Mapper<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
 		try {
