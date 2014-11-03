@@ -20,10 +20,10 @@ import java.util.TreeSet;
 import mil.nga.giat.geowave.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.accumulo.mapreduce.JobContextAdapterStore;
+import mil.nga.giat.geowave.accumulo.mapreduce.JobContextIndexStore;
 import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputFormat.IntermediateSplitInfo.RangeLocationPair;
 import mil.nga.giat.geowave.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.accumulo.util.AccumuloUtils;
-import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.store.adapter.DataAdapter;
@@ -115,10 +115,17 @@ public class GeoWaveInputFormat extends
 	public static void addDataAdapter(
 			final Job job,
 			final DataAdapter<?> adapter ) {
-		GeoWaveConfiguratorBase.addDataAdapter(
-				CLASS,
+		JobContextAdapterStore.addDataAdapter(
 				job,
 				adapter);
+	}
+
+	public static void addIndex(
+			final Job job,
+			final Index index ) {
+		JobContextIndexStore.addIndex(
+				job,
+				index);
 	}
 
 	public static void setMinimumSplitCount(
@@ -155,20 +162,9 @@ public class GeoWaveInputFormat extends
 				context);
 	}
 
-	protected static Index getIndex(
-			final JobContext context,
-			final ByteArrayId indexId ) {
-		return GeoWaveConfiguratorBase.getIndex(
-				CLASS,
-				context,
-				indexId);
-	}
-
 	protected static Index[] getIndices(
 			final JobContext context ) {
-		final Index[] userIndices = GeoWaveConfiguratorBase.getIndices(
-				CLASS,
-				context);
+		final Index[] userIndices = JobContextIndexStore.getIndices(context);
 		if ((userIndices == null) || (userIndices.length <= 0)) {
 			try {
 				// if there are no indices, assume we are searching all indices
@@ -970,15 +966,6 @@ public class GeoWaveInputFormat extends
 			InterruptedException {
 		LOGGER.setLevel(getLogLevel(context));
 		return new GeoWaveRecordReader<Object>();
-	}
-
-	public static void addIndex(
-			final Job job,
-			final Index index ) {
-		GeoWaveConfiguratorBase.addIndex(
-				CLASS,
-				job,
-				index);
 	}
 
 	/**

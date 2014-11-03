@@ -503,11 +503,6 @@ public class FeatureDataAdapter extends
 	   return GEOMETRY_VISIBILITY_HANDLER;
 	}
 
-	public boolean hasGeometricConstraints() {
-		return typeMatchingFieldHandlers.keySet().contains(
-				FeatureGeometryHandler.class);
-	}
-
 	public boolean hasTemporalConstraints() {
 		return typeMatchingFieldHandlers.keySet().contains(
 				Time.class) || typeMatchingFieldHandlers.keySet().contains(

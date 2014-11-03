@@ -179,7 +179,6 @@ public class AccumuloDataStore implements
 			final Index index,
 			final T entry,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-
 		if (writableAdapter instanceof IndexDependentDataAdapter) {
 			final IndexDependentDataAdapter adapter = ((IndexDependentDataAdapter) writableAdapter);
 			final Iterator<T> indexedEntries = adapter.convertToIndex(
