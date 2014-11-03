@@ -7,12 +7,14 @@ import java.io.IOException;
 import mil.nga.giat.geowave.accumulo.mapreduce.GeoWaveKey;
 import mil.nga.giat.geowave.index.ByteArrayId;
 
+import org.apache.accumulo.core.data.Key;
 import org.apache.hadoop.io.WritableComparator;
 
 public class GeoWaveInputKey extends
 		GeoWaveKey
 {
 	private ByteArrayId dataId;
+	private Key accumuloKey;
 
 	protected GeoWaveInputKey() {
 		super();
@@ -24,6 +26,15 @@ public class GeoWaveInputKey extends
 		super(
 				adapterId);
 		this.dataId = dataId;
+	}
+
+	public Key getAccumuloKey() {
+		return accumuloKey;
+	}
+
+	public void setAccumuloKey(
+			final Key accumuloKey ) {
+		this.accumuloKey = accumuloKey;
 	}
 
 	public ByteArrayId getDataId() {

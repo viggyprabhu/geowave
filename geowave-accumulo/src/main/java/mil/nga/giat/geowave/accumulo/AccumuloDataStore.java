@@ -6,13 +6,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import mil.nga.giat.geowave.accumulo.metadata.AccumuloAdapterStore;
 import mil.nga.giat.geowave.accumulo.metadata.AccumuloDataStatisticsStore;
@@ -51,6 +48,7 @@ import mil.nga.giat.geowave.store.adapter.statistics.StatisticalDataAdapter;
 import mil.nga.giat.geowave.store.data.VisibilityWriter;
 import mil.nga.giat.geowave.store.data.visibility.UnconstrainedVisibilityHandler;
 import mil.nga.giat.geowave.store.data.visibility.UniformVisibilityWriter;
+import mil.nga.giat.geowave.store.filter.MultiIndexDedupeFilter;
 import mil.nga.giat.geowave.store.index.Index;
 import mil.nga.giat.geowave.store.index.IndexStore;
 import mil.nga.giat.geowave.store.query.Query;
@@ -63,6 +61,7 @@ import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.accumulo.core.client.TableNotFoundException;
+import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
@@ -72,8 +71,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 
 /**
@@ -1000,13 +997,18 @@ public class AccumuloDataStore implements
 		// data adapter Ids
 		final List<CloseableIterator<?>> results = new ArrayList<CloseableIterator<?>>();
 		int indexCount = 0;
+		// all queries will use the same instance of the dedupe filter for
+		// client side filtering because the filter needs to be applied across
+		// indices
+		final MultiIndexDedupeFilter clientDedupeFilter = new MultiIndexDedupeFilter();
 		while (indices.hasNext()) {
 			final Index index = indices.next();
 			final AccumuloConstraintsQuery accumuloQuery;
 			if (query == null) {
 				accumuloQuery = new AccumuloConstraintsQuery(
 						adapterIds,
-						index);
+						index,
+						clientDedupeFilter);
 			}
 			else if (query.isSupported(index)) {
 				// construct the query
@@ -1015,6 +1017,7 @@ public class AccumuloDataStore implements
 						index,
 						query.getIndexConstraints(index.getIndexStrategy()),
 						query.createFilters(index.getIndexModel()),
+						clientDedupeFilter,
 						authorizations);
 			}
 			else {
@@ -1026,10 +1029,11 @@ public class AccumuloDataStore implements
 					limit,
 					true));
 			indexCount++;
-
 		}
-		final Iterator baseIterator = Iterators.concat(results.iterator());
-		final IteratorFilterTransformer ft = new IteratorFilterTransformer();
+		// if there aren't multiple indices, the client-side dedupe filter can
+		// just cache rows that are duplicated within the index and not
+		// everything
+		clientDedupeFilter.setMultiIndexSupportEnabled(indexCount > 1);
 		// concatenate iterators
 		return new CloseableIteratorWrapper<Object>(
 				new Closeable() {
@@ -1041,52 +1045,7 @@ public class AccumuloDataStore implements
 						}
 					}
 				},
-				Iterators.filter(
-						Iterators.transform(
-								baseIterator,
-								ft),
-						ft));
-	}
-
-	private static class IteratorFilterTransformer implements
-			Function<Entry<Key, Object>, Object>,
-			Predicate<Object>
-	{
-		private final Map<ByteArrayId, Set<ByteArrayId>> adapterIdToVisitedDataIdMap = new HashMap<ByteArrayId, Set<ByteArrayId>>();
-		private boolean nextValuePasses = true;
-
-		@Override
-		public boolean apply(
-				final Object input ) {
-			// unfortunately because filtering is done after the transform, this
-			// has to be passed from the transform
-			return nextValuePasses;
-		}
-
-		@Override
-		public Object apply(
-				final Entry<Key, Object> input ) {
-			final AccumuloRowId rowId = new AccumuloRowId(
-					input.getKey().getRow().getBytes());
-			final ByteArrayId adapterId = new ByteArrayId(
-					rowId.getAdapterId());
-			final ByteArrayId dataId = new ByteArrayId(
-					rowId.getDataId());
-			nextValuePasses = true;
-			Set<ByteArrayId> visitedDataIds = adapterIdToVisitedDataIdMap.get(adapterId);
-			if (visitedDataIds == null) {
-				visitedDataIds = new HashSet<ByteArrayId>();
-				adapterIdToVisitedDataIdMap.put(
-						adapterId,
-						visitedDataIds);
-			}
-			else if (visitedDataIds.contains(dataId)) {
-				nextValuePasses = false;
-			}
-			visitedDataIds.add(dataId);
-			return input.getValue();
-		}
-
+				Iterators.concat(results.iterator()));
 	}
 
 	@Override
@@ -1365,10 +1324,13 @@ public class AccumuloDataStore implements
 					final Key key,
 					final Value value ) {
 				if (!foundOne) {
+					final AccumuloRowId rowId = new AccumuloRowId(
+							key.getRow().copyBytes());
 					@SuppressWarnings("unchecked")
 					final Pair<T, IngestEntryInfo> rowData = AccumuloUtils.decodeRow(
 							key,
 							value,
+							rowId,
 							adapter,
 							null,
 							null,

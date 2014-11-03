@@ -7,7 +7,6 @@ import mil.nga.giat.geowave.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.accumulo.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.accumulo.util.CloseableIteratorWrapper.ScannerClosableWrapper;
 import mil.nga.giat.geowave.accumulo.util.EntryIteratorWrapper;
-import mil.nga.giat.geowave.accumulo.util.EntryWithKeyIteratorWrapper;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.index.StringUtils;
 import mil.nga.giat.geowave.store.CloseableIterator;
@@ -26,28 +25,6 @@ public abstract class AccumuloFilteredIndexQuery extends
 {
 	protected List<QueryFilter> clientFilters;
 	private final static Logger LOGGER = Logger.getLogger(AccumuloFilteredIndexQuery.class);
-
-	public AccumuloFilteredIndexQuery(
-			final Index index,
-			final List<QueryFilter> clientFilters,
-			final String... authorizations ) {
-		super(
-				index,
-				authorizations);
-		this.clientFilters = clientFilters;
-	}
-
-	public AccumuloFilteredIndexQuery(
-			final List<ByteArrayId> adapterIds,
-			final Index index,
-			final List<QueryFilter> clientFilters,
-			final String... authorizations ) {
-		super(
-				adapterIds,
-				index,
-				authorizations);
-		this.clientFilters = clientFilters;
-	}
 
 	public AccumuloFilteredIndexQuery(
 			final Index index,
@@ -105,9 +82,8 @@ public abstract class AccumuloFilteredIndexQuery extends
 				limit);
 		addScanIteratorSettings(scanner);
 		Iterator it = initIterator(
-				scanner,
 				adapterStore,
-				withKeys);
+				scanner);
 		if ((limit != null) && (limit > 0)) {
 			it = Iterators.limit(
 					it,
@@ -120,17 +96,8 @@ public abstract class AccumuloFilteredIndexQuery extends
 	}
 
 	protected Iterator initIterator(
-			final ScannerBase scanner,
 			final AdapterStore adapterStore,
-			final boolean withKeys ) {
-		if (withKeys) {
-			return new EntryWithKeyIteratorWrapper(
-					adapterStore,
-					index,
-					scanner.iterator(),
-					new FilterList<QueryFilter>(
-							clientFilters));
-		}
+			final ScannerBase scanner ) {
 		return new EntryIteratorWrapper(
 				adapterStore,
 				index,
@@ -138,5 +105,4 @@ public abstract class AccumuloFilteredIndexQuery extends
 				new FilterList<QueryFilter>(
 						clientFilters));
 	}
-
 }

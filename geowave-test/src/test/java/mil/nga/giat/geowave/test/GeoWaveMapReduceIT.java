@@ -78,6 +78,7 @@ public class GeoWaveMapReduceIT extends
 	protected static String jobtracker;
 	protected static String hdfs;
 	protected static boolean hdfsProtocol;
+	private static String hdfsBaseDirectory;
 
 	public static enum ResultCounterType {
 		EXPECTED,
@@ -99,15 +100,13 @@ public class GeoWaveMapReduceIT extends
 		hdfs = System.getProperty("hdfs");
 		jobtracker = System.getProperty("jobtracker");
 		if (!isSet(hdfs)) {
-			final String tempDirStr = tempDir.toURI().toURL().toString();
-			System.err.println(tempDirStr);
-			hdfs = tempDirStr.replace(
-					"file:/",
-					"file:///");
+			hdfs = "file:///";
 
+			hdfsBaseDirectory = tempDir.toURI().toURL().toString() + "/" + HDFS_BASE_DIRECTORY;
 			hdfsProtocol = false;
 		}
 		else {
+			hdfsBaseDirectory = HDFS_BASE_DIRECTORY;
 			if (!hdfs.contains("://")) {
 				hdfs = "hdfs://" + hdfs;
 				hdfsProtocol = true;
@@ -126,7 +125,7 @@ public class GeoWaveMapReduceIT extends
 	public static void cleanupHdfsFiles() {
 		if (hdfsProtocol) {
 			final Path tmpDir = new Path(
-					HDFS_BASE_DIRECTORY);
+					hdfsBaseDirectory);
 			try {
 				final FileSystem fs = FileSystem.get(getConfiguration());
 				fs.delete(
@@ -148,7 +147,7 @@ public class GeoWaveMapReduceIT extends
 		// ingest framework's main method and pre-defined commandline arguments
 		LOGGER.warn("Ingesting '" + ingestFilePath + "' - this may take several minutes...");
 		final String[] args = StringUtils.split(
-				"-hdfsingest -t gpx -hdfs " + hdfs + " -hdfsbase " + HDFS_BASE_DIRECTORY + " -jobtracker " + jobtracker + " -b " + ingestFilePath + " -z " + zookeeper + " -i " + accumuloInstance + " -u " + accumuloUser + " -p " + accumuloPassword + " -n " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
+				"-hdfsingest -t gpx -hdfs " + hdfs + " -hdfsbase " + hdfsBaseDirectory + " -jobtracker " + jobtracker + " -b " + ingestFilePath + " -z " + zookeeper + " -i " + accumuloInstance + " -u " + accumuloUser + " -p " + accumuloPassword + " -n " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
 				' ');
 		IngestMain.main(args);
 	}

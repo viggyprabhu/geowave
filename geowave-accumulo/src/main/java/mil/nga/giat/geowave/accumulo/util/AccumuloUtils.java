@@ -149,8 +149,7 @@ public class AccumuloUtils
 				value,
 				adapter,
 				null,
-				null,
-				index).getLeft();
+				index);
 	}
 
 	public static Object decodeRow(
@@ -159,14 +158,16 @@ public class AccumuloUtils
 			final DataAdapter<?> adapter,
 			final QueryFilter clientFilter,
 			final Index index ) {
-		final Pair<?, IngestEntryInfo> pair = decodeRow(
+		final AccumuloRowId rowId = new AccumuloRowId(
+				key.getRow().copyBytes());
+		return decodeRow(
 				key,
 				value,
+				rowId,
 				adapter,
 				null,
 				clientFilter,
 				index);
-		return pair != null ? pair.getLeft() : null;
 	}
 
 	public static Object decodeRow(
@@ -175,31 +176,60 @@ public class AccumuloUtils
 			final AdapterStore adapterStore,
 			final QueryFilter clientFilter,
 			final Index index ) {
-		final Pair<Object, IngestEntryInfo> pair = decodeRow(
+		final AccumuloRowId rowId = new AccumuloRowId(
+				key.getRow().copyBytes());
+		return decodeRowObj(
 				key,
 				value,
+				rowId,
 				null,
 				adapterStore,
 				clientFilter,
 				index);
-		return pair != null ? pair.getLeft() : null;
 	}
 
-	public static GeoWaveInputKey accumuloKeyToGeoWaveKey(
-			final Key key ) {
-		final AccumuloRowId rowId = new AccumuloRowId(
-				key.getRow().copyBytes());
-		return new GeoWaveInputKey(
-				new ByteArrayId(
-						rowId.getAdapterId()),
-				new ByteArrayId(
-						rowId.getDataId()));
+	public static Object decodeRow(
+			final Key key,
+			final Value value,
+			final AccumuloRowId rowId,
+			final AdapterStore adapterStore,
+			final QueryFilter clientFilter,
+			final Index index ) {
+		return decodeRowObj(
+				key,
+				value,
+				rowId,
+				null,
+				adapterStore,
+				clientFilter,
+				index);
+	}
+
+	private static <T> Object decodeRowObj(
+			final Key key,
+			final Value value,
+			final AccumuloRowId rowId,
+			final DataAdapter<T> dataAdapter,
+			final AdapterStore adapterStore,
+			final QueryFilter clientFilter,
+			final Index index ) {
+		final Pair<T, IngestEntryInfo> pair = decodeRow(
+				key,
+				value,
+				rowId,
+				dataAdapter,
+				adapterStore,
+				clientFilter,
+				index);
+		return pair != null ? pair.getLeft() : null;
+
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <T> Pair<T, IngestEntryInfo> decodeRow(
 			final Key k,
 			final Value v,
+			final AccumuloRowId rowId,
 			final DataAdapter<T> dataAdapter,
 			final AdapterStore adapterStore,
 			final QueryFilter clientFilter,
@@ -298,9 +328,6 @@ public class AccumuloUtils
 						entry.getKey().getColumnVisibility().getBytes()));
 			}
 		}
-		final ByteSequence rowData = k.getRowData();
-		final AccumuloRowId rowId = new AccumuloRowId(
-				rowData.getBackingArray());
 		final IndexedAdapterPersistenceEncoding encodedRow = new IndexedAdapterPersistenceEncoding(
 				adapterId,
 				new ByteArrayId(
@@ -317,7 +344,7 @@ public class AccumuloUtils
 							index),
 					new IngestEntryInfo(
 							Arrays.asList(new ByteArrayId(
-									rowData.getBackingArray())),
+									k.getRowData().getBackingArray())),
 							fieldInfoList));
 		}
 		return null;

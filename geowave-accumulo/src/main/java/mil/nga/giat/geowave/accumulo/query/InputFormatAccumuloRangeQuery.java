@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import mil.nga.giat.geowave.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.accumulo.util.EntryWithKeyIteratorWrapper;
+import mil.nga.giat.geowave.accumulo.util.InputFormatIteratorWrapper;
 import mil.nga.giat.geowave.index.ByteArrayId;
 import mil.nga.giat.geowave.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.store.filter.FilterList;
@@ -18,13 +18,13 @@ import org.apache.accumulo.core.data.Range;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
-public class AccumuloRangeQuery extends
+public class InputFormatAccumuloRangeQuery extends
 		AccumuloConstraintsQuery
 {
-	private final static Logger LOGGER = Logger.getLogger(AccumuloRangeQuery.class);
+	private final static Logger LOGGER = Logger.getLogger(InputFormatAccumuloRangeQuery.class);
 	private final Range accumuloRange;
 
-	public AccumuloRangeQuery(
+	public InputFormatAccumuloRangeQuery(
 			final List<ByteArrayId> adapterIds,
 			final Index index,
 			final Range accumuloRange,
@@ -64,6 +64,18 @@ public class AccumuloRangeQuery extends
 					e);
 			return null;
 		}
+	}
+
+	@Override
+	protected Iterator initIterator(
+			final AdapterStore adapterStore,
+			final ScannerBase scanner ) {
+		return new InputFormatIteratorWrapper(
+				adapterStore,
+				index,
+				scanner.iterator(),
+				new FilterList<QueryFilter>(
+						clientFilters));
 	}
 
 }

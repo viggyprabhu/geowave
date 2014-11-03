@@ -58,8 +58,19 @@ public class AccumuloConstraintsQuery extends
 		this(
 				adapterIds,
 				index,
+				null);
+	}
+
+	public AccumuloConstraintsQuery(
+			final List<ByteArrayId> adapterIds,
+			final Index index,
+			final DedupeFilter clientDedupeFilter ) {
+		this(
+				adapterIds,
+				index,
 				null,
 				null,
+				clientDedupeFilter,
 				new String[0]);
 	}
 
@@ -81,6 +92,23 @@ public class AccumuloConstraintsQuery extends
 			final MultiDimensionalNumericData constraints,
 			final List<QueryFilter> queryFilters,
 			final String[] authorizations ) {
+		this(
+				adapterIds,
+				index,
+				constraints,
+				queryFilters,
+				null,
+				authorizations);
+
+	}
+
+	public AccumuloConstraintsQuery(
+			final List<ByteArrayId> adapterIds,
+			final Index index,
+			final MultiDimensionalNumericData constraints,
+			final List<QueryFilter> queryFilters,
+			final DedupeFilter clientDedupeFilter,
+			final String[] authorizations ) {
 		super(
 				adapterIds,
 				index,
@@ -90,10 +118,10 @@ public class AccumuloConstraintsQuery extends
 		final List<QueryFilter> clientFilters = lists.clientFilters;
 		// add dedupe filters to the front of both lists so that the
 		// de-duplication is performed before any more complex filtering
-		// operations
+		// operations, use the supplied client dedupe filter if possible
 		clientFilters.add(
 				0,
-				new DedupeFilter());
+				clientDedupeFilter != null ? clientDedupeFilter : new DedupeFilter());
 		super.setClientFilters(clientFilters);
 		distributableFilters = lists.distributableFilters;
 		// we are assuming we always have to ensure no duplicates

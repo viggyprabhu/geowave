@@ -16,8 +16,7 @@ import java.util.Set;
 
 import mil.nga.giat.geowave.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.accumulo.mapreduce.JobContextAdapterStore;
-import mil.nga.giat.geowave.accumulo.query.AccumuloRangeQuery;
-import mil.nga.giat.geowave.accumulo.util.AccumuloUtils;
+import mil.nga.giat.geowave.accumulo.query.InputFormatAccumuloRangeQuery;
 import mil.nga.giat.geowave.accumulo.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.store.CloseableIterator;
 import mil.nga.giat.geowave.store.filter.QueryFilter;
@@ -158,7 +157,7 @@ public class GeoWaveRecordReader<T> extends
 							new RangeIndexPair(
 									r,
 									i),
-							new AccumuloRangeQuery(
+							new InputFormatAccumuloRangeQuery(
 									adapterStore.getAdapterIds(),
 									i,
 									r,
@@ -271,13 +270,13 @@ public class GeoWaveRecordReader<T> extends
 				++numKeysRead;
 				final Object value = iterator.next();
 				if (value instanceof Entry) {
-					final Entry<Key, T> entry = (Entry<Key, T>) value;
-					currentAccumuloKey = entry.getKey();
-					if (currentAccumuloKey == null) {
-						currentGeoWaveKey = null;
+					final Entry<GeoWaveInputKey, T> entry = (Entry<GeoWaveInputKey, T>) value;
+					currentGeoWaveKey = entry.getKey();
+					if (currentGeoWaveKey == null) {
+						currentAccumuloKey = null;
 					}
 					else {
-						currentGeoWaveKey = AccumuloUtils.accumuloKeyToGeoWaveKey(currentAccumuloKey);
+						currentAccumuloKey = currentGeoWaveKey.getAccumuloKey();
 					}
 					currentValue = entry.getValue();
 				}
