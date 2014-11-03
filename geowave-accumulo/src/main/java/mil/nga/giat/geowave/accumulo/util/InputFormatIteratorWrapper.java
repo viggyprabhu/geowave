@@ -72,6 +72,9 @@ public class InputFormatIteratorWrapper<T> implements
 				adapterStore,
 				clientFilter,
 				index);
+		if (value == null) {
+			return null;
+		}
 		final GeoWaveInputKey key = new GeoWaveInputKey(
 				new ByteArrayId(
 						rowId.getAdapterId()),

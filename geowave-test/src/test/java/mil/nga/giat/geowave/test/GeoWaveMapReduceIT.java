@@ -365,7 +365,7 @@ public class GeoWaveMapReduceIT extends
 
 		@Override
 		protected String getHdfsOutputBase() {
-			return HDFS_BASE_DIRECTORY;
+			return hdfsBaseDirectory;
 		}
 
 		@Override
