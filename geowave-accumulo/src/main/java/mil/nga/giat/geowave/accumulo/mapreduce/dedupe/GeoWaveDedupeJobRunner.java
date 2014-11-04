@@ -21,6 +21,11 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+/**
+ * This class can run a basic job to query GeoWave, deduplicating results, and
+ * writing the final set of key value pairs to a sequence file. It can be
+ * extended for more advanced capabilities or job chaining.
+ */
 public class GeoWaveDedupeJobRunner extends
 		Configured implements
 		Tool

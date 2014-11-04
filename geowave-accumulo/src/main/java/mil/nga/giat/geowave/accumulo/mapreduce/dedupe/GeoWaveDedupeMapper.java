@@ -7,6 +7,9 @@ import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputKey;
 
 import org.apache.hadoop.mapreduce.MapContext;
 
+/**
+ * Basically an identity mapper used for the deduplication job
+ */
 public class GeoWaveDedupeMapper extends
 		GeoWaveWritableOutputMapper<GeoWaveInputKey, Object>
 {

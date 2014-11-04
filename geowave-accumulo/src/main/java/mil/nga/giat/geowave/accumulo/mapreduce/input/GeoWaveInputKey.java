@@ -10,6 +10,11 @@ import mil.nga.giat.geowave.index.ByteArrayId;
 import org.apache.accumulo.core.data.Key;
 import org.apache.hadoop.io.WritableComparator;
 
+/**
+ * This class encapsulates the unique identifier for GeoWave input data using a
+ * map-reduce GeoWave input format. The combination of the the adapter ID and
+ * the data ID should be unique.
+ */
 public class GeoWaveInputKey extends
 		GeoWaveKey
 {

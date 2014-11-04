@@ -18,6 +18,13 @@ import org.apache.accumulo.core.data.Range;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
+/**
+ * * Represents a query operation for a range of Accumulo row IDs. This class is
+ * particularly used by the InputFormat as the iterator that it returns will
+ * contain Entry<GeoWaveInputKey, Object> entries rather than just the object.
+ * This is so the input format has a way of getting the adapter ID and data ID
+ * to define the key.
+ */
 public class InputFormatAccumuloRangeQuery extends
 		AccumuloConstraintsQuery
 {

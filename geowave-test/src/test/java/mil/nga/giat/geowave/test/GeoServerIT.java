@@ -293,9 +293,6 @@ public class GeoServerIT extends
 						"src/test/resources/wfs-requests/insert_with_time.xml"),
 				"text/xml"));
 		final HttpResponse r = httpclient.execute(command);
-		if (r.getStatusLine().getStatusCode() != 200) {
-			System.err.println(getContent(r));
-		}
 		return r.getStatusLine().getStatusCode() == 200;
 	}
 

@@ -15,6 +15,12 @@ import org.apache.hadoop.mapreduce.MapContext;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
+/**
+ * This abstract class can be extended by GeoWave analytics. It handles the
+ * conversion of native GeoWave objects into objects that are writable. It is a
+ * mapper that converts to writable objects for both inputs and outputs. This
+ * conversion will only work if the data adapter implements HadoopDataAdapter.
+ */
 public abstract class GeoWaveMapper extends
 		Mapper<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, ObjectWritable>
 {

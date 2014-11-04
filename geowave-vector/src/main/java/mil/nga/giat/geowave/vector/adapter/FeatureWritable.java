@@ -22,6 +22,12 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKBWriter;
 
+/**
+ * This class is used by FeatureDataAdapter to persist SimpleFeature and its
+ * SimpleFeatureType. The attribute types of the feature must be understood
+ * before the feature can be deserialized so therefore each SimpleFeature
+ * serializes its type.
+ */
 public class FeatureWritable implements
 		Writable
 {

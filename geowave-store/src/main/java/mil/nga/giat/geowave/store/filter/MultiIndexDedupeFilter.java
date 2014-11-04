@@ -2,10 +2,11 @@ package mil.nga.giat.geowave.store.filter;
 
 /**
  * This filter will perform de-duplication using the combination of data adapter
- * ID and data ID to determine uniqueness. It can be performed client-side
- * and/or distributed. This will cache every ID that streams in regardless of
- * whether its duplicated within a given index, so that it will support
- * deduplication across multiple indices.
+ * ID and data ID to determine uniqueness. This should only be used client-side
+ * because multiple indices would use a server-side scan per index anyways but
+ * can be used distributed if necessary. This will cache every ID that streams
+ * in regardless of whether its duplicated within a given index, so that it will
+ * support deduplication across multiple indices.
  *
  */
 public class MultiIndexDedupeFilter extends

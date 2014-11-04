@@ -8,6 +8,9 @@ import mil.nga.giat.geowave.accumulo.mapreduce.input.GeoWaveInputKey;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+/**
+ * A basic implementation of deduplication as a reducer
+ */
 public class GeoWaveDedupeReducer extends
 		Reducer<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, ObjectWritable>
 {

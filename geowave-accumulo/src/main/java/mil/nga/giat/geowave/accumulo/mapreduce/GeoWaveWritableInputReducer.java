@@ -17,6 +17,12 @@ import org.apache.log4j.Logger;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
+/**
+ * This abstract class can be extended by GeoWave analytics. It handles the
+ * conversion of native GeoWave objects into objects that are writable. It is a
+ * reducer that converts to writable objects for the input. This conversion will
+ * only work if the data adapter implements HadoopDataAdapter.
+ */
 public abstract class GeoWaveWritableInputReducer<KEYOUT, VALUEOUT> extends
 		Reducer<GeoWaveInputKey, ObjectWritable, KEYOUT, VALUEOUT>
 {

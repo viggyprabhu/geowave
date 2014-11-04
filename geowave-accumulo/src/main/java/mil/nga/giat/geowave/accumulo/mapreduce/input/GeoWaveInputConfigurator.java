@@ -13,6 +13,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 
+/**
+ * This class provides utility methods for accessing job context configuration
+ * parameters that are specific to the GeoWaveInputFormat.
+ */
 public class GeoWaveInputConfigurator extends
 		GeoWaveConfiguratorBase
 {

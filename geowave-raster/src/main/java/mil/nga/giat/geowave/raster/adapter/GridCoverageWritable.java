@@ -7,6 +7,11 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
 
+/**
+ * This class is used by GridCoverageDataAdapter to persist GridCoverages. The
+ * adapter has information regarding the sample model and color model so all
+ * that is necessary to persist is the buffer and the envelope.
+ */
 public class GridCoverageWritable implements
 		Writable
 {

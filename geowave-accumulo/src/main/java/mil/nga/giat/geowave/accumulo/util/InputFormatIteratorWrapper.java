@@ -18,7 +18,9 @@ import org.apache.accumulo.core.data.Value;
  * This is used internally to translate Accumulo rows into native objects (using
  * the appropriate data adapter). It also performs any client-side filtering. It
  * will peek at the next entry in the accumulo iterator to always maintain a
- * reference to the next value.
+ * reference to the next value. It maintains the adapter ID, data ID, and
+ * original accumulo key in the GeoWaveInputKey for use by the
+ * GeoWaveInputFormat.
  *
  * @param <T>
  *            The type for the entry

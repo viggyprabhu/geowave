@@ -13,6 +13,12 @@ import org.apache.hadoop.mapreduce.ReduceContext;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
 
+/**
+ * This abstract class can be extended by GeoWave analytics. It handles the
+ * conversion of native GeoWave objects into objects that are writable. It is a
+ * reducer that converts to writable objects for the output. This conversion
+ * will only work if the data adapter implements HadoopDataAdapter.
+ */
 public abstract class GeoWaveWritableOutputReducer<KEYIN, VALUEIN> extends
 		Reducer<KEYIN, VALUEIN, GeoWaveInputKey, ObjectWritable>
 {

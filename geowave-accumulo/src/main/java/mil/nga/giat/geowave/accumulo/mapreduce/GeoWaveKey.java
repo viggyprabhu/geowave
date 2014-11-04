@@ -9,6 +9,10 @@ import mil.nga.giat.geowave.index.ByteArrayId;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 
+/**
+ * This is the base class for both GeoWaveInputKey and GeoWaveOutputKey and is
+ * responsible for persisting the adapter ID
+ */
 public abstract class GeoWaveKey implements
 		WritableComparable<GeoWaveKey>
 {
@@ -24,24 +28,6 @@ public abstract class GeoWaveKey implements
 	public ByteArrayId getAdapterId() {
 		return adapterId;
 	}
-
-	// @Override
-	// public int compareTo(
-	// final GeoWaveKey o ) {
-	// if (equals(o)) {
-	// return 0;
-	// }
-	// if (o == null) {
-	// return 1;
-	// }
-	// if (comparableDelegate == null) {
-	// if (o.comparableDelegate == null) {
-	// return 0;
-	// }
-	// return -1;
-	// }
-	// return comparableDelegate.compareTo(o.comparableDelegate);
-	// }
 
 	@Override
 	public int compareTo(
@@ -59,33 +45,17 @@ public abstract class GeoWaveKey implements
 	public void readFields(
 			final DataInput input )
 			throws IOException {
-		// try {
-		// final Class<? extends WritableComparable> cls = Class.forName(
-		// Text.readString(input)).asSubclass(
-		// WritableComparable.class);
-		// comparableDelegate = cls.newInstance();
-		// comparableDelegate.readFields(input);
 		final int adapterIdLength = input.readInt();
 		final byte[] adapterIdBinary = new byte[adapterIdLength];
 		input.readFully(adapterIdBinary);
 		adapterId = new ByteArrayId(
 				adapterIdBinary);
-		// }
-		// catch (final InstantiationException | IllegalAccessException |
-		// ClassNotFoundException e) {
-		// throw (IOException) new IOException(
-		// "Failed geowave key init").initCause(e);
-		// }
 	}
 
 	@Override
 	public void write(
 			final DataOutput output )
 			throws IOException {
-		// Text.writeString(
-		// output,
-		// comparableDelegate.getClass().getName());
-		// comparableDelegate.write(output);
 		final byte[] adapterIdBinary = adapterId.getBytes();
 		output.writeInt(adapterIdBinary.length);
 		output.write(adapterIdBinary);
