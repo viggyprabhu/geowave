@@ -160,7 +160,7 @@ public class AccumuloUtils
 			final Index index ) {
 		final AccumuloRowId rowId = new AccumuloRowId(
 				key.getRow().copyBytes());
-		return decodeRow(
+		return decodeRowObj(
 				key,
 				value,
 				rowId,
