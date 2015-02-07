@@ -22,7 +22,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * This class contains all of the primitive reader field types supported
- *
+ * 
  */
 public class BasicReader
 {

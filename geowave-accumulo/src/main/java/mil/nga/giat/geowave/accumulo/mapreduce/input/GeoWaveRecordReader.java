@@ -40,7 +40,7 @@ import com.google.common.collect.Iterators;
 /**
  * This class is used by the GeoWaveInputFormat to read data from an Accumulo
  * data store.
- *
+ * 
  * @param <T>
  *            The native type for the reader
  */

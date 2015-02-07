@@ -55,7 +55,7 @@ public class NumericValue implements
 	public boolean isRange() {
 		return false;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "NumericRange [value=" + value + "]";

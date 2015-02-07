@@ -79,7 +79,8 @@ public class WFSTransactionTest
 		newFeature.setAttribute(
 				"geometry",
 				factory.createPoint(new Coordinate(
-						27.25,41.25)));
+						27.25,
+						41.25)));
 		writer.write();
 		writer.close();
 
@@ -111,7 +112,7 @@ public class WFSTransactionTest
 		reader.next();
 		assertFalse(reader.hasNext());
 		reader.close();
-		
+
 		transaction1.close();
 
 		// since this implementation does not support serializable, transaction2
@@ -152,7 +153,8 @@ public class WFSTransactionTest
 		newFeature.setAttribute(
 				"geometry",
 				factory.createPoint(new Coordinate(
-						27.25,41.25)));
+						27.25,
+						41.25)));
 		writer.write();
 		writer.close();
 		transaction1.commit();
@@ -189,7 +191,8 @@ public class WFSTransactionTest
 		newFeature.setAttribute(
 				"geometry",
 				factory.createPoint(new Coordinate(
-						27.25,41.25)));
+						27.25,
+						41.25)));
 		writer.write();
 		writer.close();
 
@@ -272,7 +275,8 @@ public class WFSTransactionTest
 		newFeature.setAttribute(
 				"geometry",
 				factory.createPoint(new Coordinate(
-						27.25,41.25)));
+						27.25,
+						41.25)));
 		writer.write();
 		writer.close();
 		transaction1.commit();

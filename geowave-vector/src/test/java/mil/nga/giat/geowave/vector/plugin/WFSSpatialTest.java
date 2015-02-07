@@ -86,7 +86,8 @@ public class WFSSpatialTest
 		newFeature.setAttribute(
 				"geometry",
 				factory.createPoint(new Coordinate(
-						27.25,41.25)));
+						27.25,
+						41.25)));
 
 		newFeature = writer.next();
 		newFeature.setAttribute(
@@ -102,7 +103,8 @@ public class WFSSpatialTest
 		newFeature.setAttribute(
 				"geometry",
 				factory.createPoint(new Coordinate(
-						27.25,41.25)));
+						27.25,
+						41.25)));
 		writer.write();
 		writer.close();
 

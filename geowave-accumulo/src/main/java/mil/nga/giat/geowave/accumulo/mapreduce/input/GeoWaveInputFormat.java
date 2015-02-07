@@ -75,7 +75,7 @@ public class GeoWaveInputFormat extends
 
 	/**
 	 * Configures a {@link AccumuloOperations} for this job.
-	 *
+	 * 
 	 * @param job
 	 *            the Hadoop job instance to be configured
 	 * @param zooKeepers
@@ -212,7 +212,7 @@ public class GeoWaveInputFormat extends
 
 	/**
 	 * Initializes an Accumulo {@link TabletLocator} based on the configuration.
-	 *
+	 * 
 	 * @param instance
 	 *            the accumulo instance
 	 * @param tableName
@@ -1015,7 +1015,7 @@ public class GeoWaveInputFormat extends
 
 	/**
 	 * Sets the log level for this job.
-	 *
+	 * 
 	 * @param job
 	 *            the Hadoop job instance to be configured
 	 * @param level
@@ -1033,7 +1033,7 @@ public class GeoWaveInputFormat extends
 
 	/**
 	 * Gets the log level from this configuration.
-	 *
+	 * 
 	 * @param context
 	 *            the Hadoop context for the configured job
 	 * @return the log level
@@ -1050,7 +1050,7 @@ public class GeoWaveInputFormat extends
 	/**
 	 * Check whether a configuration is fully configured to be used with an
 	 * Accumulo {@link org.apache.hadoop.mapreduce.InputFormat}.
-	 *
+	 * 
 	 * @param context
 	 *            the Hadoop context for the configured job
 	 * @throws IOException

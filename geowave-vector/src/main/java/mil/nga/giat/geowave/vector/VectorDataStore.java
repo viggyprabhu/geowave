@@ -117,9 +117,11 @@ public class VectorDataStore extends
 			}
 		}
 		catch (IOException e) {
-			LOGGER.error("Cannot close index iterator.", e);
+			LOGGER.error(
+					"Cannot close index iterator.",
+					e);
 		}
-		
+
 		return new CloseableIteratorWrapper<SimpleFeature>(
 				new Closeable() {
 					@Override

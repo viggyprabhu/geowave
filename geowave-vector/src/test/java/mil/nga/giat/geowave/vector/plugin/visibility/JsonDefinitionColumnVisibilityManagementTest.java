@@ -40,19 +40,22 @@ public class JsonDefinitionColumnVisibilityManagementTest
 					PrecisionModel.FIXED));
 	final FieldLevelVisibilityHandler<SimpleFeature, Object> simplePIDHandler = new FieldLevelVisibilityHandler<SimpleFeature, Object>(
 			"pid",
-			new GlobalVisibilityHandler<SimpleFeature, Object>("default"),
+			new GlobalVisibilityHandler<SimpleFeature, Object>(
+					"default"),
 			"vis",
 			manager);
 
 	final FieldLevelVisibilityHandler<SimpleFeature, Object> simplePOPHandler = new FieldLevelVisibilityHandler<SimpleFeature, Object>(
 			"pop",
-			new GlobalVisibilityHandler<SimpleFeature, Object>("default"),
+			new GlobalVisibilityHandler<SimpleFeature, Object>(
+					"default"),
 			"vis",
 			manager);
 
 	final FieldLevelVisibilityHandler<SimpleFeature, Object> simpleGEOHandler = new FieldLevelVisibilityHandler<SimpleFeature, Object>(
 			"geometry",
-			new GlobalVisibilityHandler<SimpleFeature, Object>("default"),
+			new GlobalVisibilityHandler<SimpleFeature, Object>(
+					"default"),
 			"vis",
 			manager);
 

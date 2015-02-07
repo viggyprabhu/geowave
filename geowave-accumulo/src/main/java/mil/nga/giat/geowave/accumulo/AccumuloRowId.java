@@ -13,7 +13,7 @@ import org.apache.accumulo.core.data.Key;
  * number of duplicate row IDs for this entry. The data ID must be unique for an
  * adapter, so the combination of adapter ID and data ID is intended to
  * guarantee uniqueness for this row ID.
- *
+ * 
  */
 public class AccumuloRowId
 {

@@ -9,7 +9,7 @@ import org.opengis.feature.type.AttributeDescriptor;
 /**
  * 
  * Describes temporally indexed attributes associated with a feature type.
- *
+ * 
  */
 public class TimeDescriptors
 {

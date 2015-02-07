@@ -43,7 +43,7 @@ import org.opengis.filter.Filter;
  * rows as SimpleFeatures and it will decode a CQL filter string into a query
  * filter to check acceptance with each SimpleFeature within an AccumuloIterator
  * and skip the row if it is not accepted.
- *
+ * 
  */
 public class CqlQueryFilterIterator extends
 		WholeRowIterator
@@ -194,7 +194,7 @@ public class CqlQueryFilterIterator extends
 			}
 			classLoaderInitialized = true;
 		}
-	
+
 	}
 
 	@Override

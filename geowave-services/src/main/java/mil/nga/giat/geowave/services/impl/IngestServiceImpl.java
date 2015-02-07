@@ -46,7 +46,8 @@ public class IngestServiceImpl implements
 	private final String jobTracker;
 
 	public IngestServiceImpl(
-			@Context final ServletConfig servletConfig ) {
+			@Context
+			final ServletConfig servletConfig ) {
 		final Properties props = ServiceUtils.loadProperties(servletConfig.getServletContext().getResourceAsStream(
 				servletConfig.getInitParameter("config.properties")));
 

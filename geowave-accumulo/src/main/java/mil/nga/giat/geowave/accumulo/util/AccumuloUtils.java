@@ -52,7 +52,7 @@ import org.apache.log4j.Logger;
  * A set of convenience methods for common operations on Accumulo within
  * GeoWave, such as conversions between GeoWave objects and corresponding
  * Accumulo objects.
- *
+ * 
  */
 public class AccumuloUtils
 {
@@ -490,7 +490,7 @@ public class AccumuloUtils
 	}
 
 	/**
-	 *
+	 * 
 	 * @param dataWriter
 	 * @param index
 	 * @param entry

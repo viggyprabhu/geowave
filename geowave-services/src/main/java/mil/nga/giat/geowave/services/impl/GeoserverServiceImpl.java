@@ -56,7 +56,8 @@ public class GeoserverServiceImpl implements
 	private final String defaultWorkspace;
 
 	public GeoserverServiceImpl(
-			@Context final ServletConfig servletConfig ) {
+			@Context
+			final ServletConfig servletConfig ) {
 		final Properties props = ServiceUtils.loadProperties(servletConfig.getServletContext().getResourceAsStream(
 				servletConfig.getInitParameter("config.properties")));
 
@@ -182,7 +183,8 @@ public class GeoserverServiceImpl implements
 	@DELETE
 	@Path("/workspaces/{workspace}")
 	public Response deleteWorkspace(
-			@PathParam("workspace") final String workspace ) {
+			@PathParam("workspace")
+			final String workspace ) {
 
 		final Client client = ClientBuilder.newClient().register(
 				HttpAuthenticationFeature.basic(
@@ -238,7 +240,8 @@ public class GeoserverServiceImpl implements
 	@Path("/styles/{styleName}")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response getStyle(
-			@PathParam("styleName") final String styleName ) {
+			@PathParam("styleName")
+			final String styleName ) {
 
 		final Client client = ClientBuilder.newClient().register(
 				HttpAuthenticationFeature.basic(
@@ -312,7 +315,8 @@ public class GeoserverServiceImpl implements
 	@DELETE
 	@Path("/styles/{styleName}")
 	public Response deleteStyle(
-			@PathParam("styleName") final String styleName ) {
+			@PathParam("styleName")
+			final String styleName ) {
 
 		final Client client = ClientBuilder.newClient().register(
 				HttpAuthenticationFeature.basic(
@@ -329,7 +333,9 @@ public class GeoserverServiceImpl implements
 	@Path("/datastores")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getDatastores(
-			@DefaultValue("") @QueryParam("workspace") String customWorkspace ) {
+			@DefaultValue("")
+			@QueryParam("workspace")
+			String customWorkspace ) {
 
 		customWorkspace = (customWorkspace.equals("")) ? defaultWorkspace : customWorkspace;
 
@@ -433,8 +439,11 @@ public class GeoserverServiceImpl implements
 	@Path("/datastores/{datastoreName}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getDatastore(
-			@PathParam("datastoreName") final String datastoreName,
-			@DefaultValue("") @QueryParam("workspace") String customWorkspace ) {
+			@PathParam("datastoreName")
+			final String datastoreName,
+			@DefaultValue("")
+			@QueryParam("workspace")
+			String customWorkspace ) {
 
 		customWorkspace = (customWorkspace.equals("")) ? defaultWorkspace : customWorkspace;
 
@@ -538,8 +547,11 @@ public class GeoserverServiceImpl implements
 	@DELETE
 	@Path("/datastores/{datastoreName}")
 	public Response deleteDatastore(
-			@PathParam("datastoreName") final String datastoreName,
-			@DefaultValue("") @QueryParam("workspace") String customWorkspace ) {
+			@PathParam("datastoreName")
+			final String datastoreName,
+			@DefaultValue("")
+			@QueryParam("workspace")
+			String customWorkspace ) {
 
 		customWorkspace = (customWorkspace.equals("")) ? defaultWorkspace : customWorkspace;
 
@@ -760,7 +772,8 @@ public class GeoserverServiceImpl implements
 	@Path("/layers/{layerName}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getLayer(
-			@PathParam("layerName") final String layerName ) {
+			@PathParam("layerName")
+			final String layerName ) {
 
 		final Client client = ClientBuilder.newClient().register(
 				HttpAuthenticationFeature.basic(
@@ -855,7 +868,8 @@ public class GeoserverServiceImpl implements
 	@DELETE
 	@Path("/layers/{layer}")
 	public Response deleteLayer(
-			@PathParam("layer") final String layerName ) {
+			@PathParam("layer")
+			final String layerName ) {
 
 		final Client client = ClientBuilder.newClient().register(
 				HttpAuthenticationFeature.basic(

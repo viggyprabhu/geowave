@@ -134,7 +134,8 @@ public class GeoWaveFeatureSource extends
 		Map<ByteArrayId, DataStatistics<SimpleFeature>> stats = this.components.getDataStatistics(new GeoWaveEmptyTransaction(
 				this.components));
 		DataStatistics<SimpleFeature> countStats = stats.get(CountDataStatistics.STATS_ID);
-		if (countStats != null && query.getFilter().equals(Filter.INCLUDE)) {
+		if (countStats != null && query.getFilter().equals(
+				Filter.INCLUDE)) {
 			return (int) ((CountDataStatistics) countStats).getCount();
 		}
 		else {

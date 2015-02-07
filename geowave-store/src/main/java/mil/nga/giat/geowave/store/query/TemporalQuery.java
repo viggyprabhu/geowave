@@ -12,8 +12,8 @@ import mil.nga.giat.geowave.index.sfc.data.NumericRange;
  * The Spatial Temporal Query class represents a query in three dimensions. The
  * constraint that is applied represents an intersection operation on the query
  * geometry AND a date range intersection based on startTime and endTime.
- *
- *
+ * 
+ * 
  */
 public class TemporalQuery extends
 		BasicQuery

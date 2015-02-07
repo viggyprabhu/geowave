@@ -17,7 +17,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * This class contains all of the primitive writer field types supported
- *
+ * 
  */
 public class BasicWriter<RowType, FieldType> implements
 		FieldWriter<RowType, FieldType>

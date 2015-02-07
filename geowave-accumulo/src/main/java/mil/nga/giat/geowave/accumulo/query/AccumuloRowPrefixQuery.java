@@ -10,7 +10,7 @@ import mil.nga.giat.geowave.store.index.Index;
 
 /**
  * Represents a query operation using an Accumulo row prefix.
- *
+ * 
  */
 public class AccumuloRowPrefixQuery extends
 		AbstractAccumuloRowQuery<CloseableIteratorWrapper<?>>
@@ -19,7 +19,7 @@ public class AccumuloRowPrefixQuery extends
 	public AccumuloRowPrefixQuery(
 			final Index index,
 			final ByteArrayId rowPrefix,
-			final String...authorizations) {
+			final String... authorizations ) {
 		super(
 				index,
 				rowPrefix,

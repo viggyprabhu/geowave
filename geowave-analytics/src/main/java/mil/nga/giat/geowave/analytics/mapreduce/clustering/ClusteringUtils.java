@@ -139,17 +139,19 @@ public class ClusteringUtils
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static Integer getPointCount(Connector connector, String tableNamespace, String adapterId)
-	{		
-		AccumuloDataStatisticsStore statStore = new
-				AccumuloDataStatisticsStore(new BasicAccumuloOperations(
+	public static Integer getPointCount(
+			Connector connector,
+			String tableNamespace,
+			String adapterId ) {
+		AccumuloDataStatisticsStore statStore = new AccumuloDataStatisticsStore(
+				new BasicAccumuloOperations(
 						connector,
 						tableNamespace));
 		final DataStatistics<?> stats = statStore.getDataStatistics(
 				new ByteArrayId(
 						adapterId),
 				CountDataStatistics.STATS_ID);
-		if ((stats != null) && (stats instanceof CountDataStatistics)) {				
+		if ((stats != null) && (stats instanceof CountDataStatistics)) {
 			return (int) ((CountDataStatistics) stats).getCount();
 		}
 

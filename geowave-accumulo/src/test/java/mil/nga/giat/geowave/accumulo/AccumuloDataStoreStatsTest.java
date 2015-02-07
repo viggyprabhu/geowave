@@ -151,7 +151,7 @@ public class AccumuloDataStoreStatsTest
 		accumuloOptions.setPersistDataStatistics(true);
 		runtest();
 	}
-	
+
 	@Test
 	public void testWithAltIndex() {
 		accumuloOptions.setCreateTable(true);
@@ -159,7 +159,7 @@ public class AccumuloDataStoreStatsTest
 		accumuloOptions.setPersistDataStatistics(true);
 		runtest();
 	}
-	
+
 	private void runtest() {
 
 		final Index index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
@@ -183,8 +183,6 @@ public class AccumuloDataStoreStatsTest
 					33)
 		});
 
-	
-
 		final ByteArrayId rowId0 = mockDataStore.ingest(
 				adapter,
 				index,
@@ -195,8 +193,7 @@ public class AccumuloDataStoreStatsTest
 						"test_pt"),
 				visWriterAAA).get(
 				0);
-		
-		
+
 		final ByteArrayId rowId1 = mockDataStore.ingest(
 				adapter,
 				index,
@@ -264,11 +261,13 @@ public class AccumuloDataStoreStatsTest
 
 		assertFalse(mockDataStore.deleteEntry(
 				index,
-				new ByteArrayId("test_pt_2".getBytes()),
+				new ByteArrayId(
+						"test_pt_2".getBytes()),
 				adapter.getAdapterId(),
 				"aaa"));
 
-		it1 = mockDataStore.query(adapter,
+		it1 = mockDataStore.query(
+				adapter,
 				index,
 				query,
 				-1,
@@ -282,14 +281,16 @@ public class AccumuloDataStoreStatsTest
 		assertEquals(
 				3,
 				count);
-		
+
 		assertTrue(mockDataStore.deleteEntry(
 				index,
-				new ByteArrayId("test_pt".getBytes()),
+				new ByteArrayId(
+						"test_pt".getBytes()),
 				adapter.getAdapterId(),
 				"aaa"));
 
-		it1 = mockDataStore.query(adapter,
+		it1 = mockDataStore.query(
+				adapter,
 				index,
 				query,
 				-1,
@@ -325,7 +326,8 @@ public class AccumuloDataStoreStatsTest
 				index,
 				"aaa",
 				"bbb");
-		it1 = mockDataStore.query(adapter,
+		it1 = mockDataStore.query(
+				adapter,
 				index,
 				query,
 				-1,

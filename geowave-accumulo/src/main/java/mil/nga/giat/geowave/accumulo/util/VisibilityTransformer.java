@@ -52,7 +52,7 @@ public class VisibilityTransformer implements
 				cv.length,
 				timestamp + 1);
 
-		return  Pair.of(
+		return Pair.of(
 				newKey,
 				entry.getValue());
 	}

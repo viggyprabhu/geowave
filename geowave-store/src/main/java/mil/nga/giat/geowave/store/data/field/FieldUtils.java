@@ -62,7 +62,7 @@ import com.vividsolutions.jts.geom.Geometry;
 /**
  * This class has a set of convenience methods to determine the appropriate
  * field reader and writer for a given field type (Class)
- *
+ * 
  */
 public class FieldUtils
 {

@@ -52,7 +52,8 @@ public class GeoWaveGTMemDataStoreFactory extends
 
 	@Override
 	public boolean canProcess(
-			@SuppressWarnings("rawtypes") Map params ) {
+			@SuppressWarnings("rawtypes")
+			Map params ) {
 		return (params.isEmpty() || params.size() == 2);
 	}
 

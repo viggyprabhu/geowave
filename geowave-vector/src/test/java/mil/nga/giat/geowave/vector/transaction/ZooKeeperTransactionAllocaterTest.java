@@ -46,10 +46,9 @@ public class ZooKeeperTransactionAllocaterTest
 							String clientID,
 							String txID ) {
 						synchronized (createdTXIds) {
-							if (createdTXIds.size() == maxSize) 
-								return false;
+							if (createdTXIds.size() == maxSize) return false;
 							createdTXIds.add(txID);
-							
+
 							return true;
 						}
 					}
@@ -57,7 +56,8 @@ public class ZooKeeperTransactionAllocaterTest
 				});
 	}
 
-	private int runTest() throws InterruptedException {
+	private int runTest()
+			throws InterruptedException {
 		Thread[] thr = new Thread[10];
 		for (int i = 0; i < thr.length; i++) {
 			thr[i] = new Thread(
@@ -90,10 +90,9 @@ public class ZooKeeperTransactionAllocaterTest
 
 	}
 
-	
 	// not a good test in the sense that the data is not flushed to the server.
 	// works...with discrepencies
-	//@Test
+	// @Test
 	public void recoveryTest()
 			throws InterruptedException {
 
@@ -153,7 +152,7 @@ public class ZooKeeperTransactionAllocaterTest
 						activeTX.notify();
 					}
 					try {
-						Thread.sleep(200 + (Math.abs(random.nextInt())%200));
+						Thread.sleep(200 + (Math.abs(random.nextInt()) % 200));
 					}
 					catch (InterruptedException e) {}
 					allocater.releaseTransaction(txID);

@@ -93,7 +93,7 @@ abstract public class SimpleAbstractMergeStrategy<T extends Persistable> impleme
 		if (getClass() != obj.getClass()) return false;
 		return true;
 	}
-	
+
 	@Override
 	public byte[] toBinary() {
 		return new byte[] {};

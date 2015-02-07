@@ -5,11 +5,12 @@ import mil.nga.giat.geowave.store.IngestEntryInfo;
 /**
  * 
  * Supplies not additional visibility
- *
+ * 
  * @param <T>
  */
 public class EmptyStatisticVisibility<T> implements
-		DataStatisticsVisibilityHandler<T> {
+		DataStatisticsVisibilityHandler<T>
+{
 
 	@Override
 	public byte[] getVisibility(

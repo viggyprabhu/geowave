@@ -35,7 +35,7 @@ public class GeoWaveConfiguratorBase
 
 	/**
 	 * Configuration keys for AccumuloOperations configuration.
-	 *
+	 * 
 	 */
 	protected static enum AccumuloOperationsConfig {
 		ZOOKEEPER_URL,
@@ -57,14 +57,14 @@ public class GeoWaveConfiguratorBase
 	/**
 	 * Provides a configuration key for a given feature enum, prefixed by the
 	 * implementingClass, and suffixed by a custom String
-	 *
+	 * 
 	 * @param implementingClass
 	 *            the class whose name will be used as a prefix for the property
 	 *            configuration key
 	 * @param e
 	 *            the enum used to provide the unique part of the configuration
 	 *            key
-	 *
+	 * 
 	 * @param suffix
 	 *            the custom suffix to be used in the configuration key
 	 * @return the configuration key
@@ -81,7 +81,7 @@ public class GeoWaveConfiguratorBase
 	/**
 	 * Provides a configuration key for a given feature enum, prefixed by the
 	 * implementingClass
-	 *
+	 * 
 	 * @param implementingClass
 	 *            the class whose name will be used as a prefix for the property
 	 *            configuration key
@@ -462,11 +462,11 @@ public class GeoWaveConfiguratorBase
 					e);
 		}
 	}
-	
+
 	public static void setRemoteInvocationParams(
 			final String hdfsHostPort,
 			final String jobTrackerOrResourceManagerHostPort,
-			final Configuration conf  ) {
+			final Configuration conf ) {
 		conf.set(
 				"fs.defaultFS",
 				hdfsHostPort);

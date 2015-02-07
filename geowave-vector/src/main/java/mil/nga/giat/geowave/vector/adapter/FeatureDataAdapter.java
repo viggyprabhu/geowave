@@ -535,7 +535,8 @@ public class FeatureDataAdapter extends
 		final TimeDescriptors timeDescriptors = new TimeDescriptors();
 		timeDescriptors.inferType(persistType);
 		// Up the meta-data so that it is clear and visible any inference that
-		// has occurred here. Also, this is critical to serialization/deserialization
+		// has occurred here. Also, this is critical to
+		// serialization/deserialization
 		timeDescriptors.updateType(persistType);
 		return timeDescriptors;
 	}

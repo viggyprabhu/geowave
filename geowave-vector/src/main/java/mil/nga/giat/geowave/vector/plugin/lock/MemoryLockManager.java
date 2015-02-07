@@ -8,11 +8,10 @@ import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.vector.plugin.GeoWavePluginConfig;
 
-
 /**
  * Single GeoServer lock support. In a clustered model, do not use.
  * 
- *
+ * 
  * 
  */
 public class MemoryLockManager extends

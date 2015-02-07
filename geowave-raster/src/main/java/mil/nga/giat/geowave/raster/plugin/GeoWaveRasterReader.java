@@ -196,14 +196,14 @@ public class GeoWaveRasterReader extends
 
 	/**
 	 * Constructor.
-	 *
+	 * 
 	 * @param source
 	 *            The source object.
 	 * @throws IOException
 	 * @throws AccumuloSecurityException
 	 * @throws AccumuloException
 	 * @throws UnsupportedEncodingException
-	 *
+	 * 
 	 */
 	public GeoWaveRasterReader(
 			final Object source )
@@ -422,7 +422,7 @@ public class GeoWaveRasterReader extends
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.opengis.coverage.grid.GridCoverageReader#read(org.opengis.parameter
 	 * .GeneralParameterValue [])
@@ -720,7 +720,7 @@ public class GeoWaveRasterReader extends
 	/**
 	 * transforms (if necessary) the requested envelope into the CRS used by
 	 * this reader.
-	 *
+	 * 
 	 * @throws DataSourceException
 	 */
 	private static void transformRequestEnvelope(

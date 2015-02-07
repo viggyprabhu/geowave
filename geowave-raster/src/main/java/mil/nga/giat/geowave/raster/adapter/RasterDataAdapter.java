@@ -792,7 +792,7 @@ public class RasterDataAdapter implements
 	/**
 	 * This method is responsible for creating a coverage from the supplied
 	 * {@link RenderedImage}.
-	 *
+	 * 
 	 * @param image
 	 * @return
 	 * @throws IOException
@@ -1591,7 +1591,8 @@ public class RasterDataAdapter implements
 	}
 
 	@Override
-	public IteratorConfig[] getAttachedIteratorConfig(final Index index) {
+	public IteratorConfig[] getAttachedIteratorConfig(
+			final Index index ) {
 		final EnumSet<IteratorScope> visibilityCombinerScope = EnumSet.of(IteratorScope.scan);
 		final RasterTileCombinerConfig tileCombiner = new RasterTileCombinerConfig(
 				new IteratorSetting(

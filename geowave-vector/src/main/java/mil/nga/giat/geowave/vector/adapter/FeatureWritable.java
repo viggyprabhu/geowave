@@ -167,7 +167,7 @@ public class FeatureWritable implements
 
 	/**
 	 * Reads the attributes.
-	 *
+	 * 
 	 * @param ad
 	 * @return
 	 * @throws IOException

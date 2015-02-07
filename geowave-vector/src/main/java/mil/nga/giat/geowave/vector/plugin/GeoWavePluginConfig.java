@@ -76,13 +76,12 @@ public class GeoWavePluginConfig
 			"The table namespace associated with this data store",
 			true);
 
-	/* 	
-	private static final Param FEATURE_NAMESPACE = new Param(
-			FEATURE_NAMESPACE_KEY,
-			String.class,
-			"The overriding namespace for all feature types maintained within this data store",
-			false);
-			*/
+	/*
+	 * private static final Param FEATURE_NAMESPACE = new Param(
+	 * FEATURE_NAMESPACE_KEY, String.class,
+	 * "The overriding namespace for all feature types maintained within this data store"
+	 * , false);
+	 */
 
 	private static final Param LOCK_MGT = new Param(
 			LOCK_MGT_KEY,
@@ -134,7 +133,7 @@ public class GeoWavePluginConfig
 			accumuloParams.add(PASSWORD);
 			accumuloParams.add(ACCUMULO_NAMESPACE);
 			// is pulled from the workspace
-	//		accumuloParams.add(FEATURE_NAMESPACE);
+			// accumuloParams.add(FEATURE_NAMESPACE);
 			accumuloParams.add(LOCK_MGT);
 			accumuloParams.add(AUTH_MGT);
 			accumuloParams.add(AUTH_URL);

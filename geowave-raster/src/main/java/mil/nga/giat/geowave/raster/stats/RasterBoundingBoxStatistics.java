@@ -19,7 +19,7 @@ public class RasterBoundingBoxStatistics extends
 		super(
 				dataAdapterId);
 	}
-	
+
 	@Override
 	protected Envelope getEnvelope(
 			final GridCoverage entry ) {

@@ -92,7 +92,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * the term 'start' and the other contains either the term 'stop' or 'end' it
  * will interpret the combination of these attributes as a time range to index
  * on.
- *
+ * 
  */
 public class FeatureCollectionDataAdapter extends
 		AbstractDataAdapter<DefaultFeatureCollection> implements
