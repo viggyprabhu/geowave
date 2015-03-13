@@ -7,7 +7,12 @@ Vagrant.configure("2") do |config|
   config.vm.host_name = "geowave-vagrant"
   
   config.ssh.forward_agent = true
-  config.vm.network :forwarded_port, guest: 80, host:8080 
+
+  # Port forwarding for Accumulo Monitor
+  config.vm.network :forwarded_port, guest: 20001, host:20001
+
+  # Port forwarding for Zookeeper 
+  config.vm.network :forwarded_port, guest: 2181, host:2181
 
   config.vm.provider :virtualbox do |vb|
     vb.customize ["modifyvm", :id, "--memory", 4096]
@@ -17,7 +22,5 @@ Vagrant.configure("2") do |config|
     vb.gui = true
   end
 
-  config.vm.provision :ansible do |ansible|
-    ansible.playbook = "playbook.yml"
-  end
+  config.vm.provision :shell, :path => "provision.sh"
 end
