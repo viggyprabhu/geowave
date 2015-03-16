@@ -39,7 +39,7 @@ The arguments to the tool are as follow, presented in the exact order required.
 
 * Zookeepers - Formatted as a comma-separated string: zookeeper1:port,zookeeper2:port
 * Accumulo Instance ID - The "instance" that the Accumulo cluster. 
-* Accumulo Username - The nme of the connection user associated with a user account managed by Accumulo, not a system, etc.
+* Accumulo Username - The name of the connection user associated with a user account managed by Accumulo, not a system, etc.
 * Accumulo Password - This is an Accumulo controlled secret.
 * Geowave Namespace - This is _not_ an Accumulo namespace; rather think of it as a prefix Geowave uses for index table creation.
 * Geowave Adapter ID - The name of the adapter.  This is the local name for the feature name managed by the Feature Data Adapter.  
