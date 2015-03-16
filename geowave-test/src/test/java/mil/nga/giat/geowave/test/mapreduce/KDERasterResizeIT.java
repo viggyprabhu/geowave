@@ -295,14 +295,6 @@ public class KDERasterResizeIT extends
 				}
 			}
 		}
-		// make sure all of the counts are the same before and after compaction
-		// for (int i = 1; i < counts.length; i++) {
-		// Assert.assertEquals('
-		// "The count of non-nodata values is different between the 1 pixel KDE and the 2^"
-		// + i + " pixel KDE",
-		// counts[0],
-		// counts[i]);
-		// }
 		return expectedResults;
 	}
 }
