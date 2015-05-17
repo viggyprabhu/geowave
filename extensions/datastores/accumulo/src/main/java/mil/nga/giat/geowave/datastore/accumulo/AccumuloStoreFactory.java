@@ -10,6 +10,7 @@ import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextIndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 
 import org.apache.hadoop.mapreduce.JobContext;
@@ -66,6 +67,13 @@ public class AccumuloStoreFactory extends DataStoreFactory {
 	@Override
 	public JobContextAdapterStore getJobContextAdapterStore() {
 		// TODO #238 Need to ensure that only one of the getJobContextAdapterStore is exposed
+		return null;
+	}
+
+	@Override
+	public AccumuloDataStatisticsStore getAccumuloDataStatisticsStore(
+			StoreOperations accumuloOperations) {
+		// TODO #238 Auto-generated method stub
 		return null;
 	}
 

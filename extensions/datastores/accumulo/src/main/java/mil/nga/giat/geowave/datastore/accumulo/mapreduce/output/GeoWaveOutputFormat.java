@@ -23,7 +23,6 @@ import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextIndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 
 import org.apache.accumulo.core.client.AccumuloException;
@@ -78,10 +77,10 @@ public class GeoWaveOutputFormat extends
 			final AdapterStore jobContextAdapterStore = getDataAdapterStore(
 					context,
 					accumuloOperations);
-			final IndexStore jobContextIndexStore = getIndexStore(
+			final IndexStore jobContextIndexStore = AccumuloStoreUtils.getIndexStore(
 					context,
 					accumuloOperations);
-			final DataStatisticsStore statisticsStore = new AccumuloDataStatisticsStore(
+			final DataStatisticsStore statisticsStore = AccumuloStoreUtils.getAccumuloDataStatisticsStore(
 					accumuloOperations);
 			return new GeoWaveRecordWriter(
 					context,

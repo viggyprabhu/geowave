@@ -4,9 +4,11 @@
 package mil.nga.giat.geowave.datastore.accumulo;
 
 import mil.nga.giat.geowave.core.iface.store.StoreOperations;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextIndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 
 import org.apache.hadoop.mapreduce.JobContext;
 
@@ -41,6 +43,16 @@ public class AccumuloStoreUtils {
 	public static AccumuloAdapterStore getAdapterStore(
 			StoreOperations accumuloOperations) {
 		return m_accumuloStoreFactory.getAdapterStore(accumuloOperations);
+	}
+
+	public static IndexStore getIndexStore(JobContext context,
+			StoreOperations accumuloOperations) {
+		return m_accumuloStoreFactory.getIndexStore(accumuloOperations);
+	}
+
+	public static AccumuloDataStatisticsStore getAccumuloDataStatisticsStore(
+			StoreOperations accumuloOperations) {
+		return m_accumuloStoreFactory.getAccumuloDataStatisticsStore(accumuloOperations);
 	}
 
 }

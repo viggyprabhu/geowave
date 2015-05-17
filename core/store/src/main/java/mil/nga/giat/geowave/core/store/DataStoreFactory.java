@@ -9,6 +9,7 @@ import mil.nga.giat.geowave.core.iface.store.IJobContextIndexStore;
 import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.StoreException;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 
 import org.apache.hadoop.mapreduce.JobContext;
@@ -43,5 +44,7 @@ public abstract class DataStoreFactory {
 			JobContext context) throws StoreException;
 
 	public abstract IJobContextAdapterStore getJobContextAdapterStore();
+
+	public abstract DataStatisticsStore getAccumuloDataStatisticsStore(StoreOperations accumuloOperations);
 
 }
