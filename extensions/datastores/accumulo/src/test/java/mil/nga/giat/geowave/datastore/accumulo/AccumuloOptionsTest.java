@@ -8,25 +8,22 @@ import java.util.List;
 
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.geotime.store.dimension.GeometryWrapper;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.AbstractDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler;
-import mil.nga.giat.geowave.core.store.adapter.PersistentIndexFieldHandler;
-import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler.RowBuilder;
+import mil.nga.giat.geowave.core.store.adapter.PersistentIndexFieldHandler;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
+import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
 import mil.nga.giat.geowave.core.store.data.field.FieldUtils;
 import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloIndexWriter;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOptions;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
@@ -34,7 +31,6 @@ import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.log4j.Logger;
@@ -54,7 +50,7 @@ public class AccumuloOptionsTest
 
 	final GeometryFactory factory = new GeometryFactory();
 
-	AccumuloOperations accumuloOperations;
+	StoreOperations accumuloOperations;
 
 	AccumuloIndexStore indexStore;
 
@@ -209,7 +205,7 @@ public class AccumuloOptionsTest
 							tableName,
 							adapterId));
 		}
-		catch (final AccumuloException | TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.error(
 					"Locality Group check failed",
 					e);
@@ -245,7 +241,7 @@ public class AccumuloOptionsTest
 							tableName,
 							adapterId));
 		}
-		catch (final AccumuloException | TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.error(
 					"Locality Group check failed",
 					e);
@@ -394,7 +390,7 @@ public class AccumuloOptionsTest
 		try {
 			accumuloOperations.deleteAll();
 		}
-		catch (TableNotFoundException | AccumuloSecurityException | AccumuloException e) {
+		catch (StoreException e) {
 			LOGGER.error(
 					"Unable to clear accumulo namespace",
 					e);

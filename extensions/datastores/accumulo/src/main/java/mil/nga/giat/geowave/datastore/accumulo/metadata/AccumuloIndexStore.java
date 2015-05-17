@@ -1,10 +1,10 @@
 package mil.nga.giat.geowave.datastore.accumulo.metadata;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 
 /**
  * This class will persist Index objects within an Accumulo table for GeoWave
@@ -22,7 +22,7 @@ public class AccumuloIndexStore extends
 	private static final String INDEX_CF = "INDEX";
 
 	public AccumuloIndexStore(
-			final AccumuloOperations accumuloOperations ) {
+			final StoreOperations accumuloOperations ) {
 		super(
 				accumuloOperations);
 	}

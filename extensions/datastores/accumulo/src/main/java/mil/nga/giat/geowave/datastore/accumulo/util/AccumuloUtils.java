@@ -14,6 +14,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
@@ -21,12 +22,13 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
-import mil.nga.giat.geowave.core.store.ScanCallback;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo.FieldInfo;
+import mil.nga.giat.geowave.core.store.ScanCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.data.DataWriter;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
@@ -46,7 +48,6 @@ import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloRowId;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.ModelConvertingDataAdapter;
@@ -1021,11 +1022,9 @@ public class AccumuloUtils
 			final String namespace,
 			final Index index,
 			final DataAdapter<?> adapter )
-			throws AccumuloException,
-			AccumuloSecurityException,
-			IOException,
-			TableNotFoundException {
-		final AccumuloOperations operations = new BasicAccumuloOperations(
+			throws StoreException,
+			IOException {
+		final StoreOperations operations = new BasicAccumuloOperations(
 				connector,
 				namespace);
 		// get unqualified table name
@@ -1051,11 +1050,9 @@ public class AccumuloUtils
 			final String namespace,
 			final Index index,
 			final DataAdapter<?> adapter )
-			throws AccumuloException,
-			AccumuloSecurityException,
-			IOException,
-			TableNotFoundException {
-		final AccumuloOperations operations = new BasicAccumuloOperations(
+			throws StoreException,
+			IOException {
+		final StoreOperations operations = new BasicAccumuloOperations(
 				connector,
 				namespace);
 		// get unqualified table name
@@ -1085,7 +1082,7 @@ public class AccumuloUtils
 			AccumuloSecurityException,
 			IOException {
 		long counter = 0L;
-		final AccumuloOperations operations = new BasicAccumuloOperations(
+		final StoreOperations operations = new BasicAccumuloOperations(
 				connector,
 				namespace);
 		final AccumuloIndexStore indexStore = new AccumuloIndexStore(
@@ -1130,7 +1127,7 @@ public class AccumuloUtils
 			AccumuloSecurityException,
 			IOException {
 		long counter = 0L;
-		final AccumuloOperations operations = new BasicAccumuloOperations(
+		final StoreOperations operations = new BasicAccumuloOperations(
 				connector,
 				namespace);
 		final AccumuloIndexStore indexStore = new AccumuloIndexStore(
@@ -1192,7 +1189,7 @@ public class AccumuloUtils
 			IOException,
 			TableNotFoundException {
 		CloseableIterator<Entry<Key, Value>> iterator = null;
-		final AccumuloOperations operations = new BasicAccumuloOperations(
+		final StoreOperations operations = new BasicAccumuloOperations(
 				connector);
 		final AccumuloIndexStore indexStore = new AccumuloIndexStore(
 				operations);

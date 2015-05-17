@@ -3,12 +3,12 @@ package mil.nga.giat.geowave.datastore.accumulo.query;
 import java.util.Iterator;
 import java.util.List;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.filter.FilterList;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.util.InputFormatIteratorWrapper;
 
 import org.apache.accumulo.core.client.Scanner;
@@ -51,7 +51,7 @@ public class InputFormatAccumuloRangeQuery extends
 
 	@Override
 	protected ScannerBase getScanner(
-			final AccumuloOperations accumuloOperations,
+			final StoreOperations accumuloOperations,
 			final Integer limit ) {
 		final String tableName = index.getId().getString();
 		Scanner scanner;

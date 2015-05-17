@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.core.iface.store.Converter;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
@@ -93,11 +94,11 @@ public class AccumuloDataStore implements
 	protected final IndexStore indexStore;
 	protected final AdapterStore adapterStore;
 	protected final DataStatisticsStore statisticsStore;
-	protected final AccumuloOperations accumuloOperations;
+	protected final StoreOperations accumuloOperations;
 	protected final AccumuloOptions accumuloOptions;
 
 	public AccumuloDataStore(
-			final AccumuloOperations accumuloOperations ) {
+			final StoreOperations accumuloOperations ) {
 		this(
 				new AccumuloIndexStore(
 						accumuloOperations),
@@ -109,7 +110,7 @@ public class AccumuloDataStore implements
 	}
 
 	public AccumuloDataStore(
-			final AccumuloOperations accumuloOperations,
+			final StoreOperations accumuloOperations,
 			final AccumuloOptions accumuloOptions ) {
 		this(
 				new AccumuloIndexStore(
@@ -126,7 +127,7 @@ public class AccumuloDataStore implements
 			final IndexStore indexStore,
 			final AdapterStore adapterStore,
 			final DataStatisticsStore statisticsStore,
-			final AccumuloOperations accumuloOperations ) {
+			final StoreOperations accumuloOperations ) {
 		this(
 				indexStore,
 				adapterStore,
@@ -139,7 +140,7 @@ public class AccumuloDataStore implements
 			final IndexStore indexStore,
 			final AdapterStore adapterStore,
 			final DataStatisticsStore statisticsStore,
-			final AccumuloOperations accumuloOperations,
+			final StoreOperations accumuloOperations,
 			final AccumuloOptions accumuloOptions ) {
 		this.indexStore = indexStore;
 		this.adapterStore = adapterStore;

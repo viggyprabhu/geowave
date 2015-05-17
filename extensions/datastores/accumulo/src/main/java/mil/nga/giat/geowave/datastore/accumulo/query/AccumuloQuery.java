@@ -2,11 +2,11 @@ package mil.nga.giat.geowave.datastore.accumulo.query;
 
 import java.util.List;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 
 import org.apache.accumulo.core.client.BatchScanner;
@@ -51,7 +51,7 @@ abstract public class AccumuloQuery
 	abstract protected List<ByteArrayRange> getRanges();
 
 	protected ScannerBase getScanner(
-			final AccumuloOperations accumuloOperations,
+			final StoreOperations accumuloOperations,
 			final Integer limit ) {
 		final List<ByteArrayRange> ranges = getRanges();
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());

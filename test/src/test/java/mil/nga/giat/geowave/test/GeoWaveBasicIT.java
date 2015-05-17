@@ -28,6 +28,7 @@ import mil.nga.giat.geowave.core.store.IngestCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.MemoryAdapterStore;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
@@ -43,9 +44,6 @@ import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.format.geotools.vector.GeoToolsVectorDataStoreIngestPlugin;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math.util.MathUtils;
@@ -127,7 +125,7 @@ public class GeoWaveBasicIT extends
 			try {
 				accumuloOperations.deleteAll();
 			}
-			catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+			catch (StoreException ex) {
 				LOGGER.error(
 						"Unable to clear accumulo namespace",
 						ex);
@@ -153,7 +151,7 @@ public class GeoWaveBasicIT extends
 			try {
 				accumuloOperations.deleteAll();
 			}
-			catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+			catch (StoreException ex) {
 				LOGGER.error(
 						"Unable to clear accumulo namespace",
 						ex);
@@ -175,7 +173,7 @@ public class GeoWaveBasicIT extends
 			try {
 				accumuloOperations.deleteAll();
 			}
-			catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+			catch (StoreException ex) {
 				LOGGER.error(
 						"Unable to clear accumulo namespace",
 						ex);
@@ -193,7 +191,7 @@ public class GeoWaveBasicIT extends
 			try {
 				accumuloOperations.deleteAll();
 			}
-			catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+			catch (StoreException ex) {
 				LOGGER.error(
 						"Unable to clear accumulo namespace",
 						ex);
@@ -203,7 +201,7 @@ public class GeoWaveBasicIT extends
 		try {
 			accumuloOperations.deleteAll();
 		}
-		catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+		catch (StoreException ex) {
 			LOGGER.error(
 					"Unable to clear accumulo namespace",
 					ex);
@@ -306,7 +304,7 @@ public class GeoWaveBasicIT extends
 				try {
 					accumuloOperations.deleteAll();
 				}
-				catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+				catch (StoreException ex) {
 					LOGGER.error(
 							"Unable to clear accumulo namespace",
 							ex);
@@ -381,7 +379,7 @@ public class GeoWaveBasicIT extends
 			try {
 				accumuloOperations.deleteAll();
 			}
-			catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+			catch (StoreException ex) {
 				LOGGER.error(
 						"Unable to clear accumulo namespace",
 						ex);
@@ -417,7 +415,7 @@ public class GeoWaveBasicIT extends
 			try {
 				accumuloOperations.deleteAll();
 			}
-			catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+			catch (StoreException ex) {
 				LOGGER.error(
 						"Unable to clear accumulo namespace",
 						ex);
@@ -440,7 +438,7 @@ public class GeoWaveBasicIT extends
 			try {
 				accumuloOperations.deleteAll();
 			}
-			catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+			catch (StoreException ex) {
 				LOGGER.error(
 						"Unable to clear accumulo namespace",
 						ex);
@@ -463,7 +461,7 @@ public class GeoWaveBasicIT extends
 			try {
 				accumuloOperations.deleteAll();
 			}
-			catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+			catch (StoreException ex) {
 				LOGGER.error(
 						"Unable to clear accumulo namespace",
 						ex);
@@ -481,7 +479,7 @@ public class GeoWaveBasicIT extends
 			try {
 				accumuloOperations.deleteAll();
 			}
-			catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+			catch (StoreException ex) {
 				LOGGER.error(
 						"Unable to clear accumulo namespace",
 						ex);
@@ -491,7 +489,7 @@ public class GeoWaveBasicIT extends
 		try {
 			accumuloOperations.deleteAll();
 		}
-		catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+		catch (StoreException ex) {
 			LOGGER.error(
 					"Unable to clear accumulo namespace",
 					ex);
@@ -717,7 +715,7 @@ public class GeoWaveBasicIT extends
 		try {
 			accumuloOperations.deleteAll();
 		}
-		catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+		catch (StoreException ex) {
 			LOGGER.error(
 					"Unable to clear accumulo namespace",
 					ex);
@@ -798,7 +796,7 @@ public class GeoWaveBasicIT extends
 				try {
 					accumuloOperations.deleteAll();
 				}
-				catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+				catch (StoreException ex) {
 					LOGGER.error(
 							"Unable to clear accumulo namespace",
 							ex);
@@ -810,7 +808,7 @@ public class GeoWaveBasicIT extends
 			try {
 				accumuloOperations.deleteAll();
 			}
-			catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+			catch (StoreException ex) {
 				LOGGER.error(
 						"Unable to clear accumulo namespace",
 						ex);

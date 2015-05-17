@@ -1,7 +1,7 @@
 package mil.nga.giat.geowave.adapter.vector;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.accumulo.util.TransformerWriter;
 import mil.nga.giat.geowave.datastore.accumulo.util.VisibilityTransformer;
@@ -23,10 +23,10 @@ public class AccumuloDataStatisticsStoreExt extends
 {
 
 	private final static Logger LOGGER = Logger.getLogger(AccumuloDataStatisticsStoreExt.class);
-	private AccumuloOperations accumuloOperations;
+	private StoreOperations accumuloOperations;
 
 	public AccumuloDataStatisticsStoreExt(
-			AccumuloOperations accumuloOperations ) {
+			StoreOperations accumuloOperations ) {
 		super(
 				accumuloOperations);
 		this.accumuloOperations = accumuloOperations;

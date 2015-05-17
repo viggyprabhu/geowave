@@ -2,6 +2,7 @@ package mil.nga.giat.geowave.datastore.accumulo.util;
 
 import java.io.IOException;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
@@ -9,7 +10,6 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOptions;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
@@ -34,7 +34,7 @@ public class StatsTool
 	private static final Logger LOGGER = Logger.getLogger(StatsTool.class);
 
 	public static boolean calculateStastics(
-			final AccumuloOperations accumuloOperations,
+			final StoreOperations accumuloOperations,
 			final ByteArrayId adapterId,
 			final String[] authorizations )
 			throws IOException {
@@ -98,7 +98,7 @@ public class StatsTool
 		final String namespace = args[4];
 		final String adapterId = args[5];
 		final String authorizations = args.length > 6 ? args[6] : null;
-		final AccumuloOperations accumuloOperations = new BasicAccumuloOperations(
+		final StoreOperations accumuloOperations = new BasicAccumuloOperations(
 				zookeeper,
 				accumuloInstance,
 				accumuloUser,

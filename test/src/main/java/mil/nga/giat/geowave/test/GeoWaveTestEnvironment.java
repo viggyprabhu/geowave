@@ -17,16 +17,16 @@ import mil.nga.giat.geowave.core.cli.GeoWaveMain;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialTemporalQuery;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
 import org.apache.commons.io.FileUtils;
@@ -62,7 +62,7 @@ abstract public class GeoWaveTestEnvironment
 	protected static final String DEFAULT_MINI_ACCUMULO_PASSWORD = "Ge0wave";
 	protected static final String HADOOP_WINDOWS_UTIL = "winutils.exe";
 	protected static final Object MUTEX = new Object();
-	protected static AccumuloOperations accumuloOperations;
+	protected static StoreOperations accumuloOperations;
 	protected static String zookeeper;
 	protected static String accumuloInstance;
 	protected static String accumuloUser;
@@ -217,7 +217,7 @@ abstract public class GeoWaveTestEnvironment
 				try {
 					accumuloOperations.deleteAll();
 				}
-				catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+				catch (StoreException ex) {
 					LOGGER.error(
 							"Unable to clear accumulo namespace",
 							ex);
@@ -266,7 +266,7 @@ abstract public class GeoWaveTestEnvironment
 		try {
 			accumuloOperations.insureAuthorization(auth);
 		}
-		catch (AccumuloException | AccumuloSecurityException e) {
+		catch (StoreException e) {
 			LOGGER.warn(
 					"Unable to alter authorization for Accumulo user",
 					e);
@@ -444,7 +444,7 @@ abstract public class GeoWaveTestEnvironment
 				accumuloOperations.insureAuthorization(auth);
 			}
 		}
-		catch (AccumuloException | AccumuloSecurityException e) {
+		catch (StoreException e) {
 			LOGGER.warn(
 					"Unable to alter authorization for Accumulo user",
 					e);

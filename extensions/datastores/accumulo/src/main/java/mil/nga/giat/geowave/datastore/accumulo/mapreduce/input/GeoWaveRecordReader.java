@@ -16,6 +16,7 @@ import java.util.Set;
 
 import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
@@ -23,8 +24,6 @@ import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.query.InputFormatAccumuloRangeQuery;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.PartialKey;
@@ -252,7 +251,7 @@ public class GeoWaveRecordReader<T> extends
 								}
 							}));
 		}
-		catch (AccumuloException | AccumuloSecurityException e) {
+		catch (StoreException e) {
 			LOGGER.error(
 					"Unable to query accumulo for range input split",
 					e);

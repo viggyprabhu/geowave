@@ -10,11 +10,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
 import mil.nga.giat.geowave.datastore.accumulo.Writer;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
@@ -47,7 +47,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 {
 	public final static String METADATA_TABLE = "GEOWAVE_METADATA";
 	private final static Logger LOGGER = Logger.getLogger(AbstractAccumuloPersistence.class);
-	private final AccumuloOperations accumuloOperations;
+	private final StoreOperations accumuloOperations;
 
 	// TODO: should we concern ourselves with multiple distributed processes
 	// updating and looking up objects simultaneously that would require some
@@ -75,7 +75,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 	private boolean iteratorsAttached = false;
 
 	public AbstractAccumuloPersistence(
-			final AccumuloOperations accumuloOperations ) {
+			final StoreOperations accumuloOperations ) {
 		this.accumuloOperations = accumuloOperations;
 	}
 

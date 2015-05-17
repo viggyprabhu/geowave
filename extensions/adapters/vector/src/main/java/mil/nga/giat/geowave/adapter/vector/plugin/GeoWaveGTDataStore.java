@@ -31,6 +31,7 @@ import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.geotime.store.dimension.LatitudeField;
 import mil.nga.giat.geowave.core.geotime.store.dimension.LongitudeField;
 import mil.nga.giat.geowave.core.geotime.store.dimension.TimeField;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
@@ -39,7 +40,6 @@ import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.dimension.DimensionField;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AbstractAccumuloPersistence;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
@@ -122,8 +122,8 @@ public class GeoWaveGTDataStore extends
 	private AdapterStore adapterStore;
 	protected VectorDataStore dataStore;
 	protected VectorDataStore statsDataStore;
-	protected AccumuloOperations statsOperations;
-	protected AccumuloOperations storeOperations;
+	protected StoreOperations statsOperations;
+	protected StoreOperations storeOperations;
 	private final Map<String, Index> preferredIndexes = new ConcurrentHashMap<String, Index>();
 	private final ColumnVisibilityManagement<SimpleFeature> visibilityManagement = VisibilityManagementHelper.loadVisibilityManagement();
 
@@ -225,17 +225,17 @@ public class GeoWaveGTDataStore extends
 		this.statsDataStore = statsDataStore;
 	}
 
-	protected AccumuloOperations getStatsOperations() {
+	protected StoreOperations getStatsOperations() {
 		return statsOperations;
 	}
 
 	protected void setStoreOperations(
-			final AccumuloOperations storeOperations ) {
+			final StoreOperations storeOperations ) {
 		this.storeOperations = storeOperations;
 	}
 
 	protected void setStatsOperations(
-			final AccumuloOperations statsOperations ) {
+			final StoreOperations statsOperations ) {
 		this.statsOperations = statsOperations;
 	}
 

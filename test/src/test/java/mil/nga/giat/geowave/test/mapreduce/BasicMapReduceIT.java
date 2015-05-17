@@ -17,6 +17,7 @@ import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
@@ -32,9 +33,6 @@ import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.format.gpx.GpxIngestPlugin;
 import mil.nga.giat.geowave.test.GeoWaveTestEnvironment;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
@@ -74,7 +72,7 @@ public class BasicMapReduceIT extends
 		try {
 			accumuloOperations.deleteAll();
 		}
-		catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+		catch (StoreException ex) {
 			LOGGER.error(
 					"Unable to clear accumulo namespace",
 					ex);
@@ -147,7 +145,7 @@ public class BasicMapReduceIT extends
 		try {
 			accumuloOperations.deleteAll();
 		}
-		catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+		catch (StoreException ex) {
 			LOGGER.error(
 					"Unable to clear accumulo namespace",
 					ex);

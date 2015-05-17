@@ -1,6 +1,3 @@
-/**
- * 
- */
 package mil.nga.giat.geowave.core.iface.store;
 
 import java.util.List;
@@ -9,13 +6,6 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.mapreduce.client.CoreIteratorConfig;
 
-
-
-
-/**
- * @author viggy
- *
- */
 /**
  * This interface is used as a basis for establishing connections for queries
  * and ingest processes used by the index classes.
@@ -317,4 +307,3 @@ public interface StoreOperations
 			final String... authorizations )
 			throws StoreException;
 }
-

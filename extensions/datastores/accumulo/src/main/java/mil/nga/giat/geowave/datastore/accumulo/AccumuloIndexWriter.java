@@ -7,11 +7,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.IndexDependentDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsBuilder;
@@ -22,8 +24,6 @@ import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsSt
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.DataAdapterAndIndexCache;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.log4j.Logger;
 
@@ -38,7 +38,7 @@ public class AccumuloIndexWriter implements
 {
 	private final static Logger LOGGER = Logger.getLogger(AccumuloIndexWriter.class);
 	protected final Index index;
-	protected final AccumuloOperations accumuloOperations;
+	protected final StoreOperations accumuloOperations;
 	protected final AccumuloOptions accumuloOptions;
 	protected final AccumuloDataStore dataStore;
 	protected Writer writer;
@@ -53,7 +53,7 @@ public class AccumuloIndexWriter implements
 
 	public AccumuloIndexWriter(
 			final Index index,
-			final AccumuloOperations accumuloOperations,
+			final StoreOperations accumuloOperations,
 			final AccumuloDataStore dataStore ) {
 		this(
 				index,
@@ -64,7 +64,7 @@ public class AccumuloIndexWriter implements
 
 	public AccumuloIndexWriter(
 			final Index index,
-			final AccumuloOperations accumuloOperations,
+			final StoreOperations accumuloOperations,
 			final AccumuloOptions accumuloOptions,
 			final AccumuloDataStore dataStore ) {
 		this.index = index;
@@ -190,7 +190,7 @@ public class AccumuloIndexWriter implements
 						adapterId);
 			}
 		}
-		catch (AccumuloException | TableNotFoundException | AccumuloSecurityException e) {
+		catch (StoreException e) {
 			LOGGER.error(
 					"Unable to determine existence of locality group [" + writableAdapter.getAdapterId().getString() + "]",
 					e);
@@ -310,7 +310,7 @@ public class AccumuloIndexWriter implements
 						adapterId);
 			}
 		}
-		catch (AccumuloException | TableNotFoundException | AccumuloSecurityException e) {
+		catch (StoreException e) {
 			LOGGER.error(
 					"Unable to determine existence of locality group [" + writableAdapter.getAdapterId().getString() + "]",
 					e);

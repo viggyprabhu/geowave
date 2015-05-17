@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import mil.nga.giat.geowave.core.geotime.IndexType;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.format.gpx.GpxUtils;
 import mil.nga.giat.geowave.service.client.GeoserverServiceClient;
 import mil.nga.giat.geowave.service.client.InfoServiceClient;
@@ -16,9 +17,6 @@ import mil.nga.giat.geowave.test.mapreduce.MapReduceTestEnvironment;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.commons.io.IOUtils;
 import org.geotools.feature.SchemaException;
 import org.junit.Assert;
@@ -107,7 +105,7 @@ public class GeoWaveServicesIT extends
 		try {
 			accumuloOperations.deleteAll();
 		}
-		catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+		catch (StoreException ex) {
 			LOGGER.error(
 					"Unable to clear accumulo namespace",
 					ex);

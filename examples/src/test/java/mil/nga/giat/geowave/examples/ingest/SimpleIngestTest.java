@@ -5,11 +5,11 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
 import mil.nga.giat.geowave.core.geotime.GeometryUtils;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.query.BasicQuery;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOptions;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
@@ -40,7 +40,7 @@ public class SimpleIngestTest
 	final String AccumuloUser = "root";
 	final PasswordToken AccumuloPass = new PasswordToken(
 			new byte[0]);
-	AccumuloOperations accumuloOperations;
+	StoreOperations accumuloOperations;
 	AccumuloIndexStore indexStore;
 	AccumuloAdapterStore adapterStore;
 	AccumuloDataStatisticsStore statsStore;

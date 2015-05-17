@@ -1,10 +1,10 @@
 package mil.nga.giat.geowave.datastore.accumulo.metadata;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 
 /**
  * This class will persist Data Adapters within an Accumulo table for GeoWave
@@ -21,7 +21,7 @@ public class AccumuloAdapterStore extends
 	private static final String ADAPTER_CF = "ADAPTER";
 
 	public AccumuloAdapterStore(
-			final AccumuloOperations accumuloOperations ) {
+			final StoreOperations accumuloOperations ) {
 		super(
 				accumuloOperations);
 	}

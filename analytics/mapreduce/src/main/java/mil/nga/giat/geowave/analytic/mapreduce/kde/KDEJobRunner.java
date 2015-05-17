@@ -7,6 +7,7 @@ import mil.nga.giat.geowave.adapter.vector.plugin.ExtractGeometryFilterVisitor;
 import mil.nga.giat.geowave.core.geotime.GeometryUtils;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.IndexWriter;
@@ -14,7 +15,6 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputFormat;
@@ -163,7 +163,7 @@ public class KDEJobRunner extends
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 		job.setNumReduceTasks(8);
 		job.setSpeculativeExecution(false);
-		final AccumuloOperations ops = new BasicAccumuloOperations(
+		final StoreOperations ops = new BasicAccumuloOperations(
 				zookeeper,
 				instance,
 				user,
@@ -361,7 +361,7 @@ public class KDEJobRunner extends
 			final WritableDataAdapter<?> adapter,
 			final Index index )
 			throws Exception {
-		final AccumuloOperations ops = new BasicAccumuloOperations(
+		final StoreOperations ops = new BasicAccumuloOperations(
 				zookeeper,
 				instance,
 				user,

@@ -5,15 +5,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import mil.nga.giat.geowave.core.ingest.IndexCompatibilityVisitor;
-import mil.nga.giat.geowave.core.ingest.IngestDimensionalityTypeProviderSpi;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -41,7 +39,7 @@ public class AccumuloCommandLineOptions
 	private final String visibility;
 	private final boolean clearNamespace;
 	private final String dimensionalityType;
-	private AccumuloOperations operations;
+	private StoreOperations operations;
 
 	public AccumuloCommandLineOptions(
 			final String zookeepers,
@@ -77,7 +75,7 @@ public class AccumuloCommandLineOptions
 			try {
 				getAccumuloOperations().deleteAll();
 			}
-			catch (TableNotFoundException | AccumuloSecurityException | AccumuloException e) {
+			catch (StoreException e) {
 				LOGGER.error("Unable to clear accumulo namespace");
 			}
 
@@ -119,7 +117,7 @@ public class AccumuloCommandLineOptions
 		return clearNamespace;
 	}
 
-	public synchronized AccumuloOperations getAccumuloOperations()
+	public synchronized StoreOperations getAccumuloOperations()
 			throws AccumuloException,
 			AccumuloSecurityException {
 		if (operations == null) {

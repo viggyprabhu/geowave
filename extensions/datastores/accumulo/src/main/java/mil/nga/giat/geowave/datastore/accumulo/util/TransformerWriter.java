@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.datastore.accumulo.Writer;
 
 import org.apache.accumulo.core.client.ScannerBase;
@@ -25,13 +25,13 @@ public class TransformerWriter
 	private final static Logger LOGGER = Logger.getLogger(TransformerWriter.class);
 	private final ScannerBase scanner;
 	private final String tableName;
-	private final AccumuloOperations accumuloOperations;
+	private final StoreOperations accumuloOperations;
 	private final Transformer transformer;
 
 	public TransformerWriter(
 			final ScannerBase scanner,
 			final String tableName,
-			final AccumuloOperations accumuloOperations,
+			final StoreOperations accumuloOperations,
 			final Transformer transformer ) {
 		super();
 		this.scanner = scanner;

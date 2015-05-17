@@ -17,7 +17,6 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
@@ -113,7 +112,7 @@ public class GeoWaveOutputFormat extends
 
 	protected static IndexStore getIndexStore(
 			final JobContext context,
-			final AccumuloOperations accumuloOperations ) {
+			final StoreOperations accumuloOperations ) {
 		return new JobContextIndexStore(
 				context,
 				accumuloOperations);
@@ -175,7 +174,7 @@ public class GeoWaveOutputFormat extends
 
 		protected GeoWaveRecordWriter(
 				final TaskAttemptContext context,
-				final AccumuloOperations accumuloOperations,
+				final StoreOperations accumuloOperations,
 				final IndexStore indexStore,
 				final AdapterStore adapterStore,
 				final DataStatisticsStore statisticsStore )
@@ -258,7 +257,7 @@ public class GeoWaveOutputFormat extends
 	}
 
 	/**
-	 * Configures a {@link AccumuloOperations} for this job.
+	 * Configures a {@link StoreOperations} for this job.
 	 * 
 	 * @param config
 	 *            hadoop configuration
@@ -303,7 +302,7 @@ public class GeoWaveOutputFormat extends
 	}
 
 	/**
-	 * Configures a {@link AccumuloOperations} for this job.
+	 * Configures a {@link StoreOperations} for this job.
 	 * 
 	 * @param job
 	 *            the Hadoop job instance to be configured

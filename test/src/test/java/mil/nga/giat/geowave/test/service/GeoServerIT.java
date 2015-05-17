@@ -18,11 +18,9 @@ import java.util.regex.Pattern;
 
 import javax.ws.rs.core.Response.Status;
 
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.service.client.GeoserverServiceClient;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -76,7 +74,7 @@ public class GeoServerIT extends
 		try {
 			accumuloOperations.deleteAll();
 		}
-		catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+		catch (StoreException ex) {
 			LOGGER.error(
 					"Unable to clear accumulo namespace",
 					ex);

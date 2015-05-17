@@ -3,6 +3,7 @@ package mil.nga.giat.geowave.datastore.accumulo.query;
 import java.util.Iterator;
 import java.util.List;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
@@ -11,7 +12,6 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.filter.FilterList;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper.ScannerClosableWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.EntryIteratorWrapper;
@@ -63,7 +63,7 @@ public abstract class AccumuloFilteredIndexQuery extends
 			final ScannerBase scanner );
 
 	public CloseableIterator<?> query(
-			final AccumuloOperations accumuloOperations,
+			final StoreOperations accumuloOperations,
 			final AdapterStore adapterStore,
 			final Integer limit ) {
 		return query(
@@ -75,7 +75,7 @@ public abstract class AccumuloFilteredIndexQuery extends
 
 	@SuppressWarnings("rawtypes")
 	public CloseableIterator<?> query(
-			final AccumuloOperations accumuloOperations,
+			final StoreOperations accumuloOperations,
 			final AdapterStore adapterStore,
 			final Integer limit,
 			final boolean withKeys ) {

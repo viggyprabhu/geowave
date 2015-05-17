@@ -4,10 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mil.nga.giat.geowave.core.iface.store.IJobContextIndexStore;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 
@@ -26,12 +26,12 @@ public class JobContextIndexStore implements
 {
 	private static final Class<?> CLASS = JobContextIndexStore.class;
 	private final JobContext context;
-	private final AccumuloOperations accumuloOperations;
+	private final StoreOperations accumuloOperations;
 	private final Map<ByteArrayId, Index> indexCache = new HashMap<ByteArrayId, Index>();
 
 	public JobContextIndexStore(
 			final JobContext context,
-			final AccumuloOperations accumuloOperations ) {
+			final StoreOperations accumuloOperations ) {
 		this.context = context;
 		this.accumuloOperations = accumuloOperations;
 

@@ -14,8 +14,10 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.ConnectorPool;
 
@@ -46,7 +48,7 @@ import org.apache.log4j.Logger;
  * and a batch writer
  */
 public class BasicAccumuloOperations implements
-		AccumuloOperations
+		StoreOperations
 {
 	private final static Logger LOGGER = Logger.getLogger(BasicAccumuloOperations.class);
 	private static final int DEFAULT_NUM_THREADS = 16;
@@ -314,9 +316,7 @@ public class BasicAccumuloOperations implements
 	 */
 	@Override
 	public void deleteAll()
-			throws AccumuloSecurityException,
-			AccumuloException,
-			TableNotFoundException {
+			throws StoreException {
 		SortedSet<String> tableNames = connector.tableOperations().list();
 
 		if ((tableNamespace != null) && !tableNamespace.isEmpty()) {
@@ -326,8 +326,13 @@ public class BasicAccumuloOperations implements
 		}
 
 		for (final String tableName : tableNames) {
-			connector.tableOperations().delete(
-					tableName);
+			try {
+				connector.tableOperations().delete(
+						tableName);
+			} catch (AccumuloException | AccumuloSecurityException
+					| TableNotFoundException e) {
+				throw new StoreException(e.getMessage(),e.getCause());
+			}
 		}
 	}
 
@@ -360,7 +365,7 @@ public class BasicAccumuloOperations implements
 			deleter.delete();
 			return true;
 		}
-		catch (final TableNotFoundException | MutationsRejectedException e) {
+		catch (final StoreException | TableNotFoundException | MutationsRejectedException e) {
 			LOGGER.warn(
 					"Unable to delete row from table [" + tableName + "].",
 					e);
@@ -424,7 +429,7 @@ public class BasicAccumuloOperations implements
 
 			deleter.close();
 		}
-		catch (final TableNotFoundException | MutationsRejectedException e) {
+		catch (final StoreException | TableNotFoundException | MutationsRejectedException e) {
 			LOGGER.warn(
 					"Unable to delete row from table [" + tableName + "].",
 					e);
@@ -449,8 +454,7 @@ public class BasicAccumuloOperations implements
 	public boolean localityGroupExists(
 			final String tableName,
 			final byte[] localityGroup )
-			throws AccumuloException,
-			TableNotFoundException {
+			throws StoreException {
 		final String qName = getQualifiedTableName(tableName);
 		final String localityGroupStr = qName + StringUtils.stringFromBinary(localityGroup);
 
@@ -465,10 +469,15 @@ public class BasicAccumuloOperations implements
 		}
 
 		// check accumulo to see if locality group exists
-		final boolean groupExists = connector.tableOperations().exists(
-				qName) && connector.tableOperations().getLocalityGroups(
-				qName).keySet().contains(
-				StringUtils.stringFromBinary(localityGroup));
+		boolean groupExists;
+		try {
+			groupExists = connector.tableOperations().exists(
+					qName) && connector.tableOperations().getLocalityGroups(
+					qName).keySet().contains(
+					StringUtils.stringFromBinary(localityGroup));
+		} catch (AccumuloException | TableNotFoundException e) {
+			throw new StoreException(e.getMessage(),e.getCause());
+		}
 
 		// update the cache
 		if (groupExists) {
@@ -484,9 +493,7 @@ public class BasicAccumuloOperations implements
 	public void addLocalityGroup(
 			final String tableName,
 			final byte[] localityGroup )
-			throws AccumuloException,
-			TableNotFoundException,
-			AccumuloSecurityException {
+			throws StoreException {
 		final String qName = getQualifiedTableName(tableName);
 		final String localityGroupStr = qName + StringUtils.stringFromBinary(localityGroup);
 
@@ -503,21 +510,25 @@ public class BasicAccumuloOperations implements
 		// add locality group to accumulo and update the cache
 		if (connector.tableOperations().exists(
 				qName)) {
-			final Map<String, Set<Text>> localityGroups = connector.tableOperations().getLocalityGroups(
-					qName);
-
-			final Set<Text> groupSet = new HashSet<Text>();
-
-			groupSet.add(new Text(
-					localityGroup));
-
-			localityGroups.put(
-					StringUtils.stringFromBinary(localityGroup),
-					groupSet);
-
-			connector.tableOperations().setLocalityGroups(
-					qName,
-					localityGroups);
+			Map<String, Set<Text>> localityGroups;
+			try {
+				localityGroups = connector.tableOperations().getLocalityGroups(
+						qName);
+				final Set<Text> groupSet = new HashSet<Text>();
+	
+				groupSet.add(new Text(
+						localityGroup));
+	
+				localityGroups.put(
+						StringUtils.stringFromBinary(localityGroup),
+						groupSet);
+				connector.tableOperations().setLocalityGroups(
+						qName,
+						localityGroups);
+			} catch (AccumuloException | AccumuloSecurityException
+					| TableNotFoundException e) {
+				throw new StoreException(e.getMessage(),e.getCause());
+			}
 
 			locGrpCache.put(
 					localityGroupStr,
@@ -552,25 +563,31 @@ public class BasicAccumuloOperations implements
 	public void insureAuthorization(
 			final String clientUser,
 			final String... authorizations )
-			throws AccumuloException,
-			AccumuloSecurityException {
-		Authorizations auths = connector.securityOperations().getUserAuthorizations(
-				clientUser);
-		final List<byte[]> newSet = new ArrayList<byte[]>();
-		for (final String auth : authorizations) {
-			if (!auths.contains(auth)) {
-				newSet.add(auth.getBytes(StringUtils.UTF8_CHAR_SET));
-			}
-		}
-		if (newSet.size() > 0) {
-			newSet.addAll(auths.getAuthorizations());
-			connector.securityOperations().changeUserAuthorizations(
-					clientUser,
-					new Authorizations(
-							newSet));
-			auths = connector.securityOperations().getUserAuthorizations(
+			throws StoreException {
+		try {
+			Authorizations auths = connector.securityOperations().getUserAuthorizations(
 					clientUser);
-			LOGGER.trace(clientUser + " has authorizations " + ArrayUtils.toString(auths.getAuthorizations()));
+			final List<byte[]> newSet = new ArrayList<byte[]>();
+			for (final String auth : authorizations) {
+				if (!auths.contains(auth)) {
+					newSet.add(auth.getBytes(StringUtils.UTF8_CHAR_SET));
+				}
+			}
+			
+			if (newSet.size() > 0) {
+				newSet.addAll(auths.getAuthorizations());
+				
+					connector.securityOperations().changeUserAuthorizations(
+							clientUser,
+							new Authorizations(
+									newSet));
+					auths = connector.securityOperations().getUserAuthorizations(
+							clientUser);
+				
+				LOGGER.trace(clientUser + " has authorizations " + ArrayUtils.toString(auths.getAuthorizations()));
+			}
+		} catch (AccumuloException | AccumuloSecurityException e) {
+			throw new StoreException(e.getMessage(),e.getCause());
 		}
 	}
 
@@ -578,7 +595,7 @@ public class BasicAccumuloOperations implements
 	public BatchDeleter createBatchDeleter(
 			final String tableName,
 			final String... additionalAuthorizations )
-			throws TableNotFoundException {
+			throws StoreException {
 		return connector.createBatchDeleter(
 				getQualifiedTableName(tableName),
 				new Authorizations(
@@ -605,7 +622,7 @@ public class BasicAccumuloOperations implements
 			final String tableName,
 			final boolean createTable,
 			final IteratorConfig[] iterators )
-			throws TableNotFoundException {
+			throws StoreException {
 		final String qName = getQualifiedTableName(tableName);
 		if (createTable && !connector.tableOperations().exists(
 				qName)) {

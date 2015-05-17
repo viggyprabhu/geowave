@@ -25,7 +25,6 @@ import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.mapreduce.hadoop.GeoWaveCoreInputConfigurator.InputConfig;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
@@ -81,7 +80,7 @@ public class GeoWaveInputFormat<T> extends
 	private static final BigInteger TWO = BigInteger.valueOf(2L);
 
 	/**
-	 * Configures a {@link AccumuloOperations} for this job.
+	 * Configures a {@link StoreOperations} for this job.
 	 * 
 	 * @param config
 	 *            the Hadoop configuration instance
@@ -114,7 +113,7 @@ public class GeoWaveInputFormat<T> extends
 	}
 
 	/**
-	 * Configures a {@link AccumuloOperations} for this job.
+	 * Configures a {@link StoreOperations} for this job.
 	 * 
 	 * @param job
 	 *            the Hadoop job instance to be configured
@@ -1159,8 +1158,7 @@ public class GeoWaveInputFormat<T> extends
 
 	protected static String[] getAuthorizations(
 			final JobContext context )
-			throws AccumuloException,
-			AccumuloSecurityException {
+			throws StoreException {
 		return GeoWaveInputConfigurator.getAuthorizations(
 				CLASS,
 				context);

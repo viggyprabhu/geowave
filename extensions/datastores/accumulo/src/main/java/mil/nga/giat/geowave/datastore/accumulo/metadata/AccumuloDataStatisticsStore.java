@@ -5,11 +5,11 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map.Entry;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
 import mil.nga.giat.geowave.datastore.accumulo.MergingCombiner;
 import mil.nga.giat.geowave.datastore.accumulo.MergingVisibilityCombiner;
@@ -42,7 +42,7 @@ public class AccumuloDataStatisticsStore extends
 	private static final String STATISTICS_CF = "STATS";
 
 	public AccumuloDataStatisticsStore(
-			final AccumuloOperations accumuloOperations ) {
+			final StoreOperations accumuloOperations ) {
 		super(
 				accumuloOperations);
 	}

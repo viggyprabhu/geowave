@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
+
 import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
@@ -18,12 +20,12 @@ public class TransformerWriter
 	private final static Logger LOGGER = Logger.getLogger(TransformerWriter.class);
 	private final ScannerBase scanner;
 	private final String tableName;
-	private final AccumuloOperations accumuloOperations;
+	private final StoreOperations accumuloOperations;
 
 	public TransformerWriter(
 			ScannerBase scanner,
 			String tableName,
-			AccumuloOperations accumuloOperations ) {
+			StoreOperations accumuloOperations ) {
 		super();
 		this.scanner = scanner;
 		this.tableName = tableName;
