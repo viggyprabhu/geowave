@@ -3,15 +3,14 @@ package mil.nga.giat.geowave.adapter.raster.resize;
 import java.io.IOException;
 import java.util.Iterator;
 
+import mil.nga.giat.geowave.adapter.raster.RasterHelper;
 import mil.nga.giat.geowave.adapter.raster.adapter.MergeableRasterTile;
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextIndexStore;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.output.GeoWaveOutputKey;
+import mil.nga.giat.geowave.core.store.mapreduce.GeoWaveCoreInputKey;
+import mil.nga.giat.geowave.core.store.mapreduce.GeoWaveCoreOutputKey;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -25,8 +24,8 @@ public class RasterTileResizeHelper
 
 	public RasterTileResizeHelper(
 			final JobContext context ) {
-		index = JobContextIndexStore.getIndices(context)[0];
-		final DataAdapter[] adapters = JobContextAdapterStore.getDataAdapters(context);
+		index = RasterHelper.getJobContextIndexStore().getIndices(context)[0];
+		final DataAdapter[] adapters = RasterHelper.getJobContextAdapterStore().getDataAdapters(context);
 		final Configuration conf = context.getConfiguration();
 		final String oldAdapterId = conf.get(RasterTileResizeJobRunner.OLD_ADAPTER_ID_KEY);
 		final String newAdapterId = conf.get(RasterTileResizeJobRunner.NEW_ADAPTER_ID_KEY);
@@ -42,8 +41,8 @@ public class RasterTileResizeHelper
 		}
 	}
 
-	public GeoWaveOutputKey getGeoWaveOutputKey() {
-		return new GeoWaveOutputKey(
+	public GeoWaveCoreOutputKey getGeoWaveOutputKey() {
+		return new GeoWaveCoreOutputKey(
 				newAdapter.getAdapterId(),
 				index.getId());
 	}
@@ -56,7 +55,7 @@ public class RasterTileResizeHelper
 	}
 
 	protected GridCoverage getMergedCoverage(
-			final GeoWaveInputKey key,
+			final GeoWaveCoreInputKey key,
 			final Iterable<Object> values )
 			throws IOException,
 			InterruptedException {

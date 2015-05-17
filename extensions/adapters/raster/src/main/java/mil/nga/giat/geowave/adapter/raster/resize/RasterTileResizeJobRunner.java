@@ -1,25 +1,22 @@
 package mil.nga.giat.geowave.adapter.raster.resize;
 
+import java.io.IOException;
+
+import mil.nga.giat.geowave.adapter.raster.RasterHelper;
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter;
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.nodata.NoDataMergeStrategy;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextIndexStore;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputFormat;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.output.GeoWaveOutputFormat;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.output.GeoWaveOutputKey;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
+import mil.nga.giat.geowave.core.store.mapreduce.GeoWaveCoreConfiguratorBase;
+import mil.nga.giat.geowave.core.store.mapreduce.GeoWaveCoreInputKey;
+import mil.nga.giat.geowave.core.store.mapreduce.GeoWaveCoreOutputKey;
+import mil.nga.giat.geowave.core.store.mapreduce.hadoop.GeoWaveCoreInputFormat;
+import mil.nga.giat.geowave.core.store.mapreduce.hadoop.GeoWaveCoreOutputFormat;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -29,8 +26,6 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 import org.opengis.coverage.grid.GridCoverage;
-
-import java.io.IOException;
 
 public class RasterTileResizeJobRunner extends
 		Configured implements
@@ -69,7 +64,7 @@ public class RasterTileResizeJobRunner extends
 	public int runJob()
 			throws Exception {
 		final Configuration conf = super.getConf();
-		GeoWaveConfiguratorBase.setRemoteInvocationParams(
+		GeoWaveCoreConfiguratorBase.setRemoteInvocationParams(
 				hdfsHostPort,
 				jobTrackerOrResourceManHostPort,
 				conf);
@@ -89,21 +84,21 @@ public class RasterTileResizeJobRunner extends
 		job.setMapperClass(RasterTileResizeMapper.class);
 		job.setCombinerClass(RasterTileResizeCombiner.class);
 		job.setReducerClass(RasterTileResizeReducer.class);
-		job.setInputFormatClass(GeoWaveInputFormat.class);
-		job.setOutputFormatClass(GeoWaveOutputFormat.class);
-		job.setMapOutputKeyClass(GeoWaveInputKey.class);
+		job.setInputFormatClass(GeoWaveCoreInputFormat.class);
+		job.setOutputFormatClass(GeoWaveCoreOutputFormat.class);
+		job.setMapOutputKeyClass(GeoWaveCoreInputKey.class);
 		job.setMapOutputValueClass(ObjectWritable.class);
-		job.setOutputKeyClass(GeoWaveOutputKey.class);
+		job.setOutputKeyClass(GeoWaveCoreOutputKey.class);
 		job.setOutputValueClass(GridCoverage.class);
 		job.setNumReduceTasks(8);
 
-		GeoWaveInputFormat.setMinimumSplitCount(
+		GeoWaveCoreInputFormat.setMinimumSplitCount(
 				job.getConfiguration(),
 				minSplits);
-		GeoWaveInputFormat.setMaximumSplitCount(
+		GeoWaveCoreInputFormat.setMaximumSplitCount(
 				job.getConfiguration(),
 				maxSplits);
-		GeoWaveInputFormat.setAccumuloOperationsInfo(
+		GeoWaveCoreInputFormat.setAccumuloOperationsInfo(
 				job,
 				zookeeper,
 				instance,
@@ -111,20 +106,20 @@ public class RasterTileResizeJobRunner extends
 				password,
 				oldNamespace);
 
-		GeoWaveOutputFormat.setAccumuloOperationsInfo(
+		GeoWaveCoreOutputFormat.setAccumuloOperationsInfo(
 				job,
 				zookeeper,
 				instance,
 				user,
 				password,
 				newNamespace);
-		final AccumuloOperations oldNamespaceOperations = new BasicAccumuloOperations(
+		final StoreOperations oldNamespaceOperations = RasterHelper.getStoreOperations(
 				zookeeper,
 				instance,
 				user,
 				password,
 				oldNamespace);
-		final DataAdapter adapter = new AccumuloAdapterStore(
+		final DataAdapter adapter = RasterHelper.getAdapterStore(
 				oldNamespaceOperations).getAdapter(new ByteArrayId(
 				oldCoverageName));
 		if (adapter == null) {
@@ -137,20 +132,20 @@ public class RasterTileResizeJobRunner extends
 				newCoverageName,
 				newTileSize,
 				new NoDataMergeStrategy());
-		JobContextAdapterStore.addDataAdapter(
+		RasterHelper.getJobContextAdapterStore().addDataAdapter(
 				job.getConfiguration(),
 				adapter);
-		JobContextAdapterStore.addDataAdapter(
+		RasterHelper.getJobContextAdapterStore().addDataAdapter(
 				job.getConfiguration(),
 				newAdapter);
 		Index index = null;
 		if (indexId != null) {
-			index = new AccumuloIndexStore(
+			index = RasterHelper.getIndexStore(
 					oldNamespaceOperations).getIndex(new ByteArrayId(
 					indexId));
 		}
 		if (index == null) {
-			try (CloseableIterator<Index> indices = new AccumuloIndexStore(
+			try (CloseableIterator<Index> indices = RasterHelper.getIndexStore(
 					oldNamespaceOperations).getIndices()) {
 				index = indices.next();
 			}
@@ -159,17 +154,16 @@ public class RasterTileResizeJobRunner extends
 						"Index does not exist in namespace '" + oldNamespaceOperations + "'");
 			}
 		}
-		JobContextIndexStore.addIndex(
+		RasterHelper.getJobContextIndexStore().addIndex(
 				job.getConfiguration(),
 				index);
-		final AccumuloOperations ops = new BasicAccumuloOperations(
+		final StoreOperations ops = RasterHelper.getStoreOperations(
 				zookeeper,
 				instance,
 				user,
 				password,
 				newNamespace);
-		final DataStore store = new AccumuloDataStore(
-				ops);
+		final DataStore store = RasterHelper.getDataStore(ops);
 		final IndexWriter writer = store.createIndexWriter(index);
 		writer.setupAdapter(newAdapter);
 		boolean retVal = false;

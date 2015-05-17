@@ -1,26 +1,30 @@
 package mil.nga.giat.geowave.adapter.raster.adapter.merge;
 
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import mil.nga.giat.geowave.core.iface.store.client.IIteratorSetting;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
-import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
+import mil.nga.giat.geowave.core.store.data.IteratorScopeEntity;
+import mil.nga.giat.geowave.core.store.mapreduce.client.CoreIteratorConfig;
 
-import org.apache.accumulo.core.client.IteratorSetting;
-import org.apache.accumulo.core.iterators.IteratorUtil.IteratorScope;
-
-public class RasterTileCombinerConfig extends
-		IteratorConfig
+public class RasterTileCombinerConfig extends CoreIteratorConfig
 {
 
 	public RasterTileCombinerConfig(
-			final IteratorSetting iteratorSettings,
-			final EnumSet<IteratorScope> scopes ) {
+			final IIteratorSetting iteratorSettings,
+			final IteratorScopeEntity[] iteratorScopeEntities ) {
 		super(
 				iteratorSettings,
-				scopes);
+				iteratorScopeEntities);
+	}
+
+	public RasterTileCombinerConfig(IIteratorSetting iteratorSettings,
+			IteratorScopeEntity iteratorScopeEntity) {
+		super(
+				iteratorSettings,
+				iteratorScopeEntity);
 	}
 
 	@Override

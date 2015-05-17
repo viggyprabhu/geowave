@@ -3,23 +3,32 @@ package mil.nga.giat.geowave.datastore.accumulo.mapreduce.input;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
 
-import com.google.common.base.*;
-
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.mapreduce.hadoop.GeoWaveCoreInputConfigurator.InputConfig;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextIndexStore;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputConfigurator.InputConfig;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputFormat.IntermediateSplitInfo.RangeLocationPair;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 
@@ -147,7 +156,7 @@ public class GeoWaveInputFormat<T> extends
 			final DataAdapter<?> adapter ) {
 
 		// Also store for use the mapper and reducers
-		JobContextAdapterStore.addDataAdapter(
+		AccumuloStoreUtils.getJobContextAdapterStore().addDataAdapter(
 				config,
 				adapter);
 		GeoWaveConfiguratorBase.addDataAdapter(
@@ -159,7 +168,7 @@ public class GeoWaveInputFormat<T> extends
 	public static void addIndex(
 			final Configuration config,
 			final Index index ) {
-		JobContextIndexStore.addIndex(
+		AccumuloStoreUtils.getJobContextIndexStore().addIndex(
 				config,
 				index);
 	}
@@ -1131,26 +1140,18 @@ public class GeoWaveInputFormat<T> extends
 						"Zookeeper connection for accumulo is null");
 			}
 		}
-		catch (final AccumuloException e) {
+		catch (final StoreException e) {
 			LOGGER.warn(
 					"Error establishing zookeeper connection for accumulo",
 					e);
 			throw new IOException(
 					e);
 		}
-		catch (final AccumuloSecurityException e) {
-			LOGGER.warn(
-					"Security error while establishing connection to accumulo",
-					e);
-			throw new IOException(
-					e);
-		}
 	}
 
-	public static AccumuloOperations getAccumuloOperations(
+	public static StoreOperations getAccumuloOperations(
 			final JobContext context )
-			throws AccumuloException,
-			AccumuloSecurityException {
+			throws StoreException {
 		return GeoWaveConfiguratorBase.getAccumuloOperations(
 				CLASS,
 				context);
@@ -1167,10 +1168,8 @@ public class GeoWaveInputFormat<T> extends
 
 	protected static JobContextAdapterStore getDataAdapterStore(
 			final JobContext context,
-			final AccumuloOperations accumuloOperations ) {
-		return new JobContextAdapterStore(
-				context,
-				accumuloOperations);
+			final StoreOperations accumuloOperations ) {
+		return AccumuloStoreUtils.getJobContextAdapterStore(context);
 	}
 
 	/**

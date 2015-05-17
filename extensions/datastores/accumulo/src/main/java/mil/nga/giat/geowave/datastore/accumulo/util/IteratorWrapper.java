@@ -3,6 +3,9 @@ package mil.nga.giat.geowave.datastore.accumulo.util;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import mil.nga.giat.geowave.core.iface.store.Converter;
+
+
 /**
  * This class is used internally within the ingest process of GeoWave to convert
  * each entry into a set of mutations and iterate through them (maintaining a
@@ -18,11 +21,6 @@ import java.util.LinkedList;
 public class IteratorWrapper<InputType, ConvertedType> implements
 		Iterator<ConvertedType>
 {
-	public static interface Converter<InputType, ConvertedType>
-	{
-		public Iterator<ConvertedType> convert(
-				InputType entry );
-	}
 
 	public static interface Callback<InputType, ConvertedType>
 	{

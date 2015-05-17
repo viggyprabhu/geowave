@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
+import mil.nga.giat.geowave.core.store.mapreduce.hadoop.HadoopWritableSerializationTool;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
 
 import org.apache.hadoop.conf.Configuration;

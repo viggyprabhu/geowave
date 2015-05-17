@@ -3,63 +3,25 @@ package mil.nga.giat.geowave.adapter.raster;
 import java.util.TreeMap;
 
 import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy;
-import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy.SubStrategy;
+import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
-import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
+import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.index.CustomIdIndex;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.Query;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOptions;
 
-public class RasterDataStore extends
-		AccumuloDataStore
+public class RasterDataStore 
 {
 
-	public RasterDataStore(
-			final AccumuloOperations accumuloOperations ) {
-		super(
-				accumuloOperations);
-	}
+	private DataStore m_dataStore;
 
 	public RasterDataStore(
-			final AccumuloOperations accumuloOperations,
-			final AccumuloOptions accumuloOptions ) {
-		super(
-				accumuloOperations,
-				accumuloOptions);
+			final DataStore dataStore ) {
+		m_dataStore = dataStore;
 	}
-
-	public RasterDataStore(
-			final IndexStore indexStore,
-			final AdapterStore adapterStore,
-			final DataStatisticsStore statisticsStore,
-			final AccumuloOperations accumuloOperations,
-			final AccumuloOptions accumuloOptions ) {
-		super(
-				indexStore,
-				adapterStore,
-				statisticsStore,
-				accumuloOperations,
-				accumuloOptions);
-	}
-
-	public RasterDataStore(
-			final IndexStore indexStore,
-			final AdapterStore adapterStore,
-			final DataStatisticsStore statisticsStore,
-			final AccumuloOperations accumuloOperations ) {
-		super(
-				indexStore,
-				adapterStore,
-				statisticsStore,
-				accumuloOperations);
-	}
+	
 
 	public <T> CloseableIterator<T> query(
 			final DataAdapter<T> adapter,
@@ -104,7 +66,7 @@ public class RasterDataStore extends
 				// dimension, which is the highest precision)
 				targetIndexStrategy = sortedStrategies.firstEntry().getValue();
 			}
-			return super.query(
+			return m_dataStore.query(
 					adapter,
 					new CustomIdIndex(
 							// replace the index strategy with a single
@@ -117,7 +79,7 @@ public class RasterDataStore extends
 					query);
 		}
 		else {
-			return super.query(
+			return m_dataStore.query(
 					adapter,
 					index,
 					query);

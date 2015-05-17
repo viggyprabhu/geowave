@@ -9,8 +9,8 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.mapreduce.hadoop.HadoopWritableSerializationTool;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloRowId;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.HadoopWritableSerializationTool;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
 
 import org.apache.accumulo.core.data.Key;

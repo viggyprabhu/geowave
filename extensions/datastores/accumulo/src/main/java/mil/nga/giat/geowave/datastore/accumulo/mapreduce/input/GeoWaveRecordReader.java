@@ -14,12 +14,11 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.query.InputFormatAccumuloRangeQuery;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
@@ -37,6 +36,8 @@ import org.apache.log4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * This class is used by the GeoWaveInputFormat to read data from an Accumulo
@@ -142,7 +143,7 @@ public class GeoWaveRecordReader<T> extends
 		split = (GeoWaveInputSplit) inSplit;
 
 		try {
-			final AccumuloOperations operations = GeoWaveInputFormat.getAccumuloOperations(attempt);
+			final StoreOperations operations = GeoWaveInputFormat.getAccumuloOperations(attempt);
 			final boolean isOutputWritable = GeoWaveInputFormat.isOutputWritable(attempt);
 			final JobContextAdapterStore adapterStore = GeoWaveInputFormat.getDataAdapterStore(
 					attempt,

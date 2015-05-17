@@ -15,11 +15,10 @@ import mil.nga.giat.geowave.adapter.raster.plugin.GeoWaveRasterReader;
 import mil.nga.giat.geowave.adapter.raster.resize.RasterTileResizeJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.kde.KDEJobRunner;
 import mil.nga.giat.geowave.core.geotime.IndexType;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.datastore.accumulo.util.ConnectorPool;
 import mil.nga.giat.geowave.test.GeoWaveTestEnvironment;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.hadoop.util.ToolRunner;
 import org.geotools.geometry.GeneralEnvelope;
@@ -227,8 +226,7 @@ public class KDERasterResizeIT extends
 			final Rectangle pixelDimensions,
 			double[][][] expectedResults )
 			throws IOException,
-			AccumuloException,
-			AccumuloSecurityException {
+			StoreException {
 		final GeoWaveRasterReader reader = new GeoWaveRasterReader(
 				GeoWaveRasterConfig.createConfig(
 						zookeeper,

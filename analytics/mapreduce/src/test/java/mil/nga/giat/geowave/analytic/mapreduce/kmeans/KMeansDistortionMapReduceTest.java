@@ -20,17 +20,16 @@ import mil.nga.giat.geowave.analytic.distance.DistanceFn;
 import mil.nga.giat.geowave.analytic.distance.FeatureCentroidDistanceFn;
 import mil.nga.giat.geowave.analytic.extract.SimpleFeatureCentroidExtractor;
 import mil.nga.giat.geowave.analytic.mapreduce.CountofDoubleWritable;
-import mil.nga.giat.geowave.analytic.mapreduce.kmeans.KMeansDistortionMapReduce;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.store.DataStoreFactory;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
 
 import org.apache.accumulo.core.client.AccumuloException;
@@ -95,11 +94,11 @@ public class KMeansDistortionMapReduceTest
 				FeatureCentroidDistanceFn.class,
 				DistanceFn.class);
 
-		JobContextAdapterStore.addDataAdapter(
+		DataStoreFactory.getFactory().getJobContextAdapterStore().addDataAdapter(
 				mapDriver.getConfiguration(),
 				testObjectAapter);
 
-		JobContextAdapterStore.addDataAdapter(
+		DataStoreFactory.getFactory().getJobContextAdapterStore().addDataAdapter(
 				reduceDriver.getConfiguration(),
 				testObjectAapter);
 

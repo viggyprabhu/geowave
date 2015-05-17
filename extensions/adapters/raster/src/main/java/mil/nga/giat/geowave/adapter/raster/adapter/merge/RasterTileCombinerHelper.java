@@ -5,13 +5,12 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.adapter.raster.adapter.MergeableRasterTile;
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterTile;
+import mil.nga.giat.geowave.core.iface.field.IKey;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
-
-import org.apache.accumulo.core.data.Key;
 
 /**
  * This class can be used by both the RasterTileCombiner and the
@@ -23,7 +22,7 @@ public class RasterTileCombinerHelper<T extends Persistable>
 	private RootMergeStrategy<T> mergeStrategy;
 
 	public Mergeable transform(
-			final Key key,
+			final IKey key,
 			final Mergeable mergeable ) {
 		if ((mergeable != null) && (mergeable instanceof RasterTile)) {
 			final RasterTile<T> rasterTile = (RasterTile) mergeable;

@@ -4,18 +4,21 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextIndexStore;
@@ -55,10 +58,10 @@ public class GeoWaveOutputFormat extends
 			InterruptedException {
 		try {
 			// TODO expose GeoWave's AccumuloOptions
-			final AccumuloOperations accumuloOperations = getAccumuloOperations(context);
+			final StoreOperations accumuloOperations = getAccumuloOperations(context);
 			final AdapterStore accumuloAdapterStore = new AccumuloAdapterStore(
 					accumuloOperations);
-			final DataAdapter<?>[] adapters = JobContextAdapterStore.getDataAdapters(context);
+			final DataAdapter<?>[] adapters = AccumuloStoreUtils.getJobContextAdapterStore(context).getDataAdapters(context);
 			for (final DataAdapter<?> a : adapters) {
 				if (!accumuloAdapterStore.adapterExists(a.getAdapterId())) {
 					accumuloAdapterStore.addAdapter(a);
@@ -66,7 +69,7 @@ public class GeoWaveOutputFormat extends
 			}
 			final IndexStore accumuloIndexStore = new AccumuloIndexStore(
 					accumuloOperations);
-			final Index[] indices = JobContextIndexStore.getIndices(context);
+			final Index[] indices = AccumuloStoreUtils.getJobContextIndexStore().getIndices(context);
 			for (final Index i : indices) {
 				if (!accumuloIndexStore.indexExists(i.getId())) {
 					accumuloIndexStore.addIndex(i);
@@ -96,7 +99,7 @@ public class GeoWaveOutputFormat extends
 	public static void addIndex(
 			final Configuration config,
 			final Index index ) {
-		JobContextIndexStore.addIndex(
+		AccumuloStoreUtils.getJobContextIndexStore().addIndex(
 				config,
 				index);
 	}
@@ -104,7 +107,7 @@ public class GeoWaveOutputFormat extends
 	public static void addDataAdapter(
 			final Configuration config,
 			final DataAdapter<?> adapter ) {
-		JobContextAdapterStore.addDataAdapter(
+		AccumuloStoreUtils.getJobContextAdapterStore().addDataAdapter(
 				config,
 				adapter);
 	}
@@ -119,7 +122,7 @@ public class GeoWaveOutputFormat extends
 
 	protected static AdapterStore getDataAdapterStore(
 			final JobContext context,
-			final AccumuloOperations accumuloOperations ) {
+			final StoreOperations accumuloOperations ) {
 		return new JobContextAdapterStore(
 				context,
 				accumuloOperations);
@@ -141,20 +144,14 @@ public class GeoWaveOutputFormat extends
 						"Zookeeper connection for accumulo is null");
 			}
 		}
-		catch (final AccumuloException e) {
+		catch (final StoreException e) {
 			LOGGER.warn(
 					"Error establishing zookeeper connection for accumulo",
 					e);
 			throw new IOException(
 					e);
 		}
-		catch (final AccumuloSecurityException e) {
-			LOGGER.warn(
-					"Security error while establishing connection to accumulo",
-					e);
-			throw new IOException(
-					e);
-		}
+		
 	}
 
 	@Override
@@ -412,10 +409,9 @@ public class GeoWaveOutputFormat extends
 	// context);
 	// }
 
-	public static AccumuloOperations getAccumuloOperations(
+	public static StoreOperations getAccumuloOperations(
 			final JobContext context )
-			throws AccumuloException,
-			AccumuloSecurityException {
+			throws StoreException {
 		return GeoWaveConfiguratorBase.getAccumuloOperations(
 				CLASS,
 				context);

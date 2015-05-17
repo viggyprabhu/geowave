@@ -14,12 +14,11 @@ import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.InputParameters;
 import mil.nga.giat.geowave.analytic.param.OutputParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+import mil.nga.giat.geowave.core.store.DataStoreFactory;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextIndexStore;
 
 import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
@@ -179,15 +178,17 @@ public abstract class GeoWaveAnalyticJobRunner extends
 	public static void addDataAdapter(
 			final Configuration config,
 			final DataAdapter<?> adapter ) {
-		JobContextAdapterStore.addDataAdapter(
-				config,
-				adapter);
+		
+		DataStoreFactory.getFactory().getJobContextAdapterStore().addDataAdapter(
+					config,
+					adapter);
+		
 	}
 
 	public static void addIndex(
 			final Configuration config,
 			final Index index ) {
-		JobContextIndexStore.addIndex(
+		DataStoreFactory.getFactory().getJobContextIndexStore().addIndex(
 				config,
 				index);
 	}

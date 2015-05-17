@@ -18,13 +18,11 @@ import mil.nga.giat.geowave.analytic.param.PartitionParameters;
 import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner.PartitionData;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.HadoopWritableSerializationTool;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputFormat;
+import mil.nga.giat.geowave.core.store.DataStoreFactory;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
+import mil.nga.giat.geowave.core.store.mapreduce.hadoop.HadoopWritableSerializationTool;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -138,11 +136,10 @@ public class NNMapReduce
 					LOGGER);
 			try {
 				serializationTool = new HadoopWritableSerializationTool(
-						new JobContextAdapterStore(
-								context,
-								GeoWaveInputFormat.getAccumuloOperations(context)));
+						DataStoreFactory.getFactory().getJobContextAdapterStore(
+								context));
 			}
-			catch (AccumuloException | AccumuloSecurityException e) {
+			catch (StoreException e) {
 				LOGGER.warn(
 						"Unable to get GeoWave adapter store from job context",
 						e);
@@ -292,11 +289,10 @@ public class NNMapReduce
 
 			try {
 				serializationTool = new HadoopWritableSerializationTool(
-						new JobContextAdapterStore(
-								context,
-								GeoWaveInputFormat.getAccumuloOperations(context)));
+						DataStoreFactory.getFactory().getJobContextAdapterStore(
+								context));
 			}
-			catch (AccumuloException | AccumuloSecurityException e) {
+			catch (StoreException e) {
 				LOGGER.warn(
 						"Unable to get GeoWave adapter store from job context",
 						e);

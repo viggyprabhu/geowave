@@ -1,41 +1,23 @@
 package mil.nga.giat.geowave.datastore.accumulo.mapreduce;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.ByteArrayUtils;
-import mil.nga.giat.geowave.core.index.PersistenceUtils;
-import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
-
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.mapreduce.InputFormatBase;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.log4j.Logger;
+import mil.nga.giat.geowave.core.store.mapreduce.GeoWaveCoreConfiguratorBase;
 
 /**
  * This class forms the basis for GeoWave input and output format configuration.
  */
-public class GeoWaveConfiguratorBase
+public class GeoWaveConfiguratorBase extends GeoWaveCoreConfiguratorBase
 {
-	protected static final Logger LOGGER = Logger.getLogger(GeoWaveConfiguratorBase.class);
+	/*protected static final Logger LOGGER = Logger.getLogger(GeoWaveConfiguratorBase.class);
 
 	protected static enum GeoWaveMetaStore {
 		INDEX,
 		DATA_ADAPTER,
 	}
 
-	/**
+	*//**
 	 * Configuration keys for AccumuloOperations configuration.
 	 * 
-	 */
+	 *//*
 	protected static enum AccumuloOperationsConfig {
 		ZOOKEEPER_URL,
 		INSTANCE_NAME,
@@ -53,7 +35,7 @@ public class GeoWaveConfiguratorBase
 		CREATE_TABLES
 	}
 
-	/**
+	*//**
 	 * Provides a configuration key for a given feature enum, prefixed by the
 	 * implementingClass, and suffixed by a custom String
 	 * 
@@ -67,7 +49,7 @@ public class GeoWaveConfiguratorBase
 	 * @param suffix
 	 *            the custom suffix to be used in the configuration key
 	 * @return the configuration key
-	 */
+	 *//*
 	public static String enumToConfKey(
 			final Class<?> implementingClass,
 			final Enum<?> e,
@@ -77,7 +59,7 @@ public class GeoWaveConfiguratorBase
 				e) + "-" + suffix;
 	}
 
-	/**
+	*//**
 	 * Provides a configuration key for a given feature enum, prefixed by the
 	 * implementingClass
 	 * 
@@ -88,7 +70,7 @@ public class GeoWaveConfiguratorBase
 	 *            the enum used to provide the unique part of the configuration
 	 *            key
 	 * @return the configuration key
-	 */
+	 *//*
 	public static String enumToConfKey(
 			final Class<?> implementingClass,
 			final Enum<?> e ) {
@@ -500,48 +482,7 @@ public class GeoWaveConfiguratorBase
 		}
 	}
 
-	public static void setRemoteInvocationParams(
-			final String hdfsHostPort,
-			final String jobTrackerOrResourceManagerHostPort,
-			final Configuration conf ) {
-		conf.set(
-				"fs.defaultFS",
-				hdfsHostPort);
-		conf.set(
-				"fs.hdfs.impl",
-				org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
-		// if this property is used, it hadoop does not support yarn
-		conf.set(
-				"mapred.job.tracker",
-				jobTrackerOrResourceManagerHostPort);
-		// the following 3 properties will only be used if the hadoop version
-		// does support yarn
-		if ("local".equals(jobTrackerOrResourceManagerHostPort)) {
-			conf.set(
-					"mapreduce.framework.name",
-					"local");
-		}
-		else {
-			conf.set(
-					"mapreduce.framework.name",
-					"yarn");
-		}
-		conf.set(
-				"yarn.resourcemanager.address",
-				jobTrackerOrResourceManagerHostPort);
-		// if remotely submitted with yarn, the job configuration xml will be
-		// written to this staging directory, it is generally good practice to
-		// ensure the staging directory is different for each user
-		String user = System.getProperty("user.name");
-		if ((user == null) || user.isEmpty()) {
-			user = "default";
-		}
-		conf.set(
-				"yarn.app.mapreduce.am.staging-dir",
-				"/tmp/hadoop-" + user);
-	}
-
-	/**
+	*//**
 	 * Configures a {@link AccumuloOperations} for this job.
 	 * 
 	 * @param config
@@ -556,7 +497,7 @@ public class GeoWaveConfiguratorBase
 	 *            the Accumulo password
 	 * @param geowaveTableNamespace
 	 *            the GeoWave table namespace
-	 */
+	 *//*
 	public static void setAccumuloOperationsInfo(
 			final Class<?> scope,
 			final Configuration config,
@@ -585,5 +526,5 @@ public class GeoWaveConfiguratorBase
 				scope,
 				config,
 				geowaveTableNamespace);
-	}
+	}*/
 }

@@ -17,7 +17,6 @@ import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.distance.DistanceFn;
 import mil.nga.giat.geowave.analytic.distance.FeatureCentroidOrthodromicDistanceFn;
 import mil.nga.giat.geowave.analytic.mapreduce.kmeans.SimpleFeatureImplSerialization;
-import mil.nga.giat.geowave.analytic.mapreduce.nn.NNMapReduce;
 import mil.nga.giat.geowave.analytic.mapreduce.nn.NNMapReduce.PartitionDataWritable;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
@@ -25,8 +24,8 @@ import mil.nga.giat.geowave.analytic.param.PartitionParameters;
 import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner.PartitionData;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.store.DataStoreFactory;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
 
 import org.apache.accumulo.core.client.AccumuloException;
@@ -93,12 +92,12 @@ public class NNMapReduceTest
 				BasicFeatureTypes.DEFAULT_NAMESPACE,
 				ClusteringUtils.CLUSTERING_CRS).getType();
 
-		JobContextAdapterStore.addDataAdapter(
+		DataStoreFactory.getFactory().getJobContextAdapterStore().addDataAdapter(
 				mapDriver.getConfiguration(),
 				new FeatureDataAdapter(
 						ftype));
 
-		JobContextAdapterStore.addDataAdapter(
+		DataStoreFactory.getFactory().getJobContextAdapterStore().addDataAdapter(
 				reduceDriver.getConfiguration(),
 				new FeatureDataAdapter(
 						ftype));

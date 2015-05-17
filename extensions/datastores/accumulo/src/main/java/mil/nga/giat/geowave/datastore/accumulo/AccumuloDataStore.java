@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import mil.nga.giat.geowave.core.iface.store.Converter;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
@@ -52,7 +52,6 @@ import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.DataAdapterAndIndexCache;
 import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper.Callback;
-import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper.Converter;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -72,6 +71,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.Iterators;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * This is the Accumulo implementation of the data store. It requires an

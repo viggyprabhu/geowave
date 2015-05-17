@@ -16,7 +16,6 @@ import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
 import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.extract.CentroidExtractor;
-import mil.nga.giat.geowave.analytic.mapreduce.kmeans.KSamplerMapReduce;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
@@ -24,10 +23,10 @@ import mil.nga.giat.geowave.analytic.param.SampleParameters;
 import mil.nga.giat.geowave.analytic.sample.function.SamplingRankFunction;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.store.DataStoreFactory;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.output.GeoWaveOutputKey;
 
@@ -161,7 +160,7 @@ public class KSamplerMapReduceTest
 				TestSamplingMidRankFunction.class,
 				SamplingRankFunction.class);
 
-		JobContextAdapterStore.addDataAdapter(
+		DataStoreFactory.getFactory().getJobContextAdapterStore().addDataAdapter(
 				mapDriver.getConfiguration(),
 				testObjectAapter);
 
@@ -177,10 +176,10 @@ public class KSamplerMapReduceTest
 						SampleParameters.Sample.SAMPLE_SIZE),
 				2);
 
-		JobContextAdapterStore.addDataAdapter(
+		DataStoreFactory.getFactory().getJobContextAdapterStore().addDataAdapter(
 				reduceDriver.getConfiguration(),
 				adapter);
-		JobContextAdapterStore.addDataAdapter(
+		DataStoreFactory.getFactory().getJobContextAdapterStore().addDataAdapter(
 				reduceDriver.getConfiguration(),
 				testObjectAapter);
 

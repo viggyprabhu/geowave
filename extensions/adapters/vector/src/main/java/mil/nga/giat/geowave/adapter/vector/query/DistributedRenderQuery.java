@@ -11,13 +11,14 @@ import java.util.Map.Entry;
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.query.cql.FilterToCQLTool;
 import mil.nga.giat.geowave.adapter.vector.wms.DistributableRenderer;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy;
+import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy.SubStrategy;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
-import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy.SubStrategy;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
@@ -25,7 +26,6 @@ import mil.nga.giat.geowave.core.store.filter.DistributableFilterList;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.query.AccumuloConstraintsQuery;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 
@@ -129,7 +129,7 @@ public class DistributedRenderQuery extends
 	}
 
 	public List<CloseableIterator<SimpleFeature>> queryDistributedRender(
-			final AccumuloOperations accumuloOperations,
+			final StoreOperations accumuloOperations,
 			final AdapterStore adapterStore,
 			final boolean separateSubStrategies ) {
 		final Map<NumericIndexStrategy, ScannerBase> scanners = getScanners(
@@ -157,7 +157,7 @@ public class DistributedRenderQuery extends
 	}
 
 	protected Map<NumericIndexStrategy, ScannerBase> getScanners(
-			final AccumuloOperations accumuloOperations,
+			final StoreOperations accumuloOperations,
 			final boolean separateSubStrategies ) {
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
 		final Map<NumericIndexStrategy, ScannerBase> resultScanners = new HashMap<NumericIndexStrategy, ScannerBase>();
@@ -185,7 +185,7 @@ public class DistributedRenderQuery extends
 	}
 
 	protected ScannerBase getScanner(
-			final AccumuloOperations accumuloOperations,
+			final StoreOperations accumuloOperations,
 			final byte[] prefix,
 			final String tableName ) {
 		BatchScanner scanner;

@@ -4,31 +4,30 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
+import mil.nga.giat.geowave.adapter.raster.RasterHelper;
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterTile;
+import mil.nga.giat.geowave.core.iface.combiner.ICombiner;
+import mil.nga.giat.geowave.core.iface.combiner.IIteratorEnvironment;
+import mil.nga.giat.geowave.core.iface.combiner.ISortedKeyValueIterator;
+import mil.nga.giat.geowave.core.iface.field.IColumnSet;
+import mil.nga.giat.geowave.core.iface.field.IKVBuffer;
+import mil.nga.giat.geowave.core.iface.field.IKey;
+import mil.nga.giat.geowave.core.iface.field.IValue;
 import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
-import mil.nga.giat.geowave.datastore.accumulo.MergingVisibilityCombiner;
 
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.iterators.IteratorEnvironment;
-import org.apache.accumulo.core.iterators.SortedKeyValueIterator;
-import org.apache.accumulo.core.iterators.conf.ColumnSet;
-
-public class RasterTileVisibilityCombiner extends
-		MergingVisibilityCombiner
+public class RasterTileVisibilityCombiner implements ICombiner
 {
 	private final RasterTileCombinerHelper<Persistable> helper = new RasterTileCombinerHelper<Persistable>();
-	private ColumnSet columns;
+	private IColumnSet columns;
 
-	@Override
 	protected void transformRange(
-			final SortedKeyValueIterator<Key, Value> input,
-			final KVBuffer output )
+			final ISortedKeyValueIterator<IKey, IValue> input,
+			final IKVBuffer output )
 			throws IOException {
 		if (input.hasTop() && columns.contains(input.getTopKey())) {
-			super.transformRange(
+			RasterHelper.getMergingVisibilityCombiner().transformRange(
 					input,
 					output);
 		}
@@ -42,9 +41,8 @@ public class RasterTileVisibilityCombiner extends
 		}
 	}
 
-	@Override
 	protected Mergeable getMergeable(
-			final Key key,
+			final IKey key,
 			final byte[] binary ) {
 		final RasterTile mergeable = PersistenceUtils.classFactory(
 				RasterTile.class.getName(),
@@ -58,19 +56,17 @@ public class RasterTileVisibilityCombiner extends
 				mergeable);
 	}
 
-	@Override
 	protected byte[] getBinary(
 			final Mergeable mergeable ) {
 		return mergeable.toBinary();
 	}
 
-	@Override
 	public void init(
-			final SortedKeyValueIterator<Key, Value> source,
+			final ISortedKeyValueIterator<IKey, IValue> source,
 			final Map<String, String> options,
-			final IteratorEnvironment env )
+			final IIteratorEnvironment env )
 			throws IOException {
-		super.init(
+		RasterHelper.getMergingVisibilityCombiner().init(
 				source,
 				options,
 				env);
@@ -85,8 +81,7 @@ public class RasterTileVisibilityCombiner extends
 					"The " + RasterTileCombiner.COLUMNS_KEY + " must not be empty");
 		}
 
-		columns = new ColumnSet(
-				Arrays.asList(encodedColumns.split(",")));
+		columns = RasterHelper.getNewColumnSet(Arrays.asList(encodedColumns.split(",")));
 		helper.init(options);
 	}
 

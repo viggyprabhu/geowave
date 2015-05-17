@@ -31,7 +31,7 @@
 		</dependency>
 		<dependency>
 			<groupId>mil.nga.giat</groupId>
-			<artifactId>geowave-datastore-accumulo</artifactId>
+			<artifactId>geowave-core-geotime</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

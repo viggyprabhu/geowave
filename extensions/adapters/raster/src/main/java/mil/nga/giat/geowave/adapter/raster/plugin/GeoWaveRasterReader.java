@@ -20,6 +20,7 @@ import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
 
 import mil.nga.giat.geowave.adapter.raster.RasterDataStore;
+import mil.nga.giat.geowave.adapter.raster.RasterHelper;
 import mil.nga.giat.geowave.adapter.raster.RasterUtils;
 import mil.nga.giat.geowave.adapter.raster.Resolution;
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter;
@@ -28,20 +29,16 @@ import mil.nga.giat.geowave.adapter.raster.stats.HistogramStatistics;
 import mil.nga.giat.geowave.adapter.raster.stats.OverviewStatistics;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.log4j.Logger;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
@@ -131,9 +128,7 @@ public class GeoWaveRasterReader extends
 			final Object source,
 			final Hints uHints )
 			throws IOException,
-			MalformedURLException,
-			AccumuloException,
-			AccumuloSecurityException {
+			MalformedURLException {
 		super(
 				source,
 				uHints);
@@ -163,8 +158,7 @@ public class GeoWaveRasterReader extends
 	public GeoWaveRasterReader(
 			final GeoWaveRasterConfig config )
 			throws DataSourceException,
-			AccumuloException,
-			AccumuloSecurityException {
+			StoreException {
 		super(
 				new Object(),
 				new Hints());
@@ -174,22 +168,19 @@ public class GeoWaveRasterReader extends
 
 	private void init(
 			final GeoWaveRasterConfig config )
-			throws AccumuloException,
-			AccumuloSecurityException {
-		final AccumuloOperations accumuloOperations = new BasicAccumuloOperations(
+			throws StoreException {
+		
+		final StoreOperations accumuloOperations = RasterHelper.getStoreOperations(
 				config.getZookeeperUrls(),
 				config.getAccumuloInstanceId(),
 				config.getAccumuloUsername(),
 				config.getAccumuloPassword(),
 				config.getGeowaveNamespace());
-		geowaveAdapterStore = new AccumuloAdapterStore(
-				accumuloOperations);
+		geowaveAdapterStore = RasterHelper.getAdapterStore(accumuloOperations);
 
-		geowaveStatisticsStore = new AccumuloDataStatisticsStore(
-				accumuloOperations);
+		geowaveStatisticsStore = RasterHelper.getDataStatisticsStore(accumuloOperations);
 
-		geowaveDataStore = new RasterDataStore(
-				accumuloOperations);
+		geowaveDataStore =  new RasterDataStore(RasterHelper.getDataStore(accumuloOperations));
 
 		rasterIndex = IndexType.SPATIAL_RASTER.createDefaultIndex();
 		crs = GeoWaveGTRasterFormat.DEFAULT_CRS;
@@ -209,8 +200,7 @@ public class GeoWaveRasterReader extends
 	public GeoWaveRasterReader(
 			final Object source )
 			throws IOException,
-			AccumuloException,
-			AccumuloSecurityException {
+			StoreException {
 		this(
 				source,
 				null);

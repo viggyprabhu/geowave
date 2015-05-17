@@ -3,10 +3,10 @@ package mil.nga.giat.geowave.datastore.accumulo.mapreduce;
 import java.util.HashMap;
 import java.util.Map;
 
+import mil.nga.giat.geowave.core.iface.store.IJobContextIndexStore;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
@@ -22,7 +22,7 @@ import org.apache.hadoop.mapreduce.JobContext;
  * check the metadata store if it cannot find an index in the job context.
  */
 public class JobContextIndexStore implements
-		IndexStore
+		IJobContextIndexStore
 {
 	private static final Class<?> CLASS = JobContextIndexStore.class;
 	private final JobContext context;
@@ -111,7 +111,7 @@ public class JobContextIndexStore implements
 						}));
 	}
 
-	public static void addIndex(
+	public void addIndex(
 			final Configuration config,
 			final Index index ) {
 		GeoWaveConfiguratorBase.addIndex(
@@ -129,7 +129,9 @@ public class JobContextIndexStore implements
 				indexId);
 	}
 
-	public static Index[] getIndices(
+	//TODO #238 Need to fix this error caused by creating the Interface for the class 
+	// and making this function as part of its definition
+	public Index[] getIndices(
 			final JobContext context ) {
 		return GeoWaveConfiguratorBase.getIndices(
 				CLASS,

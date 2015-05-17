@@ -5,11 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mil.nga.giat.geowave.core.iface.store.IJobContextAdapterStore;
+import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
-import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 
@@ -25,16 +26,16 @@ import org.apache.hadoop.mapreduce.JobContext;
  * context.
  */
 public class JobContextAdapterStore implements
-		AdapterStore
+		IJobContextAdapterStore
 {
 	private static final Class<?> CLASS = JobContextAdapterStore.class;
 	private final JobContext context;
-	private final AccumuloOperations accumuloOperations;
+	private final StoreOperations accumuloOperations;
 	private final Map<ByteArrayId, DataAdapter<?>> adapterCache = new HashMap<ByteArrayId, DataAdapter<?>>();
 
 	public JobContextAdapterStore(
 			final JobContext context,
-			final AccumuloOperations accumuloOperations ) {
+			final StoreOperations accumuloOperations ) {
 		this.context = context;
 		this.accumuloOperations = accumuloOperations;
 
@@ -76,7 +77,7 @@ public class JobContextAdapterStore implements
 				adapterId);
 		if (adapter == null) {
 			// then try to get it from the accumulo persistent store
-			final AccumuloAdapterStore adapterStore = new AccumuloAdapterStore(
+			final AccumuloAdapterStore adapterStore = AccumuloStoreUtils.getAdapterStore(
 					accumuloOperations);
 			adapter = adapterStore.getAdapter(adapterId);
 		}
@@ -91,7 +92,7 @@ public class JobContextAdapterStore implements
 
 	@Override
 	public CloseableIterator<DataAdapter<?>> getAdapters() {
-		final AccumuloAdapterStore adapterStore = new AccumuloAdapterStore(
+		final AccumuloAdapterStore adapterStore = AccumuloStoreUtils.getAdapterStore(
 				accumuloOperations);
 		final CloseableIterator<DataAdapter<?>> it = adapterStore.getAdapters();
 		// cache any results
@@ -152,14 +153,17 @@ public class JobContextAdapterStore implements
 				adapterId);
 	}
 
-	public static DataAdapter<?>[] getDataAdapters(
+	//TODO #238 Need to fix this error caused by creating the Interface for the class 
+	// and making this function as part of its definition
+	public DataAdapter<?>[] getDataAdapters(
 			final JobContext context ) {
 		return GeoWaveConfiguratorBase.getDataAdapters(
 				CLASS,
 				context);
 	}
 
-	public static void addDataAdapter(
+	@Override
+	public void addDataAdapter(
 			final Configuration configuration,
 			final DataAdapter<?> adapter ) {
 		GeoWaveConfiguratorBase.addDataAdapter(

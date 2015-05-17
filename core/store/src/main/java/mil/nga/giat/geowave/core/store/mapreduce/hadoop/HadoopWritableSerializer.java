@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.datastore.accumulo.mapreduce;
+package mil.nga.giat.geowave.core.store.mapreduce.hadoop;
 
 import org.apache.hadoop.io.Writable;
 

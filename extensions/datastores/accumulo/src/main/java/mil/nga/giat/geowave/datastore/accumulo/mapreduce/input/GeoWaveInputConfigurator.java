@@ -4,14 +4,14 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
+import mil.nga.giat.geowave.core.store.DataStoreFactory;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.mapreduce.hadoop.GeoWaveCoreInputConfigurator;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextIndexStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.commons.collections.IteratorUtils;
@@ -23,16 +23,9 @@ import org.apache.hadoop.mapreduce.JobContext;
  * parameters that are specific to the GeoWaveInputFormat.
  */
 public class GeoWaveInputConfigurator extends
-		GeoWaveConfiguratorBase
+		GeoWaveCoreInputConfigurator
 {
-	protected static enum InputConfig {
-		QUERY,
-		AUTHORIZATION,
-		MIN_SPLITS,
-		MAX_SPLITS,
-		OUTPUT_WRITABLE // used to inform the input format to output a Writable
-						// from the HadoopDataAdapter
-	}
+	
 
 	private static DistributableQuery getQueryInternal(
 			final Class<?> implementingClass,
@@ -119,48 +112,12 @@ public class GeoWaveInputConfigurator extends
 				getConfiguration(context));
 	}
 
-	public static void setMinimumSplitCount(
-			final Class<?> implementingClass,
-			final Configuration config,
-			final Integer minSplits ) {
-		if (minSplits != null) {
-			config.set(
-					enumToConfKey(
-							implementingClass,
-							InputConfig.MIN_SPLITS),
-					minSplits.toString());
-		}
-		else {
-			config.unset(enumToConfKey(
-					implementingClass,
-					InputConfig.MIN_SPLITS));
-		}
-	}
-
 	public static Integer getMaximumSplitCount(
 			final Class<?> implementingClass,
 			final JobContext context ) {
 		return getMaximumSplitCountInternal(
 				implementingClass,
 				getConfiguration(context));
-	}
-
-	public static void setMaximumSplitCount(
-			final Class<?> implementingClass,
-			final Configuration config,
-			final Integer maxSplits ) {
-		if (maxSplits != null) {
-			config.set(
-					enumToConfKey(
-							implementingClass,
-							InputConfig.MAX_SPLITS),
-					maxSplits.toString());
-		}
-		else {
-			config.unset(enumToConfKey(
-					implementingClass,
-					InputConfig.MAX_SPLITS));
-		}
 	}
 
 	public static void addAuthorization(
@@ -215,19 +172,19 @@ public class GeoWaveInputConfigurator extends
 	public static Index[] searchForIndices(
 			final Class<?> implementingClass,
 			final JobContext context ) {
-		final Index[] userIndices = JobContextIndexStore.getIndices(context);
+		final Index[] userIndices = AccumuloStoreUtils.getJobContextIndexStore().getIndices(context);
 		if ((userIndices == null) || (userIndices.length <= 0)) {
 			try {
 				// if there are no indices, assume we are searching all indices
 				// in the metadata store
-				return (Index[]) IteratorUtils.toArray(
-						new AccumuloIndexStore(
-								getAccumuloOperations(
-										implementingClass,
-										context)).getIndices(),
-						Index.class);
+				return (Index[]) IteratorUtils.toArray( 
+						DataStoreFactory.getFactory().getIndexStore(
+															getAccumuloOperations(
+																	implementingClass,
+																	context)).getIndices(),
+																	Index.class);
 			}
-			catch (AccumuloException | AccumuloSecurityException e) {
+			catch (StoreException e) {
 				LOGGER.warn(
 						"Unable to lookup indices from GeoWave metadata store",
 						e);

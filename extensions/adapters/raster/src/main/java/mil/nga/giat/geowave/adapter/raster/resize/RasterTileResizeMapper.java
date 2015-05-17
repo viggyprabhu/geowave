@@ -6,24 +6,26 @@ import java.util.Iterator;
 import mil.nga.giat.geowave.adapter.raster.FitToIndexGridCoverage;
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveWritableOutputMapper;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
+import mil.nga.giat.geowave.core.store.mapreduce.GeoWaveCoreInputKey;
+import mil.nga.giat.geowave.core.store.mapreduce.GeoWaveCoreWritableOutputMapper;
 
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mapreduce.MapContext;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.log4j.Logger;
 import org.opengis.coverage.grid.GridCoverage;
 
 public class RasterTileResizeMapper extends
-		GeoWaveWritableOutputMapper<GeoWaveInputKey, GridCoverage>
+		GeoWaveCoreWritableOutputMapper<GeoWaveCoreInputKey, GridCoverage>
 {
+	protected static final Logger LOGGER = Logger.getLogger(RasterTileResizeMapper.class);
 	private RasterTileResizeHelper helper;
 
 	@Override
 	protected void mapNativeValue(
-			final GeoWaveInputKey key,
+			final GeoWaveCoreInputKey key,
 			final GridCoverage value,
-			final MapContext<GeoWaveInputKey, GridCoverage, GeoWaveInputKey, Object> context )
+			final MapContext<GeoWaveCoreInputKey, GridCoverage, GeoWaveCoreInputKey, Object> context )
 			throws IOException,
 			InterruptedException {
 		if (helper.isOriginalCoverage(key.getAdapterId())) {
@@ -41,7 +43,7 @@ public class RasterTileResizeMapper extends
 					// converted above
 					if (c instanceof FitToIndexGridCoverage) {
 						context.write(
-								new GeoWaveInputKey(
+								new GeoWaveCoreInputKey(
 										helper.getNewCoverageId(),
 										((FitToIndexGridCoverage) c).getInsertionId()),
 								c);
@@ -53,7 +55,7 @@ public class RasterTileResizeMapper extends
 
 	@Override
 	protected void setup(
-			final Mapper<GeoWaveInputKey, GridCoverage, GeoWaveInputKey, ObjectWritable>.Context context )
+			final Mapper<GeoWaveCoreInputKey, GridCoverage, GeoWaveCoreInputKey, ObjectWritable>.Context context )
 			throws IOException,
 			InterruptedException {
 		super.setup(context);

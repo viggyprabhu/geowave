@@ -13,8 +13,8 @@ import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
-import mil.nga.giat.geowave.datastore.accumulo.util.EntryIteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper.ScannerClosableWrapper;
+import mil.nga.giat.geowave.datastore.accumulo.util.EntryIteratorWrapper;
 
 import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.log4j.Logger;

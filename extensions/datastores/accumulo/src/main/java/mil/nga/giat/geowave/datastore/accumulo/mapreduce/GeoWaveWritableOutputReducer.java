@@ -2,11 +2,11 @@ package mil.nga.giat.geowave.datastore.accumulo.mapreduce;
 
 import java.io.IOException;
 
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
+import mil.nga.giat.geowave.core.store.mapreduce.hadoop.HadoopWritableSerializationTool;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputFormat;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mapreduce.ReduceContext;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -69,7 +69,7 @@ public abstract class GeoWaveWritableOutputReducer<KEYIN, VALUEIN> extends
 							context,
 							GeoWaveInputFormat.getAccumuloOperations(context)));
 		}
-		catch (AccumuloException | AccumuloSecurityException e) {
+		catch (StoreException e) {
 			LOGGER.warn(
 					"Unable to get GeoWave adapter store from job context",
 					e);

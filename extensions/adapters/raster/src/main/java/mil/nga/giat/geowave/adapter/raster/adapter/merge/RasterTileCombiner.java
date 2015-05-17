@@ -4,25 +4,26 @@ import java.io.IOException;
 import java.util.Map;
 
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterTile;
+import mil.nga.giat.geowave.core.iface.combiner.ICombiner;
+import mil.nga.giat.geowave.core.iface.combiner.IIteratorEnvironment;
+import mil.nga.giat.geowave.core.iface.combiner.ISortedKeyValueIterator;
+import mil.nga.giat.geowave.core.iface.field.IKey;
+import mil.nga.giat.geowave.core.iface.field.IValue;
 import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
-import mil.nga.giat.geowave.datastore.accumulo.MergingCombiner;
+import mil.nga.giat.geowave.core.store.DataStoreFactory;
 
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.iterators.IteratorEnvironment;
-import org.apache.accumulo.core.iterators.SortedKeyValueIterator;
-
-public class RasterTileCombiner extends
-		MergingCombiner
+public class RasterTileCombiner implements ICombiner 
 {
-	public static final String COLUMNS_KEY = COLUMNS_OPTION;
+	//TODO #238 This is hardcoded as against getting it from MergingCombiner.COLUMN_OPTIONS 
+	//     to solve direct dependency to Accumulo-core
+	public static final String COLUMNS_KEY = "columns";
+	
 	private final RasterTileCombinerHelper<Persistable> helper = new RasterTileCombinerHelper<Persistable>();
 
-	@Override
 	protected Mergeable getMergeable(
-			final Key key,
+			final IKey key,
 			final byte[] binary ) {
 		final RasterTile mergeable = PersistenceUtils.classFactory(
 				RasterTile.class.getName(),
@@ -36,19 +37,17 @@ public class RasterTileCombiner extends
 				mergeable);
 	}
 
-	@Override
 	protected byte[] getBinary(
 			final Mergeable mergeable ) {
 		return mergeable.toBinary();
 	}
 
-	@Override
 	public void init(
-			final SortedKeyValueIterator<Key, Value> source,
+			final ISortedKeyValueIterator<IKey, IValue> source,
 			final Map<String, String> options,
-			final IteratorEnvironment env )
+			final IIteratorEnvironment env )
 			throws IOException {
-		super.init(
+		DataStoreFactory.getFactory().getMergedCombiner().init(
 				source,
 				options,
 				env);
