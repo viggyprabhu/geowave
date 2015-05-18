@@ -9,7 +9,6 @@ import mil.nga.giat.geowave.adapter.vector.query.AccumuloCqlConstraintsQuery;
 import mil.nga.giat.geowave.adapter.vector.query.DistributedRenderQuery;
 import mil.nga.giat.geowave.adapter.vector.query.SpatialDecimationQuery;
 import mil.nga.giat.geowave.adapter.vector.wms.DistributableRenderer;
-import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
@@ -21,6 +20,7 @@ import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOptions;
+import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -45,7 +45,7 @@ public class VectorDataStore extends
 			final IndexStore indexStore,
 			final AdapterStore adapterStore,
 			final DataStatisticsStore statisticsStore,
-			final StoreOperations accumuloOperations ) {
+			final BasicAccumuloOperations accumuloOperations ) {
 		super(
 				indexStore,
 				adapterStore,
@@ -57,7 +57,7 @@ public class VectorDataStore extends
 			final IndexStore indexStore,
 			final AdapterStore adapterStore,
 			final DataStatisticsStore statisticsStore,
-			final StoreOperations accumuloOperations,
+			final BasicAccumuloOperations accumuloOperations,
 			final AccumuloOptions accumuloOptions ) {
 		super(
 				indexStore,
@@ -68,13 +68,13 @@ public class VectorDataStore extends
 	}
 
 	public VectorDataStore(
-			final StoreOperations accumuloOperations ) {
+			final BasicAccumuloOperations accumuloOperations ) {
 		super(
 				accumuloOperations);
 	}
 
 	public VectorDataStore(
-			final StoreOperations accumuloOperations,
+			final BasicAccumuloOperations accumuloOperations,
 			final AccumuloOptions accumuloOptions ) {
 		super(
 				accumuloOperations,

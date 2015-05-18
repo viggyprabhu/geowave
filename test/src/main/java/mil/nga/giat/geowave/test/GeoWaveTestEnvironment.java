@@ -17,7 +17,6 @@ import mil.nga.giat.geowave.core.cli.GeoWaveMain;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialTemporalQuery;
-import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
@@ -62,7 +61,7 @@ abstract public class GeoWaveTestEnvironment
 	protected static final String DEFAULT_MINI_ACCUMULO_PASSWORD = "Ge0wave";
 	protected static final String HADOOP_WINDOWS_UTIL = "winutils.exe";
 	protected static final Object MUTEX = new Object();
-	protected static StoreOperations accumuloOperations;
+	protected static BasicAccumuloOperations accumuloOperations;
 	protected static String zookeeper;
 	protected static String accumuloInstance;
 	protected static String accumuloUser;

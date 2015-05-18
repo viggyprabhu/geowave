@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.query.cql.FilterToCQLTool;
 import mil.nga.giat.geowave.adapter.vector.wms.DistributableRenderer;
-import mil.nga.giat.geowave.core.iface.store.StoreOperations;
+import mil.nga.giat.geowave.core.iface.store.scan.IScannerBase;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy;
@@ -22,17 +22,19 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.filter.DistributableFilterList;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.query.AccumuloConstraintsQuery;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloBatchScanner;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
-import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.ScannerBase;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Range;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
@@ -129,7 +131,7 @@ public class DistributedRenderQuery extends
 	}
 
 	public List<CloseableIterator<SimpleFeature>> queryDistributedRender(
-			final StoreOperations accumuloOperations,
+			final BasicAccumuloOperations accumuloOperations,
 			final AdapterStore adapterStore,
 			final boolean separateSubStrategies ) {
 		final Map<NumericIndexStrategy, ScannerBase> scanners = getScanners(
@@ -157,7 +159,7 @@ public class DistributedRenderQuery extends
 	}
 
 	protected Map<NumericIndexStrategy, ScannerBase> getScanners(
-			final StoreOperations accumuloOperations,
+			final BasicAccumuloOperations accumuloOperations,
 			final boolean separateSubStrategies ) {
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
 		final Map<NumericIndexStrategy, ScannerBase> resultScanners = new HashMap<NumericIndexStrategy, ScannerBase>();
@@ -167,28 +169,28 @@ public class DistributedRenderQuery extends
 			for (final SubStrategy subStrategy : subStrategies) {
 				resultScanners.put(
 						subStrategy.getIndexStrategy(),
-						getScanner(
+						AccumuloWraperUtils.getScannerBase(getScanner(
 								accumuloOperations,
 								subStrategy.getPrefix(),
-								tableName));
+								tableName)));
 			}
 		}
 		else {
 			resultScanners.put(
 					indexStrategy,
-					getScanner(
+					AccumuloWraperUtils.getScannerBase(getScanner(
 							accumuloOperations,
 							null,
-							tableName));
+							tableName)));
 		}
 		return resultScanners;
 	}
 
-	protected ScannerBase getScanner(
-			final StoreOperations accumuloOperations,
+	protected IScannerBase getScanner(
+			final BasicAccumuloOperations accumuloOperations,
 			final byte[] prefix,
 			final String tableName ) {
-		BatchScanner scanner;
+		AccumuloBatchScanner scanner;
 		try {
 			scanner = accumuloOperations.createBatchScanner(
 					tableName,
@@ -206,7 +208,7 @@ public class DistributedRenderQuery extends
 				scanner.setRanges(ranges);
 			}
 		}
-		catch (final TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.warn(
 					"Unable to query table '" + tableName + "'.  Table does not exist.",
 					e);

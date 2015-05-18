@@ -10,17 +10,19 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
+import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
 import mil.nga.giat.geowave.datastore.accumulo.Writer;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper.ScannerClosableWrapper;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloBatchScanner;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
-import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
@@ -47,7 +49,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 {
 	public final static String METADATA_TABLE = "GEOWAVE_METADATA";
 	private final static Logger LOGGER = Logger.getLogger(AbstractAccumuloPersistence.class);
-	private final StoreOperations accumuloOperations;
+	private final BasicAccumuloOperations accumuloOperations;
 
 	// TODO: should we concern ourselves with multiple distributed processes
 	// updating and looking up objects simultaneously that would require some
@@ -75,7 +77,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 	private boolean iteratorsAttached = false;
 
 	public AbstractAccumuloPersistence(
-			final StoreOperations accumuloOperations ) {
+			final BasicAccumuloOperations accumuloOperations ) {
 		this.accumuloOperations = accumuloOperations;
 	}
 
@@ -260,18 +262,18 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
 		try {
-			final BatchScanner scanner = getScanner(
+			final AccumuloBatchScanner scanner = getScanner(
 					null,
 					secondaryId,
 					authorizations);
 			final Iterator<Entry<Key, Value>> it = scanner.iterator();
 			return new CloseableIteratorWrapper<T>(
 					new ScannerClosableWrapper(
-							scanner),
+							AccumuloWraperUtils.getScannerBase(scanner)),
 					new NativeIteratorWrapper(
 							it));
 		}
-		catch (final TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.error(
 					"Unable to find objects, table '" + getAccumuloTablename() + "' does not exist",
 					e);
@@ -291,7 +293,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 			return (T) cacheResult;
 		}
 		try {
-			final BatchScanner scanner = getScanner(
+			final AccumuloBatchScanner scanner = getScanner(
 					primaryId,
 					secondaryId,
 					authorizations);
@@ -310,7 +312,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 				scanner.close();
 			}
 		}
-		catch (final TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.error(
 					"Unable to find object '" + getCombinedId(
 							primaryId,
@@ -323,15 +325,15 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 	protected CloseableIterator<T> getObjects(
 			final String... authorizations ) {
 		try {
-			final BatchScanner scanner = getFullScanner(authorizations);
+			final AccumuloBatchScanner scanner = getFullScanner(authorizations);
 			final Iterator<Entry<Key, Value>> it = scanner.iterator();
 			return new CloseableIteratorWrapper<T>(
 					new ScannerClosableWrapper(
-							scanner),
+							AccumuloWraperUtils.getScannerBase(scanner)),
 					new NativeIteratorWrapper(
 							it));
 		}
-		catch (final TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.warn(
 					"Unable to find objects, table '" + getAccumuloTablename() + "' does not exist",
 					e);
@@ -351,21 +353,21 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 		return result;
 	}
 
-	private BatchScanner getFullScanner(
+	private AccumuloBatchScanner getFullScanner(
 			final String... authorizations )
-			throws TableNotFoundException {
+			throws StoreException {
 		return getScanner(
 				null,
 				null,
 				authorizations);
 	}
 
-	protected BatchScanner getScanner(
+	protected AccumuloBatchScanner getScanner(
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId,
 			final String... authorizations )
-			throws TableNotFoundException {
-		final BatchScanner scanner = accumuloOperations.createBatchScanner(
+			throws StoreException {
+		final AccumuloBatchScanner scanner = accumuloOperations.createBatchScanner(
 				getAccumuloTablename(),
 				authorizations);
 		final IteratorSetting[] settings = getScanSettings();
@@ -420,14 +422,14 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
 		try {
-			final BatchScanner scanner = getScanner(
+			final AccumuloBatchScanner scanner = getScanner(
 					null,
 					secondaryId,
 					authorizations);
 			final Iterator<Entry<Key, Value>> it = scanner.iterator();
 			try (final CloseableIterator<?> cit = new CloseableIteratorWrapper<T>(
 					new ScannerClosableWrapper(
-							scanner),
+							AccumuloWraperUtils.getScannerBase(scanner)),
 					new DeleteIteratorWrapper(
 							it,
 							authorizations))) {
@@ -443,7 +445,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 						e);
 			}
 		}
-		catch (final TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.error(
 					"Unable to find objects, table '" + getAccumuloTablename() + "' does not exist",
 					e);
@@ -461,7 +463,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 			return true;
 		}
 		try {
-			final BatchScanner scanner = getScanner(
+			final AccumuloBatchScanner scanner = getScanner(
 					primaryId,
 					secondaryId);
 
@@ -480,7 +482,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 				scanner.close();
 			}
 		}
-		catch (final TableNotFoundException e) {
+		catch (final StoreException e) {
 			// this is only debug, because if the table doesn't exist, its
 			// essentially empty, but doesn't necessarily indicate an issue
 			LOGGER.debug(

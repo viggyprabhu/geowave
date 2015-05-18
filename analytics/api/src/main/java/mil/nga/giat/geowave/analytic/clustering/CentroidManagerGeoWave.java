@@ -8,13 +8,13 @@ import java.util.Set;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.query.AccumuloCqlConstraintsQuery;
+import mil.nga.giat.geowave.analytic.AnalyticFeature.ClusterFeatureAttribute;
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapper;
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.RunnerUtils;
 import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
-import mil.nga.giat.geowave.analytic.AnalyticFeature.ClusterFeatureAttribute;
 import mil.nga.giat.geowave.analytic.clustering.exception.MatchingCentroidNotFoundException;
 import mil.nga.giat.geowave.analytic.db.BasicAccumuloOperationsFactory;
 import mil.nga.giat.geowave.analytic.db.DirectBasicAccumuloOperationsFactory;
@@ -23,7 +23,6 @@ import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.core.geotime.IndexType;
-import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
@@ -102,7 +101,7 @@ public class CentroidManagerGeoWave<T> implements
 	private final String batchId;
 	private int level = 0;
 
-	private StoreOperations basicAccumuloOperations;
+	private BasicAccumuloOperations basicAccumuloOperations;
 	private final AnalyticItemWrapperFactory<T> centroidFactory;
 	@SuppressWarnings("rawtypes")
 	private final DataAdapter adapter;

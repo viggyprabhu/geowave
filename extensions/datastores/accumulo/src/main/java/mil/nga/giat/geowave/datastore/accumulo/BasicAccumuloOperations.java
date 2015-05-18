@@ -20,6 +20,8 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.ConnectorPool;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloBatchDeleter;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloBatchScanner;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -354,7 +356,7 @@ public class BasicAccumuloOperations implements
 			final String tableName,
 			final String columnFamily,
 			final String... additionalAuthorizations ) {
-		BatchDeleter deleter = null;
+		AccumuloBatchDeleter deleter = null;
 		try {
 			deleter = createBatchDeleter(
 					tableName,
@@ -388,7 +390,7 @@ public class BasicAccumuloOperations implements
 			final String... authorizations ) {
 
 		boolean success = true;
-		BatchDeleter deleter = null;
+		AccumuloBatchDeleter deleter = null;
 		try {
 			deleter = createBatchDeleter(
 					tableName,
@@ -548,15 +550,21 @@ public class BasicAccumuloOperations implements
 	}
 
 	@Override
-	public BatchScanner createBatchScanner(
+	public AccumuloBatchScanner createBatchScanner(
 			final String tableName,
 			final String... additionalAuthorizations )
-			throws TableNotFoundException {
-		return connector.createBatchScanner(
-				getQualifiedTableName(tableName),
-				new Authorizations(
-						getAuthorizations(additionalAuthorizations)),
-				numThreads);
+			throws StoreException {
+		try {
+			BatchScanner batchScanner;
+			batchScanner = connector.createBatchScanner(
+					getQualifiedTableName(tableName),
+					new Authorizations(
+							getAuthorizations(additionalAuthorizations)),
+					numThreads);
+			return new AccumuloBatchScanner(batchScanner);
+		} catch (TableNotFoundException e) {
+			throw new StoreException(e.getMessage(),e.getCause());
+		}
 	}
 
 	@Override
@@ -592,20 +600,26 @@ public class BasicAccumuloOperations implements
 	}
 
 	@Override
-	public BatchDeleter createBatchDeleter(
+	public AccumuloBatchDeleter createBatchDeleter(
 			final String tableName,
 			final String... additionalAuthorizations )
 			throws StoreException {
-		return connector.createBatchDeleter(
-				getQualifiedTableName(tableName),
-				new Authorizations(
-						getAuthorizations(additionalAuthorizations)),
-				numThreads,
-				new BatchWriterConfig().setMaxWriteThreads(
-						numThreads).setMaxMemory(
-						byteBufferSize).setTimeout(
-						timeoutMillis,
-						TimeUnit.MILLISECONDS));
+		try {
+			BatchDeleter batchDeleter = connector.createBatchDeleter(
+					getQualifiedTableName(tableName),
+					new Authorizations(
+							getAuthorizations(additionalAuthorizations)),
+					numThreads,
+					new BatchWriterConfig().setMaxWriteThreads(
+							numThreads).setMaxMemory(
+							byteBufferSize).setTimeout(
+							timeoutMillis,
+							TimeUnit.MILLISECONDS));
+			return new AccumuloBatchDeleter(batchDeleter);
+		} catch (TableNotFoundException e) {
+			throw new StoreException(e.getMessage(),e.getCause());
+		}
+		
 	}
 
 	public long getCacheTimeoutMillis() {
@@ -621,8 +635,7 @@ public class BasicAccumuloOperations implements
 	public boolean attachIterators(
 			final String tableName,
 			final boolean createTable,
-			final IteratorConfig[] iterators )
-			throws StoreException {
+			final IteratorConfig[] iterators ) {
 		final String qName = getQualifiedTableName(tableName);
 		if (createTable && !connector.tableOperations().exists(
 				qName)) {

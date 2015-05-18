@@ -13,7 +13,6 @@ import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.geotime.store.dimension.GeometryWrapper;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics;
-import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
@@ -62,7 +61,7 @@ public class AccumuloDataStoreStatsTest
 
 	final GeometryFactory factory = new GeometryFactory();
 
-	StoreOperations accumuloOperations;
+	BasicAccumuloOperations accumuloOperations;
 
 	AccumuloIndexStore indexStore;
 

@@ -18,6 +18,7 @@ import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreUtils;
+import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextIndexStore;
@@ -56,7 +57,7 @@ public class GeoWaveOutputFormat extends
 			InterruptedException {
 		try {
 			// TODO expose GeoWave's AccumuloOptions
-			final StoreOperations accumuloOperations = getAccumuloOperations(context);
+			final BasicAccumuloOperations accumuloOperations = getAccumuloOperations(context);
 			final AdapterStore accumuloAdapterStore = new AccumuloAdapterStore(
 					accumuloOperations);
 			final DataAdapter<?>[] adapters = AccumuloStoreUtils.getJobContextAdapterStore(context).getDataAdapters(context);
@@ -174,7 +175,7 @@ public class GeoWaveOutputFormat extends
 
 		protected GeoWaveRecordWriter(
 				final TaskAttemptContext context,
-				final StoreOperations accumuloOperations,
+				final BasicAccumuloOperations accumuloOperations,
 				final IndexStore indexStore,
 				final AdapterStore adapterStore,
 				final DataStatisticsStore statisticsStore )
@@ -407,10 +408,11 @@ public class GeoWaveOutputFormat extends
 	// context);
 	// }
 
-	public static StoreOperations getAccumuloOperations(
+	public static BasicAccumuloOperations getAccumuloOperations(
 			final JobContext context )
 			throws StoreException {
-		return GeoWaveConfiguratorBase.getAccumuloOperations(
+		//TODO #238 Need to fix this hardcoded upcast 
+		return (BasicAccumuloOperations)GeoWaveConfiguratorBase.getAccumuloOperations(
 				CLASS,
 				context);
 	}

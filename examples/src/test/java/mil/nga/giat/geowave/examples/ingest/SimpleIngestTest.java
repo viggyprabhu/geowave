@@ -1,11 +1,9 @@
 package mil.nga.giat.geowave.examples.ingest;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
+import java.util.Set;
+import java.util.TreeSet;
 
 import mil.nga.giat.geowave.core.geotime.GeometryUtils;
-import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.query.BasicQuery;
@@ -22,14 +20,14 @@ import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opengis.feature.simple.SimpleFeature;
 
-import java.util.Set;
-import java.util.TreeSet;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
 
 public class SimpleIngestTest
 {
@@ -40,7 +38,7 @@ public class SimpleIngestTest
 	final String AccumuloUser = "root";
 	final PasswordToken AccumuloPass = new PasswordToken(
 			new byte[0]);
-	StoreOperations accumuloOperations;
+	BasicAccumuloOperations accumuloOperations;
 	AccumuloIndexStore indexStore;
 	AccumuloAdapterStore adapterStore;
 	AccumuloDataStatisticsStore statsStore;

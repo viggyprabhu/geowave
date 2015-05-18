@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.ingest.AccumuloCommandLineOptions;
 import mil.nga.giat.geowave.core.ingest.GeoWaveData;
 import mil.nga.giat.geowave.core.ingest.IngestFormatPluginProviderSpi;
@@ -18,6 +17,7 @@ import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
+import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -91,9 +91,10 @@ public class LocalFileIngestDriver extends
 			adapters.addAll(Arrays.asList(localFileIngestPlugin.getDataAdapters(accumulo.getVisibility())));
 		}
 
-		StoreOperations operations;
+		BasicAccumuloOperations operations;
 		try {
-			operations = accumulo.getAccumuloOperations();
+			//TODO #238 Need to fix this hardcoded upcast
+			operations = (BasicAccumuloOperations)accumulo.getAccumuloOperations();
 
 		}
 		catch (AccumuloException | AccumuloSecurityException e) {

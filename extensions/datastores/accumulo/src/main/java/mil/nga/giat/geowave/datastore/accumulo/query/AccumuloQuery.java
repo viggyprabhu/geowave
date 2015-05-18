@@ -6,13 +6,14 @@ import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.ScannerBase;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Range;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
@@ -58,9 +59,9 @@ abstract public class AccumuloQuery
 		ScannerBase scanner;
 		try {
 			if ((ranges != null) && (ranges.size() == 1)) {
-				scanner = accumuloOperations.createScanner(
+				scanner = AccumuloWraperUtils.getScannerBase(accumuloOperations.createScanner(
 						tableName,
-						getAdditionalAuthorizations());
+						getAdditionalAuthorizations()));
 				final ByteArrayRange r = ranges.get(0);
 				if (r.isSingleValue()) {
 					((Scanner) scanner).setRange(Range.exact(new Text(
@@ -74,13 +75,13 @@ abstract public class AccumuloQuery
 				}
 			}
 			else {
-				scanner = accumuloOperations.createBatchScanner(
+				scanner = AccumuloWraperUtils.getScannerBase(accumuloOperations.createBatchScanner(
 						tableName,
-						getAdditionalAuthorizations());
+						getAdditionalAuthorizations()));
 				((BatchScanner) scanner).setRanges(AccumuloUtils.byteArrayRangesToAccumuloRanges(ranges));
 			}
 		}
-		catch (final TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.warn(
 					"Unable to query table '" + tableName + "'.  Table does not exist.",
 					e);

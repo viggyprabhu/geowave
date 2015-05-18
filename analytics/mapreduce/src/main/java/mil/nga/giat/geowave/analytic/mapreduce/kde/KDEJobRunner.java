@@ -25,7 +25,6 @@ import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.mapreduce.InputFormatBase;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
-import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
@@ -361,7 +360,7 @@ public class KDEJobRunner extends
 			final WritableDataAdapter<?> adapter,
 			final Index index )
 			throws Exception {
-		final StoreOperations ops = new BasicAccumuloOperations(
+		final BasicAccumuloOperations ops = new BasicAccumuloOperations(
 				zookeeper,
 				instance,
 				user,

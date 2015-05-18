@@ -122,8 +122,8 @@ public class GeoWaveGTDataStore extends
 	private AdapterStore adapterStore;
 	protected VectorDataStore dataStore;
 	protected VectorDataStore statsDataStore;
-	protected StoreOperations statsOperations;
-	protected StoreOperations storeOperations;
+	protected BasicAccumuloOperations statsOperations;
+	protected BasicAccumuloOperations storeOperations;
 	private final Map<String, Index> preferredIndexes = new ConcurrentHashMap<String, Index>();
 	private final ColumnVisibilityManagement<SimpleFeature> visibilityManagement = VisibilityManagementHelper.loadVisibilityManagement();
 
@@ -230,12 +230,12 @@ public class GeoWaveGTDataStore extends
 	}
 
 	protected void setStoreOperations(
-			final StoreOperations storeOperations ) {
+			final BasicAccumuloOperations storeOperations ) {
 		this.storeOperations = storeOperations;
 	}
 
 	protected void setStatsOperations(
-			final StoreOperations statsOperations ) {
+			final BasicAccumuloOperations statsOperations ) {
 		this.statsOperations = statsOperations;
 	}
 

@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.core.iface.store.Converter;
-import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
@@ -27,6 +26,7 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexDependentDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.MemoryAdapterStore;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
@@ -53,11 +53,10 @@ import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.DataAdapterAndIndexCache;
 import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper.Callback;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloBatchDeleter;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloBatchScanner;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.BatchDeleter;
-import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.Scanner;
@@ -94,11 +93,11 @@ public class AccumuloDataStore implements
 	protected final IndexStore indexStore;
 	protected final AdapterStore adapterStore;
 	protected final DataStatisticsStore statisticsStore;
-	protected final StoreOperations accumuloOperations;
+	protected final BasicAccumuloOperations accumuloOperations;
 	protected final AccumuloOptions accumuloOptions;
 
 	public AccumuloDataStore(
-			final StoreOperations accumuloOperations ) {
+			final BasicAccumuloOperations accumuloOperations ) {
 		this(
 				new AccumuloIndexStore(
 						accumuloOperations),
@@ -110,7 +109,7 @@ public class AccumuloDataStore implements
 	}
 
 	public AccumuloDataStore(
-			final StoreOperations accumuloOperations,
+			final BasicAccumuloOperations accumuloOperations,
 			final AccumuloOptions accumuloOptions ) {
 		this(
 				new AccumuloIndexStore(
@@ -127,7 +126,7 @@ public class AccumuloDataStore implements
 			final IndexStore indexStore,
 			final AdapterStore adapterStore,
 			final DataStatisticsStore statisticsStore,
-			final StoreOperations accumuloOperations ) {
+			final BasicAccumuloOperations accumuloOperations ) {
 		this(
 				indexStore,
 				adapterStore,
@@ -140,7 +139,7 @@ public class AccumuloDataStore implements
 			final IndexStore indexStore,
 			final AdapterStore adapterStore,
 			final DataStatisticsStore statisticsStore,
-			final StoreOperations accumuloOperations,
+			final BasicAccumuloOperations accumuloOperations,
 			final AccumuloOptions accumuloOptions ) {
 		this.indexStore = indexStore;
 		this.adapterStore = adapterStore;
@@ -291,7 +290,7 @@ public class AccumuloDataStore implements
 
 			return entryInfo.getRowIds();
 		}
-		catch (final TableNotFoundException | AccumuloException | AccumuloSecurityException e) {
+		catch (final StoreException | TableNotFoundException e) {
 			LOGGER.error(
 					"Unable to ingest data entry",
 					e);
@@ -522,7 +521,7 @@ public class AccumuloDataStore implements
 					true);
 
 		}
-		catch (final TableNotFoundException | AccumuloException | AccumuloSecurityException e) {
+		catch (final StoreException | TableNotFoundException e) {
 			LOGGER.error(
 					"Unable to ingest data entries",
 					e);
@@ -768,10 +767,10 @@ public class AccumuloDataStore implements
 		}
 		ScannerBase scanner = null;
 		try {
-			scanner = accumuloOperations.createBatchScanner(
+			scanner = AccumuloWraperUtils.getScannerBase(accumuloOperations.createBatchScanner(
 					tableName,
-					authorizations);
-			((BatchScanner) scanner).setRanges(AccumuloUtils.byteArrayRangesToAccumuloRanges(ranges));
+					authorizations));
+			((AccumuloBatchScanner) scanner).setRanges(AccumuloUtils.byteArrayRangesToAccumuloRanges(ranges));
 
 			final IteratorSetting iteratorSettings = new IteratorSetting(
 					QueryFilterIterator.WHOLE_ROW_ITERATOR_PRIORITY,
@@ -784,7 +783,7 @@ public class AccumuloDataStore implements
 				resultList.add(iterator.next());
 			}
 		}
-		catch (final TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.warn(
 					"Unable to query table '" + tableName + "'.  Table does not exist.",
 					e);
@@ -845,7 +844,7 @@ public class AccumuloDataStore implements
 			final ByteArrayId dataId,
 			final ByteArrayId adapterId ) {
 		boolean success = true;
-		BatchDeleter deleter = null;
+		AccumuloBatchDeleter deleter = null;
 		try {
 
 			deleter = accumuloOperations.createBatchDeleter(tableName);
@@ -877,7 +876,7 @@ public class AccumuloDataStore implements
 			deleter.close();
 
 		}
-		catch (final TableNotFoundException | MutationsRejectedException e) {
+		catch (final StoreException | TableNotFoundException | MutationsRejectedException e) {
 			LOGGER.warn(
 					"Unable to delete entries from alternate index table [" + tableName + "].",
 					e);
@@ -1253,7 +1252,7 @@ public class AccumuloDataStore implements
 			final String tableName,
 			final String columnFamily,
 			final String... additionalAuthorizations ) {
-		BatchDeleter deleter = null;
+		AccumuloBatchDeleter deleter = null;
 		try {
 			deleter = accumuloOperations.createBatchDeleter(
 					tableName,
@@ -1265,7 +1264,7 @@ public class AccumuloDataStore implements
 			deleter.delete();
 			return true;
 		}
-		catch (final TableNotFoundException | MutationsRejectedException e) {
+		catch (final StoreException | TableNotFoundException | MutationsRejectedException e) {
 			LOGGER.warn(
 					"Unable to delete row from table [" + tableName + "].",
 					e);
@@ -1294,7 +1293,7 @@ public class AccumuloDataStore implements
 			final DeleteRowObserver deleteRowObserver,
 			final String... authorizations ) {
 
-		BatchDeleter deleter = null;
+		AccumuloBatchDeleter deleter = null;
 		try {
 			deleter = accumuloOperations.createBatchDeleter(
 					tableName,
@@ -1320,7 +1319,7 @@ public class AccumuloDataStore implements
 
 			return count > 0;
 		}
-		catch (final TableNotFoundException | MutationsRejectedException e) {
+		catch (final StoreException | TableNotFoundException | MutationsRejectedException e) {
 			LOGGER.warn(
 					"Unable to delete row from table [" + tableName + "].",
 					e);
