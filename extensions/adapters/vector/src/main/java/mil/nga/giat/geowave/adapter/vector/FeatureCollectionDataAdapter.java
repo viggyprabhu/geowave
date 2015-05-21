@@ -48,10 +48,12 @@ import mil.nga.giat.geowave.core.store.index.BasicIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.mapreduce.client.CoreIteratorConfig;
 import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
 import mil.nga.giat.geowave.datastore.accumulo.ModelConvertingDataAdapter;
 import mil.nga.giat.geowave.datastore.accumulo.query.ArrayToElementsIterator;
 import mil.nga.giat.geowave.datastore.accumulo.query.ElementsToArrayIterator;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloIteratorConfig;
 
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.IteratorSetting.Column;
@@ -754,8 +756,7 @@ public class FeatureCollectionDataAdapter extends
 		return featureCollections.iterator();
 	}
 
-	@Override
-	public IteratorConfig[] getAttachedIteratorConfig(
+	public CoreIteratorConfig[] getAttachedIteratorConfig(
 			final Index index ) {
 
 		final IteratorSetting combinerSetting = new IteratorSetting(
@@ -807,10 +808,10 @@ public class FeatureCollectionDataAdapter extends
 				builderSetting,
 				EnumSet.of(IteratorScope.scan));
 
-		return new IteratorConfig[] {
-			combinerConfig,
-			decompConfig,
-			builderConfig
+		return new AccumuloIteratorConfig[] {
+			new AccumuloIteratorConfig(combinerConfig),
+			new AccumuloIteratorConfig(decompConfig),
+			new AccumuloIteratorConfig(builderConfig)
 		};
 	}
 

@@ -7,14 +7,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import mil.nga.giat.geowave.core.iface.field.IKey;
+import mil.nga.giat.geowave.core.iface.field.IValue;
 import mil.nga.giat.geowave.core.iface.store.CoreBatchScanner;
 import mil.nga.giat.geowave.core.iface.store.client.IIteratorSetting;
 
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.IteratorSetting;
-import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
-import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -37,9 +37,11 @@ public class AccumuloBatchScanner implements CoreBatchScanner {
 		m_batchScanner.close();
 	}
 
-	public Iterator<Entry<Key, Value>> iterator() {
-		return m_batchScanner.iterator();
+	public Iterator<Entry<IKey, IValue>> iterator() {
+		return AccumuloWraperUtils.convert(m_batchScanner.iterator());
 	}
+
+	
 
 	public void fetchColumn(Text colFam, Text colQual) {
 		m_batchScanner.fetchColumn(colFam, colQual);

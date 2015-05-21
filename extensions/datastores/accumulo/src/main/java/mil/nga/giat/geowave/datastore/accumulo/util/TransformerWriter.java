@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.datastore.accumulo.Writer;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
 import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.accumulo.core.data.Key;
@@ -43,7 +44,7 @@ public class TransformerWriter
 	public void transform() {
 		try {
 			final Iterator<Entry<Key, Value>> rawIt = scanner.iterator();
-			Writer writer = accumuloOperations.createWriter(tableName);
+			Writer writer = AccumuloWraperUtils.getWriter(accumuloOperations.createWriter(tableName));
 			writer.write(new Iterable<Mutation>() {
 				@Override
 				public Iterator<Mutation> iterator() {

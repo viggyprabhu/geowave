@@ -23,8 +23,8 @@ import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.DataAdapterAndIndexCache;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.log4j.Logger;
 
 /**
@@ -99,11 +99,11 @@ public class AccumuloIndexWriter implements
 	private synchronized void ensureOpen() {
 		if (writer == null) {
 			try {
-				writer = accumuloOperations.createWriter(
+				writer = AccumuloWraperUtils.getWriter(accumuloOperations.createWriter(
 						StringUtils.stringFromBinary(index.getId().getBytes()),
-						accumuloOptions.isCreateTable());
+						accumuloOptions.isCreateTable()));
 			}
-			catch (final TableNotFoundException e) {
+			catch (final StoreException e) {
 				LOGGER.error(
 						"Unable to open writer",
 						e);
@@ -111,11 +111,11 @@ public class AccumuloIndexWriter implements
 		}
 		if (useAltIndex && (altIdxWriter == null)) {
 			try {
-				altIdxWriter = accumuloOperations.createWriter(
+				altIdxWriter = AccumuloWraperUtils.getWriter(accumuloOperations.createWriter(
 						altIdxTableName,
-						accumuloOptions.isCreateTable());
+						accumuloOptions.isCreateTable()));
 			}
-			catch (final TableNotFoundException e) {
+			catch (final StoreException e) {
 				LOGGER.error(
 						"Unable to open writer",
 						e);

@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.data.Key;
@@ -55,7 +56,7 @@ public class DistortionGroupManagement
 			final int level ) {
 
 		try {
-			final Scanner scanner = ops.createScanner(distortationTableName);
+			final Scanner scanner = AccumuloWraperUtils.getScanner(ops.createScanner(distortationTableName));
 			final Map<String, DistortionGroup> groupDistortions = new HashMap<String, DistortionGroup>();
 
 			// row id is group id

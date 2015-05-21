@@ -2,13 +2,14 @@ package mil.nga.giat.geowave.adapter.vector;
 
 import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.accumulo.util.TransformerWriter;
 import mil.nga.giat.geowave.datastore.accumulo.util.VisibilityTransformer;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.Scanner;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
@@ -51,7 +52,7 @@ public class AccumuloDataStatisticsStoreExt extends
 			writer.transform();
 			scanner.close();
 		}
-		catch (TableNotFoundException e) {
+		catch (StoreException e) {
 			LOGGER.error(
 					"Table not found during transaction commit: " + getAccumuloTablename(),
 					e);
@@ -61,12 +62,12 @@ public class AccumuloDataStatisticsStoreExt extends
 	private Scanner createSortScanner(
 			final ByteArrayId adapterId,
 			String... authorizations )
-			throws TableNotFoundException {
+			throws StoreException {
 		Scanner scanner = null;
 
-		scanner = accumuloOperations.createScanner(
+		scanner = AccumuloWraperUtils.getScanner(accumuloOperations.createScanner(
 				getAccumuloTablename(),
-				authorizations);
+				authorizations));
 
 		final IteratorSetting[] settings = getScanSettings();
 		if ((settings != null) && (settings.length > 0)) {

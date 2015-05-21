@@ -18,15 +18,20 @@ import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.adapter.StoreException;
+import mil.nga.giat.geowave.core.store.mapreduce.client.CoreIteratorConfig;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.ConnectorPool;
 import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloBatchDeleter;
 import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloBatchScanner;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloScanner;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWriter;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.BatchDeleter;
 import org.apache.accumulo.core.client.BatchScanner;
+import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.BatchWriterConfig;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.IteratorSetting;
@@ -206,19 +211,19 @@ public class BasicAccumuloOperations implements
 	}
 
 	@Override
-	public Writer createWriter(
+	public AccumuloWriter createWriter(
 			final String tableName )
-			throws TableNotFoundException {
+			throws StoreException {
 		return createWriter(
 				tableName,
 				true);
 	}
 
 	@Override
-	public Writer createWriter(
+	public AccumuloWriter createWriter(
 			final String tableName,
 			final boolean createTable )
-			throws TableNotFoundException {
+			throws StoreException {
 		final String qName = getQualifiedTableName(tableName);
 		if (createTable && !connector.tableOperations().exists(
 				qName)) {
@@ -232,12 +237,17 @@ public class BasicAccumuloOperations implements
 						e);
 			}
 		}
-		return new mil.nga.giat.geowave.datastore.accumulo.BatchWriterWrapper(
-				connector.createBatchWriter(
-						qName,
-						byteBufferSize,
-						timeoutMillis,
-						numThreads));
+		BatchWriter batchWriter;
+		try {
+			batchWriter = connector.createBatchWriter(
+					qName,
+					byteBufferSize,
+					timeoutMillis,
+					numThreads);
+			return new AccumuloWriter(batchWriter);
+		} catch (TableNotFoundException e) {
+			throw new StoreException(e.getMessage(),e.getCause());
+		}
 	}
 
 	@Override
@@ -418,7 +428,7 @@ public class BasicAccumuloOperations implements
 			}
 			deleter.setRanges(rowRanges);
 
-			final Iterator<Map.Entry<Key, Value>> iterator = deleter.iterator();
+			final Iterator<Map.Entry<Key, Value>> iterator = AccumuloWraperUtils.reconvert(deleter.iterator());
 			while (iterator.hasNext()) {
 				final Entry<Key, Value> entry = iterator.next();
 				removeSet.remove(new ByteArrayId(
@@ -539,14 +549,20 @@ public class BasicAccumuloOperations implements
 	}
 
 	@Override
-	public Scanner createScanner(
+	public AccumuloScanner createScanner(
 			final String tableName,
 			final String... additionalAuthorizations )
-			throws TableNotFoundException {
-		return connector.createScanner(
-				getQualifiedTableName(tableName),
-				new Authorizations(
-						getAuthorizations(additionalAuthorizations)));
+			throws StoreException {
+		 Scanner scanner;
+		try {
+			scanner = connector.createScanner(
+					getQualifiedTableName(tableName),
+					new Authorizations(
+							getAuthorizations(additionalAuthorizations)));
+		} catch (TableNotFoundException e) {
+			throw new StoreException(e.getMessage(),e.getCause());
+		}
+		 return new AccumuloScanner(scanner);
 	}
 
 	@Override
@@ -635,7 +651,7 @@ public class BasicAccumuloOperations implements
 	public boolean attachIterators(
 			final String tableName,
 			final boolean createTable,
-			final IteratorConfig[] iterators ) {
+			final CoreIteratorConfig[] iterators ) {
 		final String qName = getQualifiedTableName(tableName);
 		if (createTable && !connector.tableOperations().exists(
 				qName)) {
@@ -651,9 +667,14 @@ public class BasicAccumuloOperations implements
 		}
 		try {
 			if ((iterators != null) && (iterators.length > 0)) {
+				IteratorConfig[] iteratorConfigs = new IteratorConfig[iterators.length];
+				int count=0;
+				for(CoreIteratorConfig config : iterators){
+					iteratorConfigs[count++] = AccumuloWraperUtils.getIteratorConfig(iterators[count]);
+				}
 				final Map<String, EnumSet<IteratorScope>> iteratorScopes = connector.tableOperations().listIterators(
 						qName);
-				for (final IteratorConfig iteratorConfig : iterators) {
+				for (final IteratorConfig iteratorConfig : iteratorConfigs) {
 					final IteratorSetting iteratorSetting = iteratorConfig.getIteratorSettings();
 					boolean mustDelete = false;
 					boolean exists = false;
@@ -769,7 +790,7 @@ public class BasicAccumuloOperations implements
 				}
 			}
 		}
-		catch (AccumuloException | AccumuloSecurityException e) {
+		catch (AccumuloException | AccumuloSecurityException | TableNotFoundException e) {
 			LOGGER.warn(
 					"Unable to create table '" + qName + "'",
 					e);

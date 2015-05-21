@@ -57,6 +57,7 @@ import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.query.AccumuloConstraintsQuery;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper.ScannerClosableWrapper;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -821,7 +822,8 @@ public class AccumuloUtils
 			final String namespace,
 			final Index index,
 			final int quantile )
-			throws AccumuloException,
+			throws StoreException,
+			AccumuloException,
 			AccumuloSecurityException,
 			IOException,
 			TableNotFoundException {
@@ -903,7 +905,8 @@ public class AccumuloUtils
 			final String namespace,
 			final Index index,
 			final int numberSplits )
-			throws AccumuloException,
+			throws StoreException,
+			AccumuloException,
 			AccumuloSecurityException,
 			IOException,
 			TableNotFoundException {
@@ -965,7 +968,8 @@ public class AccumuloUtils
 			final String namespace,
 			final Index index,
 			final long numberRows )
-			throws AccumuloException,
+			throws StoreException,
+			AccumuloException,
 			AccumuloSecurityException,
 			IOException,
 			TableNotFoundException {
@@ -1184,8 +1188,7 @@ public class AccumuloUtils
 			final Connector connector,
 			final String namespace,
 			final Index index )
-			throws AccumuloException,
-			AccumuloSecurityException,
+			throws StoreException,
 			IOException,
 			TableNotFoundException {
 		CloseableIterator<Entry<Key, Value>> iterator = null;
@@ -1198,7 +1201,7 @@ public class AccumuloUtils
 
 		if (indexStore.indexExists(index.getId())) {
 			final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
-			final ScannerBase scanner = operations.createBatchScanner(tableName);
+			final ScannerBase scanner = AccumuloWraperUtils.getScannerBase(operations.createBatchScanner(tableName));
 			((BatchScanner) scanner).setRanges(AccumuloUtils.byteArrayRangesToAccumuloRanges(null));
 
 			final IteratorSetting iteratorSettings = new IteratorSetting(

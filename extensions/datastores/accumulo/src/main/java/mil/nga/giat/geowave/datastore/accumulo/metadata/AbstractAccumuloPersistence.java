@@ -21,10 +21,10 @@ import mil.nga.giat.geowave.datastore.accumulo.Writer;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper.ScannerClosableWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloBatchScanner;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloIteratorConfig;
 import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
 import org.apache.accumulo.core.client.IteratorSetting;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
@@ -174,18 +174,23 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 		addObjectToCache(object);
 		try {
 
-			final Writer writer = accumuloOperations.createWriter(
+			final Writer writer = AccumuloWraperUtils.getWriter(accumuloOperations.createWriter(
 					getAccumuloTablename(),
-					true);
+					true));
 			synchronized (this) {
 				if (!iteratorsAttached) {
 					iteratorsAttached = true;
 					final IteratorConfig[] configs = getIteratorConfig();
 					if ((configs != null) && (configs.length > 0)) {
+						int count =0;
+						AccumuloIteratorConfig[] coreIteratorConfig = new AccumuloIteratorConfig[configs.length];
+						for(IteratorConfig config: configs){
+							coreIteratorConfig[count++] = new AccumuloIteratorConfig(config);
+						}
 						accumuloOperations.attachIterators(
 								getAccumuloTablename(),
 								true,
-								configs);
+								coreIteratorConfig);
 					}
 				}
 			}
@@ -215,7 +220,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 			writer.write(mutation);
 			writer.close();
 		}
-		catch (final TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.error(
 					"Unable add object",
 					e);
@@ -266,7 +271,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 					null,
 					secondaryId,
 					authorizations);
-			final Iterator<Entry<Key, Value>> it = scanner.iterator();
+			final Iterator<Entry<Key, Value>> it = AccumuloWraperUtils.reconvert(scanner.iterator());
 			return new CloseableIteratorWrapper<T>(
 					new ScannerClosableWrapper(
 							AccumuloWraperUtils.getScannerBase(scanner)),
@@ -298,7 +303,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 					secondaryId,
 					authorizations);
 			try {
-				final Iterator<Entry<Key, Value>> it = scanner.iterator();
+				final Iterator<Entry<Key, Value>> it = AccumuloWraperUtils.reconvert(scanner.iterator());
 				if (!it.hasNext()) {
 					LOGGER.warn("Object '" + getCombinedId(
 							primaryId,
@@ -326,7 +331,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 			final String... authorizations ) {
 		try {
 			final AccumuloBatchScanner scanner = getFullScanner(authorizations);
-			final Iterator<Entry<Key, Value>> it = scanner.iterator();
+			final Iterator<Entry<Key, Value>> it = AccumuloWraperUtils.reconvert(scanner.iterator());
 			return new CloseableIteratorWrapper<T>(
 					new ScannerClosableWrapper(
 							AccumuloWraperUtils.getScannerBase(scanner)),
@@ -426,7 +431,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 					null,
 					secondaryId,
 					authorizations);
-			final Iterator<Entry<Key, Value>> it = scanner.iterator();
+			final Iterator<Entry<Key, Value>> it = AccumuloWraperUtils.reconvert(scanner.iterator());
 			try (final CloseableIterator<?> cit = new CloseableIteratorWrapper<T>(
 					new ScannerClosableWrapper(
 							AccumuloWraperUtils.getScannerBase(scanner)),
@@ -468,7 +473,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 					secondaryId);
 
 			try {
-				final Iterator<Entry<Key, Value>> it = scanner.iterator();
+				final Iterator<Entry<Key, Value>> it = AccumuloWraperUtils.reconvert(scanner.iterator());
 				if (it.hasNext()) {
 					// may as well cache the result
 					return (entryToValue(it.next()) != null);

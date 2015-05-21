@@ -20,23 +20,19 @@ import mil.nga.giat.geowave.core.iface.field.IValue;
 public class AccumuloMergingVisibilityCombiner implements
 		IMergingVisibilityCombiner {
 
-	/* (non-Javadoc)
-	 * @see mil.nga.giat.geowave.core.iface.combiner.IMergingVisibilityCombiner#transformRange(mil.nga.giat.geowave.core.iface.combiner.ISortedKeyValueIterator, mil.nga.giat.geowave.core.iface.field.IKVBuffer)
-	 */
+
 	@Override
 	public void transformRange(ISortedKeyValueIterator<IKey, IValue> input,
 			IKVBuffer output) {
-		new MergingVisibilityCombiner().transformRange(input, output);
+		// TODO #238 Auto-generated method stub
 
 	}
 
-	/* (non-Javadoc)
-	 * @see mil.nga.giat.geowave.core.iface.combiner.IMergingVisibilityCombiner#init(mil.nga.giat.geowave.core.iface.combiner.ISortedKeyValueIterator, java.util.Map, mil.nga.giat.geowave.core.iface.combiner.IIteratorEnvironment)
-	 */
+	
 	@Override
 	public void init(ISortedKeyValueIterator<IKey, IValue> source,
 			Map<String, String> options, IIteratorEnvironment env) {
-		// TODO Auto-generated method stub
+		// TODO #238 Auto-generated method stub
 
 	}
 

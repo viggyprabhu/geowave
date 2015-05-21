@@ -6,24 +6,24 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.*;
-import java.nio.file.Files;
+import java.net.URL;
+import java.net.URLStreamHandler;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
 import mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveGTMemDataStore;
-import mil.nga.giat.geowave.adapter.vector.query.CqlQueryFilterIterator;
 import mil.nga.giat.geowave.adapter.vector.query.cql.FilterToCQLTool;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -35,8 +35,6 @@ import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.vfs2.impl.VFSClassLoader;
 import org.apache.hadoop.fs.FsUrlStreamHandlerFactory;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
@@ -54,8 +52,6 @@ import org.opengis.filter.expression.Expression;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
-import sun.misc.Launcher;
-
 public class CqlQueryFilterIteratorTest
 {
 
@@ -66,6 +62,7 @@ public class CqlQueryFilterIteratorTest
 			SchemaException,
 			IOException,
 			ParseException,
+			StoreException,
 			TableNotFoundException {
 		final GeoWaveGTMemDataStore dataStore = new GeoWaveGTMemDataStore(
 				"CqlQueryFilterIteratorTest");
@@ -117,7 +114,7 @@ public class CqlQueryFilterIteratorTest
 				dataOps);
 
 		final String tableName = IndexType.SPATIAL_VECTOR.getDefaultId();
-		final ScannerBase scanner = dataOps.createScanner(tableName);
+		final ScannerBase scanner = AccumuloWraperUtils.getScannerBase(dataOps.createScanner(tableName));
 
 		AccumuloAdapterStore adapterStore = new AccumuloAdapterStore(
 				dataOps);

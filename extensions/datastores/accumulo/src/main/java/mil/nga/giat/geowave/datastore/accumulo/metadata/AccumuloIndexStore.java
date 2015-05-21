@@ -5,6 +5,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 
 /**
  * This class will persist Index objects within an Accumulo table for GeoWave
@@ -23,7 +24,7 @@ public class AccumuloIndexStore extends
 
 	public AccumuloIndexStore(
 			final StoreOperations accumuloOperations ) {
-		super(
+		super((BasicAccumuloOperations)
 				accumuloOperations);
 	}
 

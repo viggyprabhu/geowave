@@ -9,11 +9,10 @@ import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.Writer;
-import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.datastore.accumulo.util.TransformerWriter;
 import mil.nga.giat.geowave.datastore.accumulo.util.VisibilityTransformer;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -126,9 +125,9 @@ public class TransformWriterTest
 
 	@Test
 	public void test()
-			throws TableNotFoundException,
+			throws StoreException,TableNotFoundException,
 			MutationsRejectedException {
-		Writer w = operations.createWriter("test_table");
+		Writer w = AccumuloWraperUtils.getWriter(operations.createWriter("test_table"));
 		write(
 				w,
 				"1234",
@@ -159,10 +158,10 @@ public class TransformWriterTest
 				"123");
 		w.close();
 
-		Scanner scanner = operations.createScanner(
+		Scanner scanner = AccumuloWraperUtils.getScanner(operations.createScanner(
 				"test_table",
 				"a",
-				"b");
+				"b"));
 		check(
 				scanner.iterator(),
 				new Expect(
@@ -173,10 +172,10 @@ public class TransformWriterTest
 						2));
 		scanner.close();
 
-		scanner = operations.createScanner(
+		scanner = AccumuloWraperUtils.getScanner(operations.createScanner(
 				"test_table",
 				"a",
-				"c");
+				"c"));
 		check(
 				scanner.iterator(),
 				new Expect(
@@ -190,11 +189,11 @@ public class TransformWriterTest
 		VisibilityTransformer transformer = new VisibilityTransformer(
 				"b",
 				"c");
-		scanner = operations.createScanner(
+		scanner = AccumuloWraperUtils.getScanner(operations.createScanner(
 				"test_table",
 				"a",
 				"b",
-				"c");
+				"c"));
 		TransformerWriter tw = new TransformerWriter(
 				scanner,
 				"test_table",
@@ -203,10 +202,10 @@ public class TransformWriterTest
 		tw.transform();
 		scanner.close();
 
-		scanner = operations.createScanner(
+		scanner = AccumuloWraperUtils.getScanner(operations.createScanner(
 				"test_table",
 				"a",
-				"c");
+				"c"));
 		check(
 				scanner.iterator(),
 				new Expect(
@@ -217,10 +216,10 @@ public class TransformWriterTest
 						2));
 		scanner.close();
 
-		scanner = operations.createScanner(
+		scanner = AccumuloWraperUtils.getScanner(operations.createScanner(
 				"test_table",
 				"a",
-				"b");
+				"b"));
 		check(
 				scanner.iterator(),
 				new Expect(

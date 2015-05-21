@@ -10,6 +10,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
+import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
 import mil.nga.giat.geowave.datastore.accumulo.MergingCombiner;
 import mil.nga.giat.geowave.datastore.accumulo.MergingVisibilityCombiner;
@@ -43,7 +44,7 @@ public class AccumuloDataStatisticsStore extends
 
 	public AccumuloDataStatisticsStore(
 			final StoreOperations accumuloOperations ) {
-		super(
+		super((BasicAccumuloOperations)
 				accumuloOperations);
 	}
 

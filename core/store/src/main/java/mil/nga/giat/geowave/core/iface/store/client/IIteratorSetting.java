@@ -9,6 +9,8 @@ package mil.nga.giat.geowave.core.iface.store.client;
  */
 public interface IIteratorSetting {
 
-	void addOption(String mergeStrategyKey, String mergeStrategyStr);
+	void addOption(String option, String value);
+
+	String getName();
 
 }

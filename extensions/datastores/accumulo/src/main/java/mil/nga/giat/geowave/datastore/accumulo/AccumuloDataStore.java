@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.core.iface.store.Converter;
+import mil.nga.giat.geowave.core.iface.store.scan.IScannerBase;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
@@ -55,6 +56,7 @@ import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper.Callback;
 import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloBatchDeleter;
 import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloBatchScanner;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloIteratorSetting;
 import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
 import org.apache.accumulo.core.client.IteratorSetting;
@@ -235,9 +237,9 @@ public class AccumuloDataStore implements
 
 			statisticsTool = getStatsCompositionTool(writableAdapter);
 
-			writer = accumuloOperations.createWriter(
+			writer = AccumuloWraperUtils.getWriter(accumuloOperations.createWriter(
 					indexName,
-					accumuloOptions.isCreateTable());
+					accumuloOptions.isCreateTable()));
 
 			if (accumuloOptions.isUseLocalityGroups() && !accumuloOperations.localityGroupExists(
 					indexName,
@@ -267,9 +269,9 @@ public class AccumuloDataStore implements
 			writer.close();
 
 			if (useAltIndex) {
-				final Writer altIdxWriter = accumuloOperations.createWriter(
+				final Writer altIdxWriter = AccumuloWraperUtils.getWriter(accumuloOperations.createWriter(
 						altIdxTableName,
-						accumuloOptions.isCreateTable());
+						accumuloOptions.isCreateTable()));
 
 				AccumuloUtils.writeAltIndex(
 						writableAdapter,
@@ -290,7 +292,7 @@ public class AccumuloDataStore implements
 
 			return entryInfo.getRowIds();
 		}
-		catch (final StoreException | TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.error(
 					"Unable to ingest data entry",
 					e);
@@ -426,9 +428,9 @@ public class AccumuloDataStore implements
 			}
 
 			final String indexName = StringUtils.stringFromBinary(index.getId().getBytes());
-			final mil.nga.giat.geowave.datastore.accumulo.Writer writer = accumuloOperations.createWriter(
+			final mil.nga.giat.geowave.datastore.accumulo.Writer writer = AccumuloWraperUtils.getWriter(accumuloOperations.createWriter(
 					indexName,
-					accumuloOptions.isCreateTable());
+					accumuloOptions.isCreateTable()));
 
 			if (accumuloOptions.isUseLocalityGroups() && !accumuloOperations.localityGroupExists(
 					tableName,
@@ -451,9 +453,9 @@ public class AccumuloDataStore implements
 			final List<IngestCallback<T>> callbacks = new ArrayList<IngestCallback<T>>();
 			Writer altIdxWriter = null;
 			if (useAltIndex) {
-				altIdxWriter = accumuloOperations.createWriter(
+				altIdxWriter = AccumuloWraperUtils.getWriter(accumuloOperations.createWriter(
 						altIdxTableName,
-						accumuloOptions.isCreateTable());
+						accumuloOptions.isCreateTable()));
 
 				callbacks.add(new AltIndexIngestCallback<T>(
 						altIdxWriter,
@@ -521,7 +523,7 @@ public class AccumuloDataStore implements
 					true);
 
 		}
-		catch (final StoreException | TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.error(
 					"Unable to ingest data entries",
 					e);
@@ -697,7 +699,7 @@ public class AccumuloDataStore implements
 			final String... authorizations ) {
 
 		final List<Entry<Key, Value>> resultList = new ArrayList<Entry<Key, Value>>();
-		ScannerBase scanner = null;
+		IScannerBase scanner = null;
 		try {
 
 			scanner = accumuloOperations.createScanner(
@@ -711,7 +713,8 @@ public class AccumuloDataStore implements
 					SingleEntryFilterIterator.WHOLE_ROW_ITERATOR_PRIORITY,
 					SingleEntryFilterIterator.WHOLE_ROW_ITERATOR_NAME,
 					WholeRowIterator.class);
-			scanner.addScanIterator(rowIteratorSettings);
+			AccumuloIteratorSetting wrapperIS = new AccumuloIteratorSetting(rowIteratorSettings);
+			scanner.addScanIterator(wrapperIS);
 
 			final IteratorSetting filterIteratorSettings = new IteratorSetting(
 					SingleEntryFilterIterator.ENTRY_FILTER_ITERATOR_PRIORITY,
@@ -725,9 +728,9 @@ public class AccumuloDataStore implements
 			filterIteratorSettings.addOption(
 					SingleEntryFilterIterator.DATA_ID,
 					ByteArrayUtils.byteArrayToString(dataId.getBytes()));
-			scanner.addScanIterator(filterIteratorSettings);
+			scanner.addScanIterator(new AccumuloIteratorSetting(filterIteratorSettings));
 
-			final Iterator<Map.Entry<Key, Value>> iterator = scanner.iterator();
+			final Iterator<Map.Entry<Key, Value>> iterator = AccumuloWraperUtils.reconvert(scanner.iterator());
 			int i = 0;
 			if (iterator.hasNext() && (i < limit)) { // FB supression as FB not
 														// detecting i reference
@@ -736,7 +739,7 @@ public class AccumuloDataStore implements
 				i++;
 			}
 		}
-		catch (final TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.warn(
 					"Unable to query table '" + tableName + "'.  Table does not exist.",
 					e);
@@ -805,7 +808,7 @@ public class AccumuloDataStore implements
 
 		final List<ByteArrayId> result = new ArrayList<ByteArrayId>();
 		if (accumuloOptions.isUseAltIndex() && accumuloOperations.tableExists(tableName)) {
-			ScannerBase scanner = null;
+			IScannerBase scanner = null;
 			try {
 				scanner = accumuloOperations.createScanner(tableName);
 
@@ -815,7 +818,7 @@ public class AccumuloDataStore implements
 				scanner.fetchColumnFamily(new Text(
 						adapterId.getBytes()));
 
-				final Iterator<Map.Entry<Key, Value>> iterator = scanner.iterator();
+				final Iterator<Map.Entry<Key, Value>> iterator = AccumuloWraperUtils.reconvert(scanner.iterator());
 				int i = 0;
 				while (iterator.hasNext() && (i < limit)) {
 					result.add(new ByteArrayId(
@@ -824,7 +827,7 @@ public class AccumuloDataStore implements
 				}
 
 			}
-			catch (final TableNotFoundException e) {
+			catch (final StoreException e) {
 				LOGGER.warn(
 						"Unable to query table '" + tableName + "'.  Table does not exist.",
 						e);
@@ -855,7 +858,7 @@ public class AccumuloDataStore implements
 			deleter.fetchColumnFamily(new Text(
 					adapterId.getBytes()));
 
-			final Iterator<Map.Entry<Key, Value>> iterator = deleter.iterator();
+			final Iterator<Map.Entry<Key, Value>> iterator = AccumuloWraperUtils.reconvert(deleter.iterator());
 			while (iterator.hasNext()) {
 				final Entry<Key, Value> entry = iterator.next();
 

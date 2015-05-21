@@ -6,14 +6,15 @@ import java.util.List;
 import mil.nga.giat.geowave.core.iface.store.StoreOperations;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
+import mil.nga.giat.geowave.core.store.adapter.StoreException;
 import mil.nga.giat.geowave.core.store.filter.FilterList;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.util.InputFormatIteratorWrapper;
+import mil.nga.giat.geowave.datastore.accumulo.wrappers.AccumuloWraperUtils;
 
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.ScannerBase;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Range;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
@@ -56,9 +57,9 @@ public class InputFormatAccumuloRangeQuery extends
 		final String tableName = index.getId().getString();
 		Scanner scanner;
 		try {
-			scanner = accumuloOperations.createScanner(
+			scanner = AccumuloWraperUtils.getScanner(accumuloOperations.createScanner(
 					tableName,
-					getAdditionalAuthorizations());
+					getAdditionalAuthorizations()));
 			scanner.setRange(accumuloRange);
 			if ((adapterIds != null) && !adapterIds.isEmpty()) {
 				for (final ByteArrayId adapterId : adapterIds) {
@@ -68,7 +69,7 @@ public class InputFormatAccumuloRangeQuery extends
 			}
 			return scanner;
 		}
-		catch (final TableNotFoundException e) {
+		catch (final StoreException e) {
 			LOGGER.warn(
 					"Unable to query table '" + tableName + "'.  Table does not exist.",
 					e);

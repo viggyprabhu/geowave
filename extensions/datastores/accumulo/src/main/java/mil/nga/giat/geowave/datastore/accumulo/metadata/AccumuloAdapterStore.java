@@ -5,6 +5,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 
 /**
  * This class will persist Data Adapters within an Accumulo table for GeoWave
@@ -22,7 +23,7 @@ public class AccumuloAdapterStore extends
 
 	public AccumuloAdapterStore(
 			final StoreOperations accumuloOperations ) {
-		super(
+		super((BasicAccumuloOperations)
 				accumuloOperations);
 	}
 
