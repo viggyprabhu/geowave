@@ -29,17 +29,19 @@ import org.opengis.coverage.grid.GridCoverage;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class RasterHelper {
+public class RasterHelper
+{
 
 	public static IMergingVisibilityCombiner getMergingVisibilityCombiner() {
-		//TODO #238 Need to give access to MergingVisibilityCombiner from here 
+		// TODO #238 Need to give access to MergingVisibilityCombiner from here
 		return null;
 	}
 
-	public static IColumnSet getNewColumnSet(List<String> asList) {
-		// TODO #238 Need to pass a new ColumnSet instance 
+	public static IColumnSet getNewColumnSet(
+			List<String> asList ) {
+		// TODO #238 Need to pass a new ColumnSet instance
 		return null;
 	}
 
@@ -52,37 +54,49 @@ public class RasterHelper {
 		return null;
 	}
 
-	public static DataStore getDataStore(StoreOperations ops) {
+	public static DataStore getDataStore(
+			StoreOperations ops ) {
 		// TODO #238 Need to pass a new AccumuloDataStore
 		return null;
 	}
-	
-	public static IndexStore getIndexStore(StoreOperations ops) {
-		// TODO #238 Need to pass a new AccumuloIndexStore 
+
+	public static IndexStore getIndexStore(
+			StoreOperations ops ) {
+		// TODO #238 Need to pass a new AccumuloIndexStore
 		return null;
 	}
 
-	public static StoreOperations getStoreOperations(String zookeeper,
-			String instance, String user, String password, String newNamespace) throws StoreException{
+	public static StoreOperations getStoreOperations(
+			String zookeeper,
+			String instance,
+			String user,
+			String password,
+			String newNamespace )
+			throws StoreException {
 		// TODO #238 Need to pass a new BasicAccumuloOperations
-		return DataStoreFactory.getFactory().getStoreOperations(zookeeper, instance, user, password, newNamespace);
+		return DataStoreFactory.getFactory().getStoreOperations(
+				zookeeper,
+				instance,
+				user,
+				password,
+				newNamespace);
 	}
 
 	public static AdapterStore getAdapterStore(
-			StoreOperations oldNamespaceOperations) {
+			StoreOperations oldNamespaceOperations ) {
 		// TODO Need to pass a new AccumuloAdapterStore
 		return null;
 	}
 
 	public static DataStatisticsStore getDataStatisticsStore(
-			StoreOperations accumuloOperations) {
+			StoreOperations accumuloOperations ) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public static Iterator<GridCoverage> getIteratorWrapper(
 			Iterator<SubStrategy> iterator,
-			MosaicPerPyramidLevelBuilder mosaicPerPyramidLevelBuilder) {
+			MosaicPerPyramidLevelBuilder mosaicPerPyramidLevelBuilder ) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -93,12 +107,14 @@ public class RasterHelper {
 	}
 
 	public static IIteratorSetting getIteratorSetting(
-			int rasterTileCombinerPriority, Class<? extends ICombiner> class1) {
+			int rasterTileCombinerPriority,
+			Class<? extends ICombiner> class1 ) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public static IColumn getColumn(String coverageName) {
+	public static IColumn getColumn(
+			String coverageName ) {
 		// TODO Auto-generated method stub
 		return null;
 	}

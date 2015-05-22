@@ -713,7 +713,8 @@ public class AccumuloDataStore implements
 					SingleEntryFilterIterator.WHOLE_ROW_ITERATOR_PRIORITY,
 					SingleEntryFilterIterator.WHOLE_ROW_ITERATOR_NAME,
 					WholeRowIterator.class);
-			AccumuloIteratorSetting wrapperIS = new AccumuloIteratorSetting(rowIteratorSettings);
+			AccumuloIteratorSetting wrapperIS = new AccumuloIteratorSetting(
+					rowIteratorSettings);
 			scanner.addScanIterator(wrapperIS);
 
 			final IteratorSetting filterIteratorSettings = new IteratorSetting(
@@ -728,7 +729,8 @@ public class AccumuloDataStore implements
 			filterIteratorSettings.addOption(
 					SingleEntryFilterIterator.DATA_ID,
 					ByteArrayUtils.byteArrayToString(dataId.getBytes()));
-			scanner.addScanIterator(new AccumuloIteratorSetting(filterIteratorSettings));
+			scanner.addScanIterator(new AccumuloIteratorSetting(
+					filterIteratorSettings));
 
 			final Iterator<Map.Entry<Key, Value>> iterator = AccumuloWraperUtils.reconvert(scanner.iterator());
 			int i = 0;

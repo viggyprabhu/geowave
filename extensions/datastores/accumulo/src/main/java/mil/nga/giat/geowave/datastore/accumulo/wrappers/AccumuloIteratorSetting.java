@@ -9,20 +9,26 @@ import org.apache.accumulo.core.client.IteratorSetting;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class AccumuloIteratorSetting implements IIteratorSetting {
+public class AccumuloIteratorSetting implements
+		IIteratorSetting
+{
 
-	
 	private IteratorSetting m_iteratorSetting;
 
-	public AccumuloIteratorSetting(IteratorSetting iteratorSetting) {
-		m_iteratorSetting = iteratorSetting; 
+	public AccumuloIteratorSetting(
+			IteratorSetting iteratorSetting ) {
+		m_iteratorSetting = iteratorSetting;
 	}
 
 	@Override
-	public void addOption(String option, String value) {
-		m_iteratorSetting.addOption(option, value);
+	public void addOption(
+			String option,
+			String value ) {
+		m_iteratorSetting.addOption(
+				option,
+				value);
 	}
 
 	@Override

@@ -21,12 +21,16 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class GeoWaveCoreInputFormat<T> extends InputFormat<GeoWaveCoreInputKey, T>{
+public class GeoWaveCoreInputFormat<T> extends
+		InputFormat<GeoWaveCoreInputKey, T>
+{
 
 	@Override
-	public List<InputSplit> getSplits(JobContext context) throws IOException,
+	public List<InputSplit> getSplits(
+			JobContext context )
+			throws IOException,
 			InterruptedException {
 		// TODO Auto-generated method stub
 		return null;
@@ -34,12 +38,14 @@ public class GeoWaveCoreInputFormat<T> extends InputFormat<GeoWaveCoreInputKey, 
 
 	@Override
 	public RecordReader<GeoWaveCoreInputKey, T> createRecordReader(
-			InputSplit split, TaskAttemptContext context) throws IOException,
+			InputSplit split,
+			TaskAttemptContext context )
+			throws IOException,
 			InterruptedException {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	private static final Class<?> CLASS = GeoWaveCoreInputFormat.class;
 	protected static final Logger LOGGER = Logger.getLogger(CLASS);
 	private static final BigInteger TWO = BigInteger.valueOf(2L);

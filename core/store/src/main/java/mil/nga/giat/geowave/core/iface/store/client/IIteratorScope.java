@@ -7,9 +7,10 @@ import mil.nga.giat.geowave.core.store.data.IteratorScopeEntity;
 
 /**
  * @author viggy
- *
+ * 
  */
-public interface IIteratorScope {
+public interface IIteratorScope
+{
 
 	IteratorScopeEntity getScan();
 

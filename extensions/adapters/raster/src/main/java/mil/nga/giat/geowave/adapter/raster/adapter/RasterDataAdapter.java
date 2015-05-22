@@ -1468,10 +1468,11 @@ public class RasterDataAdapter implements
 	public CoreIteratorConfig[] getAttachedIteratorConfig(
 			final Index index ) {
 		final IteratorScopeEntity visibilityCombinerScope = RasterHelper.getIteratorScope().getScan();
-		final RasterTileCombinerConfig tileCombiner = new RasterTileCombinerConfig(RasterHelper.getIteratorSetting(
-														RASTER_TILE_COMBINER_PRIORITY,
-														RasterTileCombiner.class),
-														visibilityCombinerScope.getCompliment());
+		final RasterTileCombinerConfig tileCombiner = new RasterTileCombinerConfig(
+				RasterHelper.getIteratorSetting(
+						RASTER_TILE_COMBINER_PRIORITY,
+						RasterTileCombiner.class),
+				visibilityCombinerScope.getCompliment());
 		final List<IColumn> columns = new ArrayList<IColumn>();
 		columns.add(RasterHelper.getColumn(getCoverageName()));
 		RasterHelper.getCombiner().setColumns(

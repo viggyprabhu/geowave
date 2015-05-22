@@ -125,7 +125,8 @@ public class TransformWriterTest
 
 	@Test
 	public void test()
-			throws StoreException,TableNotFoundException,
+			throws StoreException,
+			TableNotFoundException,
 			MutationsRejectedException {
 		Writer w = AccumuloWraperUtils.getWriter(operations.createWriter("test_table"));
 		write(

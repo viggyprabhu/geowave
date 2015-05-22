@@ -7,8 +7,10 @@ import mil.nga.giat.geowave.core.iface.store.scan.IScannerBase;
 
 /**
  * @author viggy
- *
+ * 
  */
-public interface CoreBatchDeleter extends IScannerBase{
+public interface CoreBatchDeleter extends
+		IScannerBase
+{
 
 }

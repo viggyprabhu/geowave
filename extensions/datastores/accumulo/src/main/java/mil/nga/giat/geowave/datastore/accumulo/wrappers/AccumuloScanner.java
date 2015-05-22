@@ -16,34 +16,35 @@ import org.apache.hadoop.io.Text;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class AccumuloScanner implements CoreScanner {
+public class AccumuloScanner implements
+		CoreScanner
+{
 
 	private Scanner m_scanner;
 
-	public AccumuloScanner(Scanner scanner) {
+	public AccumuloScanner(
+			Scanner scanner ) {
 		m_scanner = scanner;
 	}
 
-	
 	@Override
-	public void addScanIterator(IIteratorSetting iteratorSettings) {
+	public void addScanIterator(
+			IIteratorSetting iteratorSettings ) {
 		m_scanner.addScanIterator(AccumuloWraperUtils.getIteratorSetting(iteratorSettings));
 	}
 
-
 	@Override
-	public void fetchColumnFamily(Text col) {
+	public void fetchColumnFamily(
+			Text col ) {
 		m_scanner.fetchColumnFamily(col);
 	}
-
 
 	@Override
 	public void close() {
 		m_scanner.close();
 	}
-
 
 	@Override
 	public Iterator<Entry<IKey, IValue>> iterator() {

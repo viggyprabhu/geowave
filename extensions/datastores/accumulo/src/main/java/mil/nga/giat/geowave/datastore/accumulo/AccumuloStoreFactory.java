@@ -17,37 +17,44 @@ import org.apache.hadoop.mapreduce.JobContext;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class AccumuloStoreFactory extends DataStoreFactory {
+public class AccumuloStoreFactory extends
+		DataStoreFactory
+{
 
-	public AccumuloStoreFactory(){
+	public AccumuloStoreFactory() {
 		AccumuloStoreUtils.setAccumuloStoreFactory(this);
 	}
-	
+
 	@Override
 	public IMergingCombiner getMergedCombiner() {
-		
+
 		return new MergingCombiner();
 	}
 
 	@Override
-	public StoreOperations getStoreOperations(String zookeeperURL,
-			String instanceName, String userName, String password,
-			String tableNamespace) throws StoreException {
+	public StoreOperations getStoreOperations(
+			String zookeeperURL,
+			String instanceName,
+			String userName,
+			String password,
+			String tableNamespace )
+			throws StoreException {
 		// TODO #238 Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public AccumuloIndexStore getIndexStore(StoreOperations accumuloOperations) {
+	public AccumuloIndexStore getIndexStore(
+			StoreOperations accumuloOperations ) {
 		// TODO #238 Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public AccumuloAdapterStore getAdapterStore(
-			StoreOperations accumuloOperations) {
+			StoreOperations accumuloOperations ) {
 		// TODO #238 Auto-generated method stub
 		return null;
 	}
@@ -59,20 +66,22 @@ public class AccumuloStoreFactory extends DataStoreFactory {
 	}
 
 	@Override
-	public JobContextAdapterStore getJobContextAdapterStore(JobContext context) {
+	public JobContextAdapterStore getJobContextAdapterStore(
+			JobContext context ) {
 		// TODO #238 Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public JobContextAdapterStore getJobContextAdapterStore() {
-		// TODO #238 Need to ensure that only one of the getJobContextAdapterStore is exposed
+		// TODO #238 Need to ensure that only one of the
+		// getJobContextAdapterStore is exposed
 		return null;
 	}
 
 	@Override
 	public AccumuloDataStatisticsStore getAccumuloDataStatisticsStore(
-			StoreOperations accumuloOperations) {
+			StoreOperations accumuloOperations ) {
 		// TODO #238 Auto-generated method stub
 		return null;
 	}

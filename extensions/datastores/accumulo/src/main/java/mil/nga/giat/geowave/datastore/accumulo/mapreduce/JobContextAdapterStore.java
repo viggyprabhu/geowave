@@ -77,8 +77,7 @@ public class JobContextAdapterStore implements
 				adapterId);
 		if (adapter == null) {
 			// then try to get it from the accumulo persistent store
-			final AccumuloAdapterStore adapterStore = AccumuloStoreUtils.getAdapterStore(
-					accumuloOperations);
+			final AccumuloAdapterStore adapterStore = AccumuloStoreUtils.getAdapterStore(accumuloOperations);
 			adapter = adapterStore.getAdapter(adapterId);
 		}
 
@@ -92,8 +91,7 @@ public class JobContextAdapterStore implements
 
 	@Override
 	public CloseableIterator<DataAdapter<?>> getAdapters() {
-		final AccumuloAdapterStore adapterStore = AccumuloStoreUtils.getAdapterStore(
-				accumuloOperations);
+		final AccumuloAdapterStore adapterStore = AccumuloStoreUtils.getAdapterStore(accumuloOperations);
 		final CloseableIterator<DataAdapter<?>> it = adapterStore.getAdapters();
 		// cache any results
 		return new CloseableIteratorWrapper<DataAdapter<?>>(
@@ -153,7 +151,8 @@ public class JobContextAdapterStore implements
 				adapterId);
 	}
 
-	//TODO #238 Need to fix this error caused by creating the Interface for the class 
+	// TODO #238 Need to fix this error caused by creating the Interface for the
+	// class
 	// and making this function as part of its definition
 	public DataAdapter<?>[] getDataAdapters(
 			final JobContext context ) {

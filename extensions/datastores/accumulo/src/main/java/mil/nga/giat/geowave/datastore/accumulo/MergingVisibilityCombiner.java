@@ -20,7 +20,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.io.Text;
 
 public class MergingVisibilityCombiner extends
-		TransformingIterator 
+		TransformingIterator
 {
 	private static final byte[] AMPRISAND = StringUtils.stringToBinary("&");
 
@@ -29,7 +29,6 @@ public class MergingVisibilityCombiner extends
 		return PartialKey.ROW_COLFAM_COLQUAL;
 	}
 
-	
 	public void transformRange(
 			final ISortedKeyValueIterator<AccumuloKey, AccumuloValue> input,
 			final AccumuloKVBuffer output )
@@ -60,12 +59,12 @@ public class MergingVisibilityCombiner extends
 						combineVisibilities(
 								currentKey.getColumnVisibility().getBytes(),
 								outputKey.getColumnVisibility().getBytes()));
-				outputKey = new AccumuloKey(replaceColumnVisibility(
-						outputKey.getKey(),
-						combinedVisibility));
+				outputKey = new AccumuloKey(
+						replaceColumnVisibility(
+								outputKey.getKey(),
+								combinedVisibility));
 			}
-			final Mergeable mergeable = getMergeable(
-					val.get());
+			final Mergeable mergeable = getMergeable(val.get());
 			// hopefully its never the case that null mergeables are stored,
 			// but just in case, check
 			if (mergeable != null) {
@@ -115,18 +114,20 @@ public class MergingVisibilityCombiner extends
 						ColumnVisibility.quote(vis2))).flatten();
 	}
 
-
 	@Override
-	protected void transformRange(SortedKeyValueIterator<Key, Value> input,
-			KVBuffer output) throws IOException {
+	protected void transformRange(
+			SortedKeyValueIterator<Key, Value> input,
+			KVBuffer output )
+			throws IOException {
 		ISortedKeyValueIterator<AccumuloKey, AccumuloValue> newInput = getCastedSortedKeyValueIterator(input);
-		transformRange(newInput, (AccumuloKVBuffer) output);
-		
+		transformRange(
+				newInput,
+				(AccumuloKVBuffer) output);
+
 	}
 
-
 	private ISortedKeyValueIterator<AccumuloKey, AccumuloValue> getCastedSortedKeyValueIterator(
-			SortedKeyValueIterator<Key, Value> input) {
+			SortedKeyValueIterator<Key, Value> input ) {
 		// TODO #238 This is ugly cast hidden. Need to fix this
 		return null;
 	}

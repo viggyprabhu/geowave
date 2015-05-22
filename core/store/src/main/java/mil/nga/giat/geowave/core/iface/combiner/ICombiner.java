@@ -3,15 +3,14 @@
  */
 package mil.nga.giat.geowave.core.iface.combiner;
 
-
-
 /**
  * @author viggy
- *
+ * 
  */
-public interface ICombiner {
+public interface ICombiner
+{
 
-
-	//void setColumns(IIteratorSetting iteratorSettings, List<IColumn> columns);
+	// void setColumns(IIteratorSetting iteratorSettings, List<IColumn>
+	// columns);
 
 }

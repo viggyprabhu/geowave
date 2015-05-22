@@ -11,18 +11,20 @@ import org.opengis.coverage.grid.GridCoverage;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class GeoWaveCoreWritableInputReducer<KEYOUT, VALUEOUT> 
-		extends Reducer<GeoWaveCoreInputKey, ObjectWritable, KEYOUT, VALUEOUT> {
+public class GeoWaveCoreWritableInputReducer<KEYOUT, VALUEOUT> extends
+		Reducer<GeoWaveCoreInputKey, ObjectWritable, KEYOUT, VALUEOUT>
+{
 
 	protected void reduceNativeValues(
 			GeoWaveCoreInputKey key,
 			Iterable<Object> values,
-			Reducer<GeoWaveCoreInputKey, ObjectWritable, GeoWaveCoreOutputKey, GridCoverage>.Context context)
-			throws IOException, InterruptedException {
+			Reducer<GeoWaveCoreInputKey, ObjectWritable, GeoWaveCoreOutputKey, GridCoverage>.Context context )
+			throws IOException,
+			InterruptedException {
 		// TODO Need to fix this
-		
+
 	}
 
 	@Override
@@ -31,7 +33,7 @@ public class GeoWaveCoreWritableInputReducer<KEYOUT, VALUEOUT>
 			throws IOException,
 			InterruptedException {
 		// TODO Need to fix this
-		
+
 	}
 
 }

@@ -24,45 +24,49 @@ import org.apache.accumulo.core.data.Value;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class AccumuloWraperUtils {
+public class AccumuloWraperUtils
+{
 
-	public static ScannerBase getScannerBase(IScannerBase scanner) {
+	public static ScannerBase getScannerBase(
+			IScannerBase scanner ) {
 		// TODO #238 Auto-generated method stub
 		return null;
 	}
 
 	public static IteratorSetting getIteratorSetting(
-			IIteratorSetting iteratorSettings) {
+			IIteratorSetting iteratorSettings ) {
 		// TODO #238 Auto-generated method stub
 		return null;
 	}
 
-	public static Writer getWriter(CoreWriter createWriter) {
-		// TODO #238 Auto-generated method stub
+	public static Writer getWriter(
+			CoreWriter createWriter ) {
+		
 		return null;
 	}
 
-	public static Scanner getScanner(CoreScanner createScanner) {
+	public static Scanner getScanner(
+			CoreScanner createScanner ) {
 		// TODO #238 Auto-generated method stub
 		return null;
 	}
 
 	public static Iterator<Entry<IKey, IValue>> convert(
-			Iterator<Entry<Key, Value>> iterator) {
+			Iterator<Entry<Key, Value>> iterator ) {
 		// TODO #238 Need to convert
 		return null;
 	}
 
 	public static Iterator<Entry<Key, Value>> reconvert(
-			Iterator<Entry<IKey, IValue>> iterator) {
+			Iterator<Entry<IKey, IValue>> iterator ) {
 		// TODO #238 NEed to reconvert
 		return null;
 	}
 
 	public static IteratorConfig getIteratorConfig(
-			CoreIteratorConfig coreIteratorConfig) {
+			CoreIteratorConfig coreIteratorConfig ) {
 		// TODO #238 Auto-generated method stub
 		return null;
 	}

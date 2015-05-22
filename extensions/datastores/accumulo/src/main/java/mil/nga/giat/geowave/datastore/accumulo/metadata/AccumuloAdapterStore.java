@@ -23,8 +23,8 @@ public class AccumuloAdapterStore extends
 
 	public AccumuloAdapterStore(
 			final StoreOperations accumuloOperations ) {
-		super((BasicAccumuloOperations)
-				accumuloOperations);
+		super(
+				(BasicAccumuloOperations) accumuloOperations);
 	}
 
 	@Override

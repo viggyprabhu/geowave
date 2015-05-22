@@ -24,8 +24,8 @@ public class AccumuloIndexStore extends
 
 	public AccumuloIndexStore(
 			final StoreOperations accumuloOperations ) {
-		super((BasicAccumuloOperations)
-				accumuloOperations);
+		super(
+				(BasicAccumuloOperations) accumuloOperations);
 	}
 
 	@Override

@@ -129,7 +129,8 @@ public class JobContextIndexStore implements
 				indexId);
 	}
 
-	//TODO #238 Need to fix this error caused by creating the Interface for the class 
+	// TODO #238 Need to fix this error caused by creating the Interface for the
+	// class
 	// and making this function as part of its definition
 	public Index[] getIndices(
 			final JobContext context ) {

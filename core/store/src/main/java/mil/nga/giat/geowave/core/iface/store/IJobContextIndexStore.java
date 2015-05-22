@@ -11,12 +11,17 @@ import org.apache.hadoop.mapreduce.JobContext;
 
 /**
  * @author viggy
- *
+ * 
  */
-public interface IJobContextIndexStore extends IndexStore {
+public interface IJobContextIndexStore extends
+		IndexStore
+{
 
-	public Index[] getIndices(JobContext context);
+	public Index[] getIndices(
+			JobContext context );
 
-	public void addIndex(Configuration configuration, Index index);
+	public void addIndex(
+			Configuration configuration,
+			Index index );
 
 }

@@ -19,7 +19,8 @@ import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.accumulo.core.iterators.SortedKeyValueIterator;
 
 public class MergingCombiner extends
-		Combiner implements IMergingCombiner
+		Combiner implements
+		IMergingCombiner
 {
 	@Override
 	public Value reduce(
@@ -63,13 +64,19 @@ public class MergingCombiner extends
 	}
 
 	@Override
-	public void init(ISortedKeyValueIterator<IKey, IValue> source,
-			Map<String, String> options, IIteratorEnvironment env) {
+	public void init(
+			ISortedKeyValueIterator<IKey, IValue> source,
+			Map<String, String> options,
+			IIteratorEnvironment env ) {
 		SortedKeyValueIterator<Key, Value> modifiedSource = (SortedKeyValueIterator<Key, Value>) source;
 		IteratorEnvironment modifiedEnv = (IteratorEnvironment) env;
 		try {
-			super.init(modifiedSource,options,modifiedEnv);
-		} catch (IOException e) {
+			super.init(
+					modifiedSource,
+					options,
+					modifiedEnv);
+		}
+		catch (IOException e) {
 			// TODO #238 Fix the exception handling
 			e.printStackTrace();
 		}

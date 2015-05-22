@@ -17,7 +17,8 @@ import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 
-public class RasterTileVisibilityCombiner implements ICombiner
+public class RasterTileVisibilityCombiner implements
+		ICombiner
 {
 	private final RasterTileCombinerHelper<Persistable> helper = new RasterTileCombinerHelper<Persistable>();
 	private IColumnSet columns;

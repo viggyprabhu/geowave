@@ -10,10 +10,13 @@ import mil.nga.giat.geowave.core.iface.store.client.IIteratorSetting;
 
 /**
  * @author viggy
- *
+ * 
  */
-public interface IStoreCombiner {
+public interface IStoreCombiner
+{
 
-	void setColumns(IIteratorSetting iteratorSettings, List<IColumn> columns);
+	void setColumns(
+			IIteratorSetting iteratorSettings,
+			List<IColumn> columns );
 
 }

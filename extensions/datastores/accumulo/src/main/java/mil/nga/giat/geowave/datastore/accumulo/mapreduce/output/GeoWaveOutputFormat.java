@@ -60,7 +60,9 @@ public class GeoWaveOutputFormat extends
 			final BasicAccumuloOperations accumuloOperations = getAccumuloOperations(context);
 			final AdapterStore accumuloAdapterStore = new AccumuloAdapterStore(
 					accumuloOperations);
-			final DataAdapter<?>[] adapters = AccumuloStoreUtils.getJobContextAdapterStore(context).getDataAdapters(context);
+			final DataAdapter<?>[] adapters = AccumuloStoreUtils.getJobContextAdapterStore(
+					context).getDataAdapters(
+					context);
 			for (final DataAdapter<?> a : adapters) {
 				if (!accumuloAdapterStore.adapterExists(a.getAdapterId())) {
 					accumuloAdapterStore.addAdapter(a);
@@ -68,7 +70,8 @@ public class GeoWaveOutputFormat extends
 			}
 			final IndexStore accumuloIndexStore = new AccumuloIndexStore(
 					accumuloOperations);
-			final Index[] indices = AccumuloStoreUtils.getJobContextIndexStore().getIndices(context);
+			final Index[] indices = AccumuloStoreUtils.getJobContextIndexStore().getIndices(
+					context);
 			for (final Index i : indices) {
 				if (!accumuloIndexStore.indexExists(i.getId())) {
 					accumuloIndexStore.addIndex(i);
@@ -80,8 +83,7 @@ public class GeoWaveOutputFormat extends
 			final IndexStore jobContextIndexStore = AccumuloStoreUtils.getIndexStore(
 					context,
 					accumuloOperations);
-			final DataStatisticsStore statisticsStore = AccumuloStoreUtils.getAccumuloDataStatisticsStore(
-					accumuloOperations);
+			final DataStatisticsStore statisticsStore = AccumuloStoreUtils.getAccumuloDataStatisticsStore(accumuloOperations);
 			return new GeoWaveRecordWriter(
 					context,
 					accumuloOperations,
@@ -150,7 +152,7 @@ public class GeoWaveOutputFormat extends
 			throw new IOException(
 					e);
 		}
-		
+
 	}
 
 	@Override
@@ -411,8 +413,8 @@ public class GeoWaveOutputFormat extends
 	public static BasicAccumuloOperations getAccumuloOperations(
 			final JobContext context )
 			throws StoreException {
-		//TODO #238 Need to fix this hardcoded upcast 
-		return (BasicAccumuloOperations)GeoWaveConfiguratorBase.getAccumuloOperations(
+		// TODO #238 Need to fix this hardcoded upcast
+		return (BasicAccumuloOperations) GeoWaveConfiguratorBase.getAccumuloOperations(
 				CLASS,
 				context);
 	}

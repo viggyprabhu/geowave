@@ -7,8 +7,10 @@ import org.apache.hadoop.io.WritableComparable;
 
 /**
  * @author viggy
- *
+ * 
  */
-public interface IValue  extends WritableComparable<Object>{
+public interface IValue extends
+		WritableComparable<Object>
+{
 
 }

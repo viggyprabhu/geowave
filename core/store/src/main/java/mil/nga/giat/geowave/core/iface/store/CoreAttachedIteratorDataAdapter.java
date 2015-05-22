@@ -9,10 +9,11 @@ import mil.nga.giat.geowave.core.store.mapreduce.client.CoreIteratorConfig;
 
 /**
  * @author viggy
- *
+ * 
  */
 public interface CoreAttachedIteratorDataAdapter<T> extends
-		WritableDataAdapter<T> {
+		WritableDataAdapter<T>
+{
 
 	public static final String ATTACHED_ITERATOR_CACHE_ID = "AttachedIterators";
 

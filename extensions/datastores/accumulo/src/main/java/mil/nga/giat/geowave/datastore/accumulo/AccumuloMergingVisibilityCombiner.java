@@ -12,26 +12,27 @@ import mil.nga.giat.geowave.core.iface.field.IKVBuffer;
 import mil.nga.giat.geowave.core.iface.field.IKey;
 import mil.nga.giat.geowave.core.iface.field.IValue;
 
-
 /**
  * @author viggy
- *
+ * 
  */
 public class AccumuloMergingVisibilityCombiner implements
-		IMergingVisibilityCombiner {
-
+		IMergingVisibilityCombiner
+{
 
 	@Override
-	public void transformRange(ISortedKeyValueIterator<IKey, IValue> input,
-			IKVBuffer output) {
+	public void transformRange(
+			ISortedKeyValueIterator<IKey, IValue> input,
+			IKVBuffer output ) {
 		// TODO #238 Auto-generated method stub
 
 	}
 
-	
 	@Override
-	public void init(ISortedKeyValueIterator<IKey, IValue> source,
-			Map<String, String> options, IIteratorEnvironment env) {
+	public void init(
+			ISortedKeyValueIterator<IKey, IValue> source,
+			Map<String, String> options,
+			IIteratorEnvironment env ) {
 		// TODO #238 Auto-generated method stub
 
 	}

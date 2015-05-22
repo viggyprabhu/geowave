@@ -15,39 +15,48 @@ import org.apache.hadoop.io.Text;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class AccumuloKey implements IKey {
+public class AccumuloKey implements
+		IKey
+{
 
 	private Key m_key;
 
-	
-	public AccumuloKey(){
+	public AccumuloKey() {
 		m_key = new Key();
 	}
 
-	public AccumuloKey(AccumuloKey topKey) {
-		//TODO #238 Need to convert the existing AccumuloKey to a Key object of Accumulo Core
+	public AccumuloKey(
+			AccumuloKey topKey ) {
+		// TODO #238 Need to convert the existing AccumuloKey to a Key object of
+		// Accumulo Core
 		m_key = new Key();
 	}
 
-	public AccumuloKey(Key replaceColumnVisibility) {
+	public AccumuloKey(
+			Key replaceColumnVisibility ) {
 		m_key = replaceColumnVisibility;
 	}
 
 	@Override
-	public void write(DataOutput out) throws IOException {
+	public void write(
+			DataOutput out )
+			throws IOException {
 		m_key.write(out);
-		
+
 	}
 
 	@Override
-	public void readFields(DataInput in) throws IOException {
+	public void readFields(
+			DataInput in )
+			throws IOException {
 		m_key.readFields(in);
 	}
 
 	@Override
-	public int compareTo(IKey other) {
+	public int compareTo(
+			IKey other ) {
 		return m_key.compareTo(new AccumuloKey().getKey());
 	}
 
@@ -67,6 +76,5 @@ public class AccumuloKey implements IKey {
 	public Key getKey() {
 		return m_key;
 	}
-	
 
 }

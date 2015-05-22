@@ -10,27 +10,29 @@ import mil.nga.giat.geowave.core.store.data.IteratorScopeEntity;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class CoreIteratorConfig {
+public class CoreIteratorConfig
+{
 
-	public CoreIteratorConfig(IIteratorSetting iteratorSettings,
-			IteratorScopeEntity[] scopes) {
+	public CoreIteratorConfig(
+			IIteratorSetting iteratorSettings,
+			IteratorScopeEntity[] scopes ) {
 		this.iteratorSettings = iteratorSettings;
 		this.scopes = scopes;
 	}
-	
-	public CoreIteratorConfig(IIteratorSetting iteratorSettings,
-			IteratorScopeEntity iteratorScopeEntity) {
+
+	public CoreIteratorConfig(
+			IIteratorSetting iteratorSettings,
+			IteratorScopeEntity iteratorScopeEntity ) {
 		this.iteratorSettings = iteratorSettings;
 		ArrayList<IteratorScopeEntity> iIteratorScopeEntity = new ArrayList<IteratorScopeEntity>();
 		iIteratorScopeEntity.add(iteratorScopeEntity);
-		this.scopes = (IteratorScopeEntity[])iIteratorScopeEntity.toArray(); 
+		this.scopes = (IteratorScopeEntity[]) iIteratorScopeEntity.toArray();
 	}
 
 	private final IIteratorSetting iteratorSettings;
 	private final IteratorScopeEntity[] scopes;
-
 
 	public IteratorScopeEntity[] getScopes() {
 		return scopes;

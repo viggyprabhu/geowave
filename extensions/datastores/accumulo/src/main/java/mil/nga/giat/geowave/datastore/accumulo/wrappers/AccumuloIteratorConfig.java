@@ -10,20 +10,28 @@ import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class AccumuloIteratorConfig extends CoreIteratorConfig {
+public class AccumuloIteratorConfig extends
+		CoreIteratorConfig
+{
 
 	private IteratorConfig m_config;
 
-	public AccumuloIteratorConfig(IIteratorSetting iteratorSettings,
-			IteratorScopeEntity iteratorScopeEntity) {
-		super(iteratorSettings, iteratorScopeEntity);
+	public AccumuloIteratorConfig(
+			IIteratorSetting iteratorSettings,
+			IteratorScopeEntity iteratorScopeEntity ) {
+		super(
+				iteratorSettings,
+				iteratorScopeEntity);
 	}
 
-	public AccumuloIteratorConfig(IteratorConfig config) {
-		//TODO #238 Need to fix this
-		this(null, null);
+	public AccumuloIteratorConfig(
+			IteratorConfig config ) {
+		// TODO #238 Need to fix this
+		this(
+				null,
+				null);
 		m_config = config;
 	}
 

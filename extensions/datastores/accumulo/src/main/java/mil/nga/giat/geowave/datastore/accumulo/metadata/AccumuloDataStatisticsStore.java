@@ -44,8 +44,8 @@ public class AccumuloDataStatisticsStore extends
 
 	public AccumuloDataStatisticsStore(
 			final StoreOperations accumuloOperations ) {
-		super((BasicAccumuloOperations)
-				accumuloOperations);
+		super(
+				(BasicAccumuloOperations) accumuloOperations);
 	}
 
 	@Override

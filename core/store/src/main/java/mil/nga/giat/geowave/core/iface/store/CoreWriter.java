@@ -3,7 +3,6 @@
  */
 package mil.nga.giat.geowave.core.iface.store;
 
-
 /**
  * This interface is returned by AccumuloOperations and useful for general
  * purpose writing of entries. The default implementation of AccumuloOperations

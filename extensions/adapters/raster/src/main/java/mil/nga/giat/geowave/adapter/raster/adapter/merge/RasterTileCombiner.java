@@ -14,12 +14,14 @@ import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.DataStoreFactory;
 
-public class RasterTileCombiner implements ICombiner 
+public class RasterTileCombiner implements
+		ICombiner
 {
-	//TODO #238 This is hardcoded as against getting it from MergingCombiner.COLUMN_OPTIONS 
-	//     to solve direct dependency to Accumulo-core
+	// TODO #238 This is hardcoded as against getting it from
+	// MergingCombiner.COLUMN_OPTIONS
+	// to solve direct dependency to Accumulo-core
 	public static final String COLUMNS_KEY = "columns";
-	
+
 	private final RasterTileCombinerHelper<Persistable> helper = new RasterTileCombinerHelper<Persistable>();
 
 	protected Mergeable getMergeable(

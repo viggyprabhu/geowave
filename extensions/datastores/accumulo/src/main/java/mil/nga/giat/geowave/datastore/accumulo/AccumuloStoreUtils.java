@@ -14,44 +14,47 @@ import org.apache.hadoop.mapreduce.JobContext;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class AccumuloStoreUtils {
+public class AccumuloStoreUtils
+{
 
 	private static AccumuloStoreFactory m_accumuloStoreFactory;
 
 	public static void setAccumuloStoreFactory(
-			AccumuloStoreFactory accumuloStoreFactory) {
+			AccumuloStoreFactory accumuloStoreFactory ) {
 		m_accumuloStoreFactory = accumuloStoreFactory;
 	}
 
 	public static JobContextIndexStore getJobContextIndexStore() {
-		
+
 		return m_accumuloStoreFactory.getJobContextIndexStore();
 	}
-	
-	public static JobContextAdapterStore getJobContextAdapterStore(JobContext context) {
-		
+
+	public static JobContextAdapterStore getJobContextAdapterStore(
+			JobContext context ) {
+
 		return m_accumuloStoreFactory.getJobContextAdapterStore(context);
 	}
 
 	public static JobContextAdapterStore getJobContextAdapterStore() {
-		
+
 		return m_accumuloStoreFactory.getJobContextAdapterStore();
 	}
 
 	public static AccumuloAdapterStore getAdapterStore(
-			StoreOperations accumuloOperations) {
+			StoreOperations accumuloOperations ) {
 		return m_accumuloStoreFactory.getAdapterStore(accumuloOperations);
 	}
 
-	public static IndexStore getIndexStore(JobContext context,
-			StoreOperations accumuloOperations) {
+	public static IndexStore getIndexStore(
+			JobContext context,
+			StoreOperations accumuloOperations ) {
 		return m_accumuloStoreFactory.getIndexStore(accumuloOperations);
 	}
 
 	public static AccumuloDataStatisticsStore getAccumuloDataStatisticsStore(
-			StoreOperations accumuloOperations) {
+			StoreOperations accumuloOperations ) {
 		return m_accumuloStoreFactory.getAccumuloDataStatisticsStore(accumuloOperations);
 	}
 

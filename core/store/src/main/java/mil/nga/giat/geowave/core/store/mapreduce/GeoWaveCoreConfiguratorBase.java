@@ -22,9 +22,10 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class GeoWaveCoreConfiguratorBase {
+public class GeoWaveCoreConfiguratorBase
+{
 
 	protected static final Logger LOGGER = Logger.getLogger(GeoWaveCoreConfiguratorBase.class);
 
@@ -488,14 +489,13 @@ public class GeoWaveCoreConfiguratorBase {
 		try {
 			return context.getConfiguration();
 			/*
-			 * TODO #238 Commented this out to avoid dependency on Accumulo-core. Need to check its impact 
-			 * final Class<?> c = InputFormatBase.class.getClassLoader().loadClass(
-					"org.apache.hadoop.mapreduce.JobContext");
-			final Method m = c.getMethod("getConfiguration");
-			final Object o = m.invoke(
-					context,
-					new Object[0]);
-			return (Configuration) o;*/
+			 * TODO #238 Commented this out to avoid dependency on
+			 * Accumulo-core. Need to check its impact final Class<?> c =
+			 * InputFormatBase.class.getClassLoader().loadClass(
+			 * "org.apache.hadoop.mapreduce.JobContext"); final Method m =
+			 * c.getMethod("getConfiguration"); final Object o = m.invoke(
+			 * context, new Object[0]); return (Configuration) o;
+			 */
 		}
 		catch (final Exception e) {
 			throw new RuntimeException(
@@ -548,7 +548,7 @@ public class GeoWaveCoreConfiguratorBase {
 				config,
 				geowaveTableNamespace);
 	}
-	
+
 	public static void setRemoteInvocationParams(
 			final String hdfsHostPort,
 			final String jobTrackerOrResourceManagerHostPort,
@@ -589,6 +589,5 @@ public class GeoWaveCoreConfiguratorBase {
 				"yarn.app.mapreduce.am.staging-dir",
 				"/tmp/hadoop-" + user);
 	}
-	
-	
+
 }

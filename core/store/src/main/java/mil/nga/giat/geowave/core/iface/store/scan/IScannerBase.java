@@ -14,17 +14,19 @@ import org.apache.hadoop.io.Text;
 
 /**
  * @author viggy
- *
+ * 
  */
-public interface IScannerBase {
+public interface IScannerBase
+{
 
-	void addScanIterator(IIteratorSetting iteratorSettings);
+	void addScanIterator(
+			IIteratorSetting iteratorSettings );
 
-	void fetchColumnFamily(Text text);
+	void fetchColumnFamily(
+			Text text );
 
 	void close();
 
 	Iterator<Entry<IKey, IValue>> iterator();
-
 
 }

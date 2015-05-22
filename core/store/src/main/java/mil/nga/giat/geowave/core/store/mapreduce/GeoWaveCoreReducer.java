@@ -11,18 +11,20 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 /**
  * @author viggy
- *
+ * 
  */
 public class GeoWaveCoreReducer extends
-Reducer<GeoWaveCoreInputKey, ObjectWritable, GeoWaveCoreInputKey, ObjectWritable>{
+		Reducer<GeoWaveCoreInputKey, ObjectWritable, GeoWaveCoreInputKey, ObjectWritable>
+{
 
 	protected void reduceNativeValues(
 			GeoWaveCoreInputKey key,
 			Iterable<Object> values,
-			ReduceContext<GeoWaveCoreInputKey, ObjectWritable, GeoWaveCoreInputKey, Object> context)
-			throws IOException, InterruptedException {
+			ReduceContext<GeoWaveCoreInputKey, ObjectWritable, GeoWaveCoreInputKey, Object> context )
+			throws IOException,
+			InterruptedException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

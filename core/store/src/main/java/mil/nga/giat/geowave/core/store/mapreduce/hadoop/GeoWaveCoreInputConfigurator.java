@@ -9,9 +9,11 @@ import org.apache.hadoop.conf.Configuration;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class GeoWaveCoreInputConfigurator extends GeoWaveCoreConfiguratorBase {
+public class GeoWaveCoreInputConfigurator extends
+		GeoWaveCoreConfiguratorBase
+{
 
 	public static enum InputConfig {
 		QUERY,
@@ -21,7 +23,7 @@ public class GeoWaveCoreInputConfigurator extends GeoWaveCoreConfiguratorBase {
 		OUTPUT_WRITABLE // used to inform the input format to output a Writable
 						// from the HadoopDataAdapter
 	}
-	
+
 	public static void setMinimumSplitCount(
 			final Class<?> implementingClass,
 			final Configuration config,

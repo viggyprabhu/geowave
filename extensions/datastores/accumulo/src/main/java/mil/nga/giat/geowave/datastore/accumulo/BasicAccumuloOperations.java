@@ -244,9 +244,13 @@ public class BasicAccumuloOperations implements
 					byteBufferSize,
 					timeoutMillis,
 					numThreads);
-			return new AccumuloWriter(batchWriter);
-		} catch (TableNotFoundException e) {
-			throw new StoreException(e.getMessage(),e.getCause());
+			return new AccumuloWriter(
+					batchWriter);
+		}
+		catch (TableNotFoundException e) {
+			throw new StoreException(
+					e.getMessage(),
+					e.getCause());
 		}
 	}
 
@@ -341,9 +345,11 @@ public class BasicAccumuloOperations implements
 			try {
 				connector.tableOperations().delete(
 						tableName);
-			} catch (AccumuloException | AccumuloSecurityException
-					| TableNotFoundException e) {
-				throw new StoreException(e.getMessage(),e.getCause());
+			}
+			catch (AccumuloException | AccumuloSecurityException | TableNotFoundException e) {
+				throw new StoreException(
+						e.getMessage(),
+						e.getCause());
 			}
 		}
 	}
@@ -487,8 +493,11 @@ public class BasicAccumuloOperations implements
 					qName) && connector.tableOperations().getLocalityGroups(
 					qName).keySet().contains(
 					StringUtils.stringFromBinary(localityGroup));
-		} catch (AccumuloException | TableNotFoundException e) {
-			throw new StoreException(e.getMessage(),e.getCause());
+		}
+		catch (AccumuloException | TableNotFoundException e) {
+			throw new StoreException(
+					e.getMessage(),
+					e.getCause());
 		}
 
 		// update the cache
@@ -527,19 +536,21 @@ public class BasicAccumuloOperations implements
 				localityGroups = connector.tableOperations().getLocalityGroups(
 						qName);
 				final Set<Text> groupSet = new HashSet<Text>();
-	
+
 				groupSet.add(new Text(
 						localityGroup));
-	
+
 				localityGroups.put(
 						StringUtils.stringFromBinary(localityGroup),
 						groupSet);
 				connector.tableOperations().setLocalityGroups(
 						qName,
 						localityGroups);
-			} catch (AccumuloException | AccumuloSecurityException
-					| TableNotFoundException e) {
-				throw new StoreException(e.getMessage(),e.getCause());
+			}
+			catch (AccumuloException | AccumuloSecurityException | TableNotFoundException e) {
+				throw new StoreException(
+						e.getMessage(),
+						e.getCause());
 			}
 
 			locGrpCache.put(
@@ -553,16 +564,20 @@ public class BasicAccumuloOperations implements
 			final String tableName,
 			final String... additionalAuthorizations )
 			throws StoreException {
-		 Scanner scanner;
+		Scanner scanner;
 		try {
 			scanner = connector.createScanner(
 					getQualifiedTableName(tableName),
 					new Authorizations(
 							getAuthorizations(additionalAuthorizations)));
-		} catch (TableNotFoundException e) {
-			throw new StoreException(e.getMessage(),e.getCause());
 		}
-		 return new AccumuloScanner(scanner);
+		catch (TableNotFoundException e) {
+			throw new StoreException(
+					e.getMessage(),
+					e.getCause());
+		}
+		return new AccumuloScanner(
+				scanner);
 	}
 
 	@Override
@@ -577,9 +592,13 @@ public class BasicAccumuloOperations implements
 					new Authorizations(
 							getAuthorizations(additionalAuthorizations)),
 					numThreads);
-			return new AccumuloBatchScanner(batchScanner);
-		} catch (TableNotFoundException e) {
-			throw new StoreException(e.getMessage(),e.getCause());
+			return new AccumuloBatchScanner(
+					batchScanner);
+		}
+		catch (TableNotFoundException e) {
+			throw new StoreException(
+					e.getMessage(),
+					e.getCause());
 		}
 	}
 
@@ -597,21 +616,24 @@ public class BasicAccumuloOperations implements
 					newSet.add(auth.getBytes(StringUtils.UTF8_CHAR_SET));
 				}
 			}
-			
+
 			if (newSet.size() > 0) {
 				newSet.addAll(auths.getAuthorizations());
-				
-					connector.securityOperations().changeUserAuthorizations(
-							clientUser,
-							new Authorizations(
-									newSet));
-					auths = connector.securityOperations().getUserAuthorizations(
-							clientUser);
-				
+
+				connector.securityOperations().changeUserAuthorizations(
+						clientUser,
+						new Authorizations(
+								newSet));
+				auths = connector.securityOperations().getUserAuthorizations(
+						clientUser);
+
 				LOGGER.trace(clientUser + " has authorizations " + ArrayUtils.toString(auths.getAuthorizations()));
 			}
-		} catch (AccumuloException | AccumuloSecurityException e) {
-			throw new StoreException(e.getMessage(),e.getCause());
+		}
+		catch (AccumuloException | AccumuloSecurityException e) {
+			throw new StoreException(
+					e.getMessage(),
+					e.getCause());
 		}
 	}
 
@@ -631,11 +653,15 @@ public class BasicAccumuloOperations implements
 							byteBufferSize).setTimeout(
 							timeoutMillis,
 							TimeUnit.MILLISECONDS));
-			return new AccumuloBatchDeleter(batchDeleter);
-		} catch (TableNotFoundException e) {
-			throw new StoreException(e.getMessage(),e.getCause());
+			return new AccumuloBatchDeleter(
+					batchDeleter);
 		}
-		
+		catch (TableNotFoundException e) {
+			throw new StoreException(
+					e.getMessage(),
+					e.getCause());
+		}
+
 	}
 
 	public long getCacheTimeoutMillis() {
@@ -668,8 +694,8 @@ public class BasicAccumuloOperations implements
 		try {
 			if ((iterators != null) && (iterators.length > 0)) {
 				IteratorConfig[] iteratorConfigs = new IteratorConfig[iterators.length];
-				int count=0;
-				for(CoreIteratorConfig config : iterators){
+				int count = 0;
+				for (CoreIteratorConfig config : iterators) {
 					iteratorConfigs[count++] = AccumuloWraperUtils.getIteratorConfig(iterators[count]);
 				}
 				final Map<String, EnumSet<IteratorScope>> iteratorScopes = connector.tableOperations().listIterators(

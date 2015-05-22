@@ -19,17 +19,21 @@ import org.apache.hadoop.io.Text;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class AccumuloBatchScanner implements CoreBatchScanner {
+public class AccumuloBatchScanner implements
+		CoreBatchScanner
+{
 
 	private BatchScanner m_batchScanner;
 
-	public AccumuloBatchScanner(BatchScanner batchScanner) {
+	public AccumuloBatchScanner(
+			BatchScanner batchScanner ) {
 		m_batchScanner = batchScanner;
 	}
 
-	public void fetchColumnFamily(Text col) {
+	public void fetchColumnFamily(
+			Text col ) {
 		m_batchScanner.fetchColumnFamily(col);
 	}
 
@@ -41,24 +45,29 @@ public class AccumuloBatchScanner implements CoreBatchScanner {
 		return AccumuloWraperUtils.convert(m_batchScanner.iterator());
 	}
 
-	
-
-	public void fetchColumn(Text colFam, Text colQual) {
-		m_batchScanner.fetchColumn(colFam, colQual);
+	public void fetchColumn(
+			Text colFam,
+			Text colQual ) {
+		m_batchScanner.fetchColumn(
+				colFam,
+				colQual);
 	}
 
-	public void setRanges(Collection<Range> ranges) {
+	public void setRanges(
+			Collection<Range> ranges ) {
 		m_batchScanner.setRanges(ranges);
 	}
 
 	@Override
-	public void addScanIterator(IIteratorSetting iteratorSettings) {
+	public void addScanIterator(
+			IIteratorSetting iteratorSettings ) {
 		addScanIterator(AccumuloWraperUtils.getIteratorSetting(iteratorSettings));
 	}
 
-	public void addScanIterator(IteratorSetting cfg) {
+	public void addScanIterator(
+			IteratorSetting cfg ) {
 		m_batchScanner.addScanIterator(cfg);
-		
+
 	}
 
 }

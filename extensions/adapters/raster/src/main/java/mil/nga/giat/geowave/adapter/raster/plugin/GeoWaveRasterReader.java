@@ -169,7 +169,7 @@ public class GeoWaveRasterReader extends
 	private void init(
 			final GeoWaveRasterConfig config )
 			throws StoreException {
-		
+
 		final StoreOperations accumuloOperations = RasterHelper.getStoreOperations(
 				config.getZookeeperUrls(),
 				config.getAccumuloInstanceId(),
@@ -180,7 +180,8 @@ public class GeoWaveRasterReader extends
 
 		geowaveStatisticsStore = RasterHelper.getDataStatisticsStore(accumuloOperations);
 
-		geowaveDataStore =  new RasterDataStore(RasterHelper.getDataStore(accumuloOperations));
+		geowaveDataStore = new RasterDataStore(
+				RasterHelper.getDataStore(accumuloOperations));
 
 		rasterIndex = IndexType.SPATIAL_RASTER.createDefaultIndex();
 		crs = GeoWaveGTRasterFormat.DEFAULT_CRS;

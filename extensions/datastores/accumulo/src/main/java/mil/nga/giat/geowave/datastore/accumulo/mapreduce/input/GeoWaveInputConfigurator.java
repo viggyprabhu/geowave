@@ -25,7 +25,6 @@ import org.apache.hadoop.mapreduce.JobContext;
 public class GeoWaveInputConfigurator extends
 		GeoWaveCoreInputConfigurator
 {
-	
 
 	private static DistributableQuery getQueryInternal(
 			final Class<?> implementingClass,
@@ -172,17 +171,18 @@ public class GeoWaveInputConfigurator extends
 	public static Index[] searchForIndices(
 			final Class<?> implementingClass,
 			final JobContext context ) {
-		final Index[] userIndices = AccumuloStoreUtils.getJobContextIndexStore().getIndices(context);
+		final Index[] userIndices = AccumuloStoreUtils.getJobContextIndexStore().getIndices(
+				context);
 		if ((userIndices == null) || (userIndices.length <= 0)) {
 			try {
 				// if there are no indices, assume we are searching all indices
 				// in the metadata store
-				return (Index[]) IteratorUtils.toArray( 
+				return (Index[]) IteratorUtils.toArray(
 						DataStoreFactory.getFactory().getIndexStore(
-															getAccumuloOperations(
-																	implementingClass,
-																	context)).getIndices(),
-																	Index.class);
+								getAccumuloOperations(
+										implementingClass,
+										context)).getIndices(),
+						Index.class);
 			}
 			catch (StoreException e) {
 				LOGGER.warn(

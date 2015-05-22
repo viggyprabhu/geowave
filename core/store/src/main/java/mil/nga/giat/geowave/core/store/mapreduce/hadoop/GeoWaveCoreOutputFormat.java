@@ -16,34 +16,46 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class GeoWaveCoreOutputFormat extends OutputFormat<GeoWaveCoreOutputKey, Object>{
+public class GeoWaveCoreOutputFormat extends
+		OutputFormat<GeoWaveCoreOutputKey, Object>
+{
 
-	public static void setAccumuloOperationsInfo(Job job, String zookeeper,
-			String instance, String user, String password, String newNamespace) {
+	public static void setAccumuloOperationsInfo(
+			Job job,
+			String zookeeper,
+			String instance,
+			String user,
+			String password,
+			String newNamespace ) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public RecordWriter<GeoWaveCoreOutputKey, Object> getRecordWriter(
-			TaskAttemptContext context) throws IOException,
+			TaskAttemptContext context )
+			throws IOException,
 			InterruptedException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void checkOutputSpecs(JobContext context) throws IOException,
+	public void checkOutputSpecs(
+			JobContext context )
+			throws IOException,
 			InterruptedException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public OutputCommitter getOutputCommitter(TaskAttemptContext context)
-			throws IOException, InterruptedException {
+	public OutputCommitter getOutputCommitter(
+			TaskAttemptContext context )
+			throws IOException,
+			InterruptedException {
 		// TODO Auto-generated method stub
 		return null;
 	}

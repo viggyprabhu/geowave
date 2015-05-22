@@ -182,10 +182,11 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 					iteratorsAttached = true;
 					final IteratorConfig[] configs = getIteratorConfig();
 					if ((configs != null) && (configs.length > 0)) {
-						int count =0;
+						int count = 0;
 						AccumuloIteratorConfig[] coreIteratorConfig = new AccumuloIteratorConfig[configs.length];
-						for(IteratorConfig config: configs){
-							coreIteratorConfig[count++] = new AccumuloIteratorConfig(config);
+						for (IteratorConfig config : configs) {
+							coreIteratorConfig[count++] = new AccumuloIteratorConfig(
+									config);
 						}
 						accumuloOperations.attachIterators(
 								getAccumuloTablename(),

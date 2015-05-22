@@ -120,8 +120,9 @@ public class RasterTileResizeJobRunner extends
 				password,
 				oldNamespace);
 		final DataAdapter adapter = RasterHelper.getAdapterStore(
-				oldNamespaceOperations).getAdapter(new ByteArrayId(
-				oldCoverageName));
+				oldNamespaceOperations).getAdapter(
+				new ByteArrayId(
+						oldCoverageName));
 		if (adapter == null) {
 			throw new IllegalArgumentException(
 					"Adapter for coverage '" + oldCoverageName + "' does not exist in namespace '" + oldNamespace + "'");
@@ -141,8 +142,9 @@ public class RasterTileResizeJobRunner extends
 		Index index = null;
 		if (indexId != null) {
 			index = RasterHelper.getIndexStore(
-					oldNamespaceOperations).getIndex(new ByteArrayId(
-					indexId));
+					oldNamespaceOperations).getIndex(
+					new ByteArrayId(
+							indexId));
 		}
 		if (index == null) {
 			try (CloseableIterator<Index> indices = RasterHelper.getIndexStore(

@@ -10,11 +10,14 @@ import mil.nga.giat.geowave.core.iface.field.IValue;
 
 /**
  * @author viggy
- *
+ * 
  */
-public interface IMergingCombiner {
+public interface IMergingCombiner
+{
 
-	void init(ISortedKeyValueIterator<IKey, IValue> source,
-			Map<String, String> options, IIteratorEnvironment env);
+	void init(
+			ISortedKeyValueIterator<IKey, IValue> source,
+			Map<String, String> options,
+			IIteratorEnvironment env );
 
 }

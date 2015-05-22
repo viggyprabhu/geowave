@@ -24,8 +24,10 @@ public class RasterTileResizeHelper
 
 	public RasterTileResizeHelper(
 			final JobContext context ) {
-		index = RasterHelper.getJobContextIndexStore().getIndices(context)[0];
-		final DataAdapter[] adapters = RasterHelper.getJobContextAdapterStore().getDataAdapters(context);
+		index = RasterHelper.getJobContextIndexStore().getIndices(
+				context)[0];
+		final DataAdapter[] adapters = RasterHelper.getJobContextAdapterStore().getDataAdapters(
+				context);
 		final Configuration conf = context.getConfiguration();
 		final String oldAdapterId = conf.get(RasterTileResizeJobRunner.OLD_ADAPTER_ID_KEY);
 		final String newAdapterId = conf.get(RasterTileResizeJobRunner.NEW_ADAPTER_ID_KEY);

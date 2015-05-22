@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 /**
  * @author viggy
- *
+ * 
  */
 public interface Converter<InputType, ConvertedType>
 {

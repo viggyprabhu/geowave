@@ -12,7 +12,7 @@ import mil.nga.giat.geowave.core.store.index.CustomIdIndex;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.Query;
 
-public class RasterDataStore 
+public class RasterDataStore
 {
 
 	private DataStore m_dataStore;
@@ -21,7 +21,6 @@ public class RasterDataStore
 			final DataStore dataStore ) {
 		m_dataStore = dataStore;
 	}
-	
 
 	public <T> CloseableIterator<T> query(
 			final DataAdapter<T> adapter,

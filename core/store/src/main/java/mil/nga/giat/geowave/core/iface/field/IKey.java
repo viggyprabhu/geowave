@@ -5,9 +5,11 @@ import org.apache.hadoop.io.WritableComparable;
 
 /**
  * @author viggy
- *
+ * 
  */
-public interface IKey  extends WritableComparable<IKey>{
+public interface IKey extends
+		WritableComparable<IKey>
+{
 
 	Text getColumnFamily();
 

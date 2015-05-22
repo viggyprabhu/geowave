@@ -809,9 +809,12 @@ public class FeatureCollectionDataAdapter extends
 				EnumSet.of(IteratorScope.scan));
 
 		return new AccumuloIteratorConfig[] {
-			new AccumuloIteratorConfig(combinerConfig),
-			new AccumuloIteratorConfig(decompConfig),
-			new AccumuloIteratorConfig(builderConfig)
+			new AccumuloIteratorConfig(
+					combinerConfig),
+			new AccumuloIteratorConfig(
+					decompConfig),
+			new AccumuloIteratorConfig(
+					builderConfig)
 		};
 	}
 

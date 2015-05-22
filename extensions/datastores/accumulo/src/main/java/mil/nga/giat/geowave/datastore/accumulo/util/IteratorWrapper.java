@@ -5,7 +5,6 @@ import java.util.LinkedList;
 
 import mil.nga.giat.geowave.core.iface.store.Converter;
 
-
 /**
  * This class is used internally within the ingest process of GeoWave to convert
  * each entry into a set of mutations and iterate through them (maintaining a

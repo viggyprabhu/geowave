@@ -11,13 +11,17 @@ import org.apache.hadoop.mapreduce.JobContext;
 
 /**
  * @author viggy
- *
+ * 
  */
-public interface IJobContextAdapterStore extends AdapterStore {
+public interface IJobContextAdapterStore extends
+		AdapterStore
+{
 
-	DataAdapter[] getDataAdapters(JobContext context);
+	DataAdapter[] getDataAdapters(
+			JobContext context );
 
-	void addDataAdapter(Configuration configuration,
-			DataAdapter<?> newAdapter);
+	void addDataAdapter(
+			Configuration configuration,
+			DataAdapter<?> newAdapter );
 
 }

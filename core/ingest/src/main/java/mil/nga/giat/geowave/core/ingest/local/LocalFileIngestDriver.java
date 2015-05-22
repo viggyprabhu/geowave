@@ -93,8 +93,8 @@ public class LocalFileIngestDriver extends
 
 		BasicAccumuloOperations operations;
 		try {
-			//TODO #238 Need to fix this hardcoded upcast
-			operations = (BasicAccumuloOperations)accumulo.getAccumuloOperations();
+			// TODO #238 Need to fix this hardcoded upcast
+			operations = (BasicAccumuloOperations) accumulo.getAccumuloOperations();
 
 		}
 		catch (AccumuloException | AccumuloSecurityException e) {

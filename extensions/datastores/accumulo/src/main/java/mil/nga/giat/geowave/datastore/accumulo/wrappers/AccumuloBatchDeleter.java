@@ -20,31 +20,42 @@ import org.apache.hadoop.io.Text;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class AccumuloBatchDeleter implements CoreBatchDeleter {
+public class AccumuloBatchDeleter implements
+		CoreBatchDeleter
+{
 
 	private BatchDeleter m_batchDeleter;
 
-	public AccumuloBatchDeleter(BatchDeleter batchDeleter) {
+	public AccumuloBatchDeleter(
+			BatchDeleter batchDeleter ) {
 		m_batchDeleter = batchDeleter;
 	}
 
-	public void setRanges(List<Range> ranges) {
+	public void setRanges(
+			List<Range> ranges ) {
 		m_batchDeleter.setRanges(ranges);
-		
+
 	}
 
-	public void fetchColumnFamily(Text col) {
+	public void fetchColumnFamily(
+			Text col ) {
 		m_batchDeleter.fetchColumnFamily(col);
 	}
 
-	public void delete() throws MutationsRejectedException, TableNotFoundException {
+	public void delete()
+			throws MutationsRejectedException,
+			TableNotFoundException {
 		m_batchDeleter.delete();
 	}
 
-	public void fetchColumn(Text colFam, Text colQual) {
-		m_batchDeleter.fetchColumn(colFam, colQual);
+	public void fetchColumn(
+			Text colFam,
+			Text colQual ) {
+		m_batchDeleter.fetchColumn(
+				colFam,
+				colQual);
 	}
 
 	public Iterator<Entry<IKey, IValue>> iterator() {
@@ -56,7 +67,8 @@ public class AccumuloBatchDeleter implements CoreBatchDeleter {
 	}
 
 	@Override
-	public void addScanIterator(IIteratorSetting iteratorSettings) {
+	public void addScanIterator(
+			IIteratorSetting iteratorSettings ) {
 		m_batchDeleter.addScanIterator(AccumuloWraperUtils.getIteratorSetting(iteratorSettings));
 	}
 

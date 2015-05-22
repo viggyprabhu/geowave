@@ -9,7 +9,8 @@ import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.data.IteratorScopeEntity;
 import mil.nga.giat.geowave.core.store.mapreduce.client.CoreIteratorConfig;
 
-public class RasterTileCombinerConfig extends CoreIteratorConfig
+public class RasterTileCombinerConfig extends
+		CoreIteratorConfig
 {
 
 	public RasterTileCombinerConfig(
@@ -20,8 +21,9 @@ public class RasterTileCombinerConfig extends CoreIteratorConfig
 				iteratorScopeEntities);
 	}
 
-	public RasterTileCombinerConfig(IIteratorSetting iteratorSettings,
-			IteratorScopeEntity iteratorScopeEntity) {
+	public RasterTileCombinerConfig(
+			IIteratorSetting iteratorSettings,
+			IteratorScopeEntity iteratorScopeEntity ) {
 		super(
 				iteratorSettings,
 				iteratorScopeEntity);

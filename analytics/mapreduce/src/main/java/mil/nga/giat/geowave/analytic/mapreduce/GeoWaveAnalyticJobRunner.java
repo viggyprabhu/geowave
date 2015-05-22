@@ -178,11 +178,11 @@ public abstract class GeoWaveAnalyticJobRunner extends
 	public static void addDataAdapter(
 			final Configuration config,
 			final DataAdapter<?> adapter ) {
-		
+
 		DataStoreFactory.getFactory().getJobContextAdapterStore().addDataAdapter(
-					config,
-					adapter);
-		
+				config,
+				adapter);
+
 	}
 
 	public static void addIndex(

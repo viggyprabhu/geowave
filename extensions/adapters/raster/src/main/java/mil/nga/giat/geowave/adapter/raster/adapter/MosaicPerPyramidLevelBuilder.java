@@ -41,10 +41,10 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * @author viggy
- *
+ * 
  */
 public class MosaicPerPyramidLevelBuilder implements
-Converter<SubStrategy, GridCoverage>
+		Converter<SubStrategy, GridCoverage>
 {
 	private final static Logger LOGGER = Logger.getLogger(MosaicPerPyramidLevelBuilder.class);
 	private final MultiDimensionalNumericData originalBounds;
@@ -131,10 +131,10 @@ Converter<SubStrategy, GridCoverage>
 									new Rectangle(
 											tileSize,
 											tileSize)),
-											PixelInCell.CELL_CORNER,
-											gridToCRS,
-											GeoWaveGTRasterFormat.DEFAULT_CRS,
-											null);
+							PixelInCell.CELL_CORNER,
+							gridToCRS,
+							GeoWaveGTRasterFormat.DEFAULT_CRS,
+							null);
 
 					final double[] tileRes = pyramidLevel.getIndexStrategy().getHighestPrecisionIdRangePerDimension();
 					final double[] pixelRes = new double[tileRes.length];
@@ -196,7 +196,7 @@ Converter<SubStrategy, GridCoverage>
 										tileEnvelope.getMaximum(0),
 										tileEnvelope.getMinimum(1),
 										tileEnvelope.getMaximum(1)),
-										GeoWaveGTRasterFormat.DEFAULT_CRS);
+								GeoWaveGTRasterFormat.DEFAULT_CRS);
 						final Geometry tileJTSGeometry = new GeometryFactory().toGeometry(tileReferencedEnvelope);
 						if (!footprint.contains(tileJTSGeometry)) {
 							tileInterpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
@@ -259,9 +259,9 @@ Converter<SubStrategy, GridCoverage>
 							insertionId,
 							new Resolution(
 									pixelRes),
-									originalEnvelope,
-									footprintWithinTileWorldGeom,
-									footprintWithinTileScreenGeom);
+							originalEnvelope,
+							footprintWithinTileWorldGeom,
+							footprintWithinTileScreenGeom);
 				}
 				catch (IllegalArgumentException | NoninvertibleTransformException e) {
 					LOGGER.warn(

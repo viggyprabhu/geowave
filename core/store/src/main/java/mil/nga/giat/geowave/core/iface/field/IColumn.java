@@ -1,5 +1,6 @@
 package mil.nga.giat.geowave.core.iface.field;
 
-public interface IColumn {
+public interface IColumn
+{
 
 }
