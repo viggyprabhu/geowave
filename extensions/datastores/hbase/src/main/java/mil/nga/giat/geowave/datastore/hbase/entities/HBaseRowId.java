@@ -7,10 +7,10 @@ import java.nio.ByteBuffer;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class HBaseRowId {
-
+public class HBaseRowId
+{
 
 	private byte[] insertionId;
 	private byte[] dataId;
@@ -27,7 +27,7 @@ public class HBaseRowId {
 		this.adapterId = adapterId;
 		this.numberOfDuplicates = numberOfDuplicates;
 	}
-	
+
 	public byte[] getRowId() {
 		final ByteBuffer buf = ByteBuffer.allocate(12 + dataId.length + adapterId.length + insertionId.length);
 		buf.put(insertionId);

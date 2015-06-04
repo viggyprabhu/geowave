@@ -28,6 +28,7 @@ import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
+import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseIteratorWrapper;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseIteratorWrapper.Callback;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseIteratorWrapper.Converter;
@@ -38,9 +39,11 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class HBaseDataStore implements DataStore {
+public class HBaseDataStore implements
+		DataStore
+{
 
 	private final static Logger LOGGER = Logger.getLogger(HBaseDataStore.class);
 	private HBaseIndexStore indexStore;
@@ -48,10 +51,11 @@ public class HBaseDataStore implements DataStore {
 	private BasicHBaseOperations operations;
 	private HBaseDataStatisticsStore statisticsStore;
 
-	public HBaseDataStore(HBaseIndexStore indexStore,
+	public HBaseDataStore(
+			HBaseIndexStore indexStore,
 			HBaseAdapterStore adapterStore,
 			HBaseDataStatisticsStore statisticsStore,
-			BasicHBaseOperations operations) {
+			BasicHBaseOperations operations ) {
 		this.indexStore = indexStore;
 		this.adapterStore = adapterStore;
 		this.statisticsStore = statisticsStore;
@@ -59,14 +63,17 @@ public class HBaseDataStore implements DataStore {
 	}
 
 	@Override
-	public <T> IndexWriter createIndexWriter(Index index) {
+	public <T> IndexWriter createIndexWriter(
+			Index index ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public <T> List<ByteArrayId> ingest(WritableDataAdapter<T> writableAdapter,
-			Index index, T entry) {
+	public <T> List<ByteArrayId> ingest(
+			WritableDataAdapter<T> writableAdapter,
+			Index index,
+			T entry ) {
 		return this.ingest(
 				writableAdapter,
 				index,
@@ -76,8 +83,10 @@ public class HBaseDataStore implements DataStore {
 	}
 
 	@Override
-	public <T> void ingest(WritableDataAdapter<T> writableAdapter, Index index,
-			Iterator<T> entryIterator) {
+	public <T> void ingest(
+			WritableDataAdapter<T> writableAdapter,
+			Index index,
+			Iterator<T> entryIterator ) {
 		ingest(
 				writableAdapter,
 				index,
@@ -87,9 +96,12 @@ public class HBaseDataStore implements DataStore {
 						new UnconstrainedVisibilityHandler<T, Object>()));
 	}
 
-	public <T> void ingest(final WritableDataAdapter<T> writableAdapter, final Index index,
-			Iterator<T> entryIterator, IngestCallback<T> ingestCallback,
-			VisibilityWriter<T> customFieldVisibilityWriter) {
+	public <T> void ingest(
+			final WritableDataAdapter<T> writableAdapter,
+			final Index index,
+			Iterator<T> entryIterator,
+			IngestCallback<T> ingestCallback,
+			VisibilityWriter<T> customFieldVisibilityWriter ) {
 		if (writableAdapter instanceof IndexDependentDataAdapter) {
 			ingestInternal(
 					writableAdapter,
@@ -121,118 +133,159 @@ public class HBaseDataStore implements DataStore {
 	}
 
 	@Override
-	public CloseableIterator<?> query(Query query) {
+	public CloseableIterator<?> query(
+			Query query ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public <T> T getEntry(Index index, ByteArrayId rowId) {
+	public <T> T getEntry(
+			Index index,
+			ByteArrayId rowId ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public <T> T getEntry(Index index, ByteArrayId dataId,
-			ByteArrayId adapterId, String... additionalAuthorizations) {
+	public <T> T getEntry(
+			Index index,
+			ByteArrayId dataId,
+			ByteArrayId adapterId,
+			String... additionalAuthorizations ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public boolean deleteEntry(Index index, ByteArrayId dataId,
-			ByteArrayId adapterId, String... authorizations) {
+	public boolean deleteEntry(
+			Index index,
+			ByteArrayId dataId,
+			ByteArrayId adapterId,
+			String... authorizations ) {
 		// TODO #406 Need to fix
 		return false;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> getEntriesByPrefix(Index index,
-			ByteArrayId rowPrefix, String... authorizations) {
+	public <T> CloseableIterator<T> getEntriesByPrefix(
+			Index index,
+			ByteArrayId rowPrefix,
+			String... authorizations ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(DataAdapter<T> adapter, Query query) {
+	public <T> CloseableIterator<T> query(
+			DataAdapter<T> adapter,
+			Query query ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(Index index, Query query) {
+	public <T> CloseableIterator<T> query(
+			Index index,
+			Query query ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(Index index, Query query,
-			QueryOptions queryOptions) {
+	public <T> CloseableIterator<T> query(
+			Index index,
+			Query query,
+			QueryOptions queryOptions ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(DataAdapter<T> adapter, Index index,
-			Query query) {
+	public <T> CloseableIterator<T> query(
+			DataAdapter<T> adapter,
+			Index index,
+			Query query ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public CloseableIterator<?> query(List<ByteArrayId> adapterIds, Query query) {
+	public CloseableIterator<?> query(
+			List<ByteArrayId> adapterIds,
+			Query query ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public CloseableIterator<?> query(Query query, int limit) {
+	public CloseableIterator<?> query(
+			Query query,
+			int limit ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(DataAdapter<T> adapter, Query query,
-			int limit) {
+	public <T> CloseableIterator<T> query(
+			DataAdapter<T> adapter,
+			Query query,
+			int limit ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(Index index, Query query, int limit) {
+	public <T> CloseableIterator<T> query(
+			Index index,
+			Query query,
+			int limit ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(DataAdapter<T> adapter, Index index,
-			Query query, int limit) {
+	public <T> CloseableIterator<T> query(
+			DataAdapter<T> adapter,
+			Index index,
+			Query query,
+			int limit ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public CloseableIterator<?> query(List<ByteArrayId> adapterIds,
-			Query query, int limit) {
+	public CloseableIterator<?> query(
+			List<ByteArrayId> adapterIds,
+			Query query,
+			int limit ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(DataAdapter<T> adapter, Index index,
-			Query query, int limit, String... authorizations) {
+	public <T> CloseableIterator<T> query(
+			DataAdapter<T> adapter,
+			Index index,
+			Query query,
+			int limit,
+			String... authorizations ) {
 		// TODO #406 Need to fix
 		return null;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(DataAdapter<T> adapter, Index index,
-			Query query, Integer limit, ScanCallback<?> scanCallback,
-			String... authorizations) {
+	public <T> CloseableIterator<T> query(
+			DataAdapter<T> adapter,
+			Index index,
+			Query query,
+			Integer limit,
+			ScanCallback<?> scanCallback,
+			String... authorizations ) {
 		// TODO #406 Need to fix
 		return null;
 	}
-	
+
 	private <T> void ingestInternal(
 			final WritableDataAdapter<T> dataWriter,
 			final Index index,
@@ -241,17 +294,11 @@ public class HBaseDataStore implements DataStore {
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
 
 		try {
-			final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
-			final String altIdxTableName = tableName + HBaseUtils.ALT_INDEX_TABLE;
-			final byte[] adapterId = dataWriter.getAdapterId().getBytes();
 
-			
 			final String indexName = StringUtils.stringFromBinary(index.getId().getBytes());
-			HBaseWriter writer = operations.createWriter(
-						indexName);
-			
+			HBaseWriter writer = operations.createWriter(indexName);
+
 			final List<IngestCallback<T>> callbacks = new ArrayList<IngestCallback<T>>();
-			HBaseWriter altIdxWriter = null;
 			final StatsCompositionTool<T> statsCompositionTool = this.getStatsCompositionTool(dataWriter);
 			callbacks.add(statsCompositionTool);
 
@@ -274,31 +321,33 @@ public class HBaseDataStore implements DataStore {
 				@Override
 				public Iterator<RowMutations> iterator() {
 					return new HBaseIteratorWrapper<T, RowMutations>(
-							entryIterator, new Converter<T, RowMutations>() {
+							entryIterator,
+							new Converter<T, RowMutations>() {
 
-						@Override
-						public Iterator<RowMutations> convert(
-								final T entry ) {
-							return HBaseUtils.entryToMutations(
-									dataWriter,
-									index,
-									entry,
-									customFieldVisibilityWriter).iterator();
-						}
-					},
-					finalIngestCallback == null ? null : new Callback<T, RowMutations>() {
-	
-						@Override
-						public void notifyIterationComplete( final T entry ) {
-							finalIngestCallback.entryIngested(
-									HBaseUtils.getIngestInfo(
+								@Override
+								public Iterator<RowMutations> convert(
+										final T entry ) {
+									return HBaseUtils.entryToMutations(
 											dataWriter,
 											index,
 											entry,
-											customFieldVisibilityWriter),
-									entry);
-						}
-					});
+											customFieldVisibilityWriter).iterator();
+								}
+							},
+							finalIngestCallback == null ? null : new Callback<T, RowMutations>() {
+
+								@Override
+								public void notifyIterationComplete(
+										final T entry ) {
+									finalIngestCallback.entryIngested(
+											HBaseUtils.getIngestInfo(
+													dataWriter,
+													index,
+													entry,
+													customFieldVisibilityWriter),
+											entry);
+								}
+							});
 				}
 			});
 			writer.close();
@@ -306,21 +355,22 @@ public class HBaseDataStore implements DataStore {
 			synchronizeStatsWithStore(
 					statsCompositionTool,
 					true);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			LOGGER.warn(
 					"Unable to create writer",
 					e);
 		}
 
 	}
-	
+
 	private <T> StatsCompositionTool<T> getStatsCompositionTool(
 			final DataAdapter<T> adapter ) {
 		return new StatsCompositionTool<T>(
-				adapter, 
+				adapter,
 				null);
 	}
-	
+
 	private <T> void synchronizeStatsWithStore(
 			StatsCompositionTool<T> compositionTool,
 			boolean commitStats ) {
@@ -331,9 +381,11 @@ public class HBaseDataStore implements DataStore {
 	}
 
 	@Override
-	public <T> List<ByteArrayId> ingest(WritableDataAdapter<T> writableAdapter,
-			Index index, T entry,
-			VisibilityWriter<T> customFieldVisibilityWriter) {
+	public <T> List<ByteArrayId> ingest(
+			WritableDataAdapter<T> writableAdapter,
+			Index index,
+			T entry,
+			VisibilityWriter<T> customFieldVisibilityWriter ) {
 		if (writableAdapter instanceof IndexDependentDataAdapter) {
 			final IndexDependentDataAdapter adapter = ((IndexDependentDataAdapter) writableAdapter);
 			final Iterator<T> indexedEntries = adapter.convertToIndex(
@@ -357,13 +409,13 @@ public class HBaseDataStore implements DataStore {
 					customFieldVisibilityWriter);
 		}
 	}
-	
+
 	public <T> List<ByteArrayId> ingestInternal(
 			final WritableDataAdapter<T> writableAdapter,
 			final Index index,
 			final T entry,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-		
+
 		HBaseWriter writer = null;
 		StatsCompositionTool<T> statisticsTool = null;
 		final String indexName = StringUtils.stringFromBinary(index.getId().getBytes());
@@ -373,9 +425,9 @@ public class HBaseDataStore implements DataStore {
 		statisticsTool = getStatsCompositionTool(writableAdapter);
 
 		try {
-			writer = operations.createWriter(
-					indexName);
-		} catch (IOException e) {
+			writer = operations.createWriter(indexName);
+		}
+		catch (IOException e) {
 			LOGGER.warn(
 					"Unable to create writer'" + indexName + "'",
 					e);
@@ -402,8 +454,11 @@ public class HBaseDataStore implements DataStore {
 	}
 
 	@Override
-	public <T> void ingest(WritableDataAdapter<T> writableAdapter, Index index,
-			Iterator<T> entryIterator, IngestCallback<T> ingestCallback) {
-		// TODO #406 Need to fix		
+	public <T> void ingest(
+			WritableDataAdapter<T> writableAdapter,
+			Index index,
+			Iterator<T> entryIterator,
+			IngestCallback<T> ingestCallback ) {
+		// TODO #406 Need to fix
 	}
 }

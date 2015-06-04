@@ -13,11 +13,11 @@ import mil.nga.giat.geowave.core.geotime.GeometryUtils;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.hbase.BasicHBaseOperations;
 import mil.nga.giat.geowave.datastore.hbase.HBaseAdapterStore;
 import mil.nga.giat.geowave.datastore.hbase.HBaseDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.hbase.HBaseDataStore;
 import mil.nga.giat.geowave.datastore.hbase.HBaseIndexStore;
+import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 
 import org.apache.log4j.Logger;
 import org.geotools.feature.AttributeTypeBuilder;
@@ -40,11 +40,15 @@ public class SimpleHBaseIngest {
 
 	public static void main(
 			final String[] args ) {
-
+		if (args.length != 2) {
+			log.error("Invalid arguments, expected: zookeepers, geowaveNamespace");
+			System.exit(1);
+		}
+		
 		final SimpleHBaseIngest si = new SimpleHBaseIngest();
 
 		try {
-			final BasicHBaseOperations bao = si.getHbaseOperationsInstance();
+			final BasicHBaseOperations bao = si.getHbaseOperationsInstance(args[0],args[1]);
 
 			final DataStore geowaveDataStore = si.getGeowaveDataStore(bao);
 			si.generateGrid(geowaveDataStore);
@@ -165,8 +169,8 @@ public class SimpleHBaseIngest {
 				instance);
 	}
 
-	protected BasicHBaseOperations getHbaseOperationsInstance() throws IOException{
-		return new BasicHBaseOperations();
+	protected BasicHBaseOperations getHbaseOperationsInstance(String zookeeperInstances, String geowaveNamespace) throws IOException{
+		return new BasicHBaseOperations(zookeeperInstances, geowaveNamespace);
 	}
 
 	/***

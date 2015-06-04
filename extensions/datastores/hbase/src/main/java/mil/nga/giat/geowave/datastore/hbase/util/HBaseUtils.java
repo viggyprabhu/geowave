@@ -32,16 +32,17 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class HBaseUtils {
+public class HBaseUtils
+{
 
 	private final static Logger LOGGER = Logger.getLogger(HBaseUtils.class);
 	public static final String ALT_INDEX_TABLE = "_GEOWAVE_ALT_INDEX";
 
 	private static final byte[] BEG_AND_BYTE = "&".getBytes(StringUtils.UTF8_CHAR_SET);
 	private static final byte[] END_AND_BYTE = ")".getBytes(StringUtils.UTF8_CHAR_SET);
-	
+
 	private static byte[] merge(
 			final byte vis1[],
 			final byte vis2[] ) {
@@ -61,7 +62,7 @@ public class HBaseUtils {
 		buffer.put(END_AND_BYTE);
 		return buffer.array();
 	}
-	
+
 	public static <T> List<RowMutations> entryToMutations(
 			final WritableDataAdapter<T> dataWriter,
 			final Index index,
@@ -83,14 +84,20 @@ public class HBaseUtils {
 		final List<RowMutations> mutations = new ArrayList<RowMutations>();
 		final List<FieldInfo> fieldInfoList = ingestInfo.getFieldInfo();
 		for (final ByteArrayId rowId : ingestInfo.getRowIds()) {
-			final RowMutations mutation = new RowMutations(rowId.getBytes());
-				
+			final RowMutations mutation = new RowMutations(
+					rowId.getBytes());
+
 			for (final FieldInfo fieldInfo : fieldInfoList) {
 				try {
-					Put row = new Put(rowId.getBytes());
-					row.addColumn(adapterId, fieldInfo.getDataValue().getId().getBytes(), fieldInfo.getWrittenValue());
+					Put row = new Put(
+							rowId.getBytes());
+					row.addColumn(
+							adapterId,
+							fieldInfo.getDataValue().getId().getBytes(),
+							fieldInfo.getWrittenValue());
 					mutation.add(row);
-				} catch (IOException e) {
+				}
+				catch (IOException e) {
 					LOGGER.warn("Could not add row to mutation.");
 				}
 			}
@@ -99,7 +106,7 @@ public class HBaseUtils {
 		}
 		return mutations;
 	}
-	
+
 	@SuppressWarnings({
 		"rawtypes",
 		"unchecked"
@@ -111,7 +118,7 @@ public class HBaseUtils {
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
 		final CommonIndexModel indexModel;
 		indexModel = index.getIndexModel();
-		
+
 		final AdapterPersistenceEncoding encodedData = dataWriter.encode(
 				entry,
 				indexModel);
@@ -167,7 +174,7 @@ public class HBaseUtils {
 				Collections.EMPTY_LIST);
 
 	}
-	
+
 	private static <T> void addToRowIds(
 			final List<ByteArrayId> rowIds,
 			final List<ByteArrayId> insertionIds,
@@ -246,4 +253,10 @@ public class HBaseUtils {
 		return ingestInfo;
 	}
 	
+	public static String getQualifiedTableName(
+			final String tableNamespace,
+			final String unqualifiedTableName ) {
+		return ((tableNamespace == null) || tableNamespace.isEmpty()) ? unqualifiedTableName : tableNamespace + "_" + unqualifiedTableName;
+	}
+
 }

@@ -11,22 +11,26 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class HBaseWriter {
+public class HBaseWriter
+{
 
 	private final static Logger LOGGER = Logger.getLogger(HBaseWriter.class);
 	private Table table;
 
-	public HBaseWriter(Table table) {
+	public HBaseWriter(
+			Table table ) {
 		this.table = table;
 	}
 
-	public void write(Iterable<RowMutations> iterable) {
-		for (RowMutations rowMutation : iterable) {			
+	public void write(
+			Iterable<RowMutations> iterable ) {
+		for (RowMutations rowMutation : iterable) {
 			try {
 				table.mutateRow(rowMutation);
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				LOGGER.warn(
 						"Unable to insert row into the table",
 						e);
@@ -35,7 +39,7 @@ public class HBaseWriter {
 	}
 
 	public void close() {
-		// TODO #406 Need to fix		
+		// TODO #406 Need to fix
 	}
 
 }
