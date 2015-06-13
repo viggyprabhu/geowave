@@ -21,6 +21,8 @@ import mil.nga.giat.geowave.core.store.data.PersistentValue;
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
 import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
+import mil.nga.giat.geowave.core.store.data.visibility.UnconstrainedVisibilityHandler;
+import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.hbase.entities.HBaseRowId;
@@ -42,6 +44,9 @@ public class HBaseUtils
 
 	private static final byte[] BEG_AND_BYTE = "&".getBytes(StringUtils.UTF8_CHAR_SET);
 	private static final byte[] END_AND_BYTE = ")".getBytes(StringUtils.UTF8_CHAR_SET);
+	
+	private static final UniformVisibilityWriter DEFAULT_VISIBILITY = new UniformVisibilityWriter(
+			new UnconstrainedVisibilityHandler());
 
 	private static byte[] merge(
 			final byte vis1[],
@@ -258,5 +263,12 @@ public class HBaseUtils
 			final String unqualifiedTableName ) {
 		return ((tableNamespace == null) || tableNamespace.isEmpty()) ? unqualifiedTableName : tableNamespace + "_" + unqualifiedTableName;
 	}
-
+	
+	public static <T> DataStoreEntryInfo write(
+			final WritableDataAdapter<T> writableAdapter,
+			final Index index,
+			final T entry,
+			final HBaseWriter writer) {
+		return write(writableAdapter, index, entry, writer, DEFAULT_VISIBILITY);
+	}
 }

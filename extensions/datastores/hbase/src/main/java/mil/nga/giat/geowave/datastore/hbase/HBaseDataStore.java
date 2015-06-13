@@ -62,11 +62,24 @@ public class HBaseDataStore implements
 		this.operations = operations;
 	}
 
+	public HBaseDataStore(BasicHBaseOperations operations) {
+		this(
+				new HBaseIndexStore(
+						operations),
+				new HBaseAdapterStore(
+						operations),
+				new HBaseDataStatisticsStore(
+						operations),
+				operations);
+	}
+
 	@Override
 	public <T> IndexWriter createIndexWriter(
 			Index index ) {
-		// TODO #406 Need to fix
-		return null;
+		return new HBaseIndexWriter(
+				index,
+				operations,
+				this);
 	}
 
 	@Override
@@ -136,6 +149,7 @@ public class HBaseDataStore implements
 	public CloseableIterator<?> query(
 			Query query ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -144,6 +158,7 @@ public class HBaseDataStore implements
 			Index index,
 			ByteArrayId rowId ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -154,6 +169,7 @@ public class HBaseDataStore implements
 			ByteArrayId adapterId,
 			String... additionalAuthorizations ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -164,6 +180,7 @@ public class HBaseDataStore implements
 			ByteArrayId adapterId,
 			String... authorizations ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return false;
 	}
 
@@ -173,6 +190,7 @@ public class HBaseDataStore implements
 			ByteArrayId rowPrefix,
 			String... authorizations ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -181,6 +199,7 @@ public class HBaseDataStore implements
 			DataAdapter<T> adapter,
 			Query query ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -189,6 +208,7 @@ public class HBaseDataStore implements
 			Index index,
 			Query query ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -198,6 +218,7 @@ public class HBaseDataStore implements
 			Query query,
 			QueryOptions queryOptions ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -207,6 +228,7 @@ public class HBaseDataStore implements
 			Index index,
 			Query query ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -215,6 +237,7 @@ public class HBaseDataStore implements
 			List<ByteArrayId> adapterIds,
 			Query query ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -223,6 +246,7 @@ public class HBaseDataStore implements
 			Query query,
 			int limit ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -232,6 +256,7 @@ public class HBaseDataStore implements
 			Query query,
 			int limit ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -241,6 +266,7 @@ public class HBaseDataStore implements
 			Query query,
 			int limit ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -251,6 +277,7 @@ public class HBaseDataStore implements
 			Query query,
 			int limit ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -260,6 +287,7 @@ public class HBaseDataStore implements
 			Query query,
 			int limit ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -271,6 +299,7 @@ public class HBaseDataStore implements
 			int limit,
 			String... authorizations ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -283,6 +312,7 @@ public class HBaseDataStore implements
 			ScanCallback<?> scanCallback,
 			String... authorizations ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
 
@@ -460,5 +490,18 @@ public class HBaseDataStore implements
 			Iterator<T> entryIterator,
 			IngestCallback<T> ingestCallback ) {
 		// TODO #406 Need to fix
+	}
+
+	public void store(Index index) {
+		if (!indexStore.indexExists(index.getId())) {
+			indexStore.addIndex(index);
+		}
+	}
+	
+	protected synchronized void store(
+			final DataAdapter<?> adapter ) {
+		if (!adapterStore.adapterExists(adapter.getAdapterId())) {
+			adapterStore.addAdapter(adapter);
+		}
 	}
 }

@@ -4,6 +4,9 @@
 package mil.nga.giat.geowave.datastore.hbase.operations;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
@@ -63,24 +66,31 @@ public class BasicHBaseOperations
 	}
 
 	public HBaseWriter createWriter(
-			final String tableName,
+			final String sTableName,
 			final boolean createTable ){
-		TableName table2 = getTableName(getQualifiedTableName(tableName));
+		TableName tName = getTableName(getQualifiedTableName(sTableName));
 		Table table=null;
 		try {
-			if (createTable && !conn.getAdmin().isTableAvailable(table2)) {
-				HTableDescriptor desc = new HTableDescriptor(table2);
-				desc.addFamily(new HColumnDescriptor(DEFAULT_COLUMN_FAMILY));
-				conn.getAdmin().createTable(desc);
-			}
-			table = conn.getTable(table2);
+			table = getTable(createTable, tName);
 		}
 		catch (IOException e) {
 			LOGGER.error(
-					"Unable to create table '" + tableName + "'",
+					"Unable to create table '" + sTableName + "'",
 					e);
 		}
 		return new HBaseWriter(table);
+	}
+
+	private Table getTable(final boolean create, TableName name)
+			throws IOException {
+		Table table;
+		if (create && !conn.getAdmin().isTableAvailable(name)) {
+			HTableDescriptor desc = new HTableDescriptor(name);
+			desc.addFamily(new HColumnDescriptor(DEFAULT_COLUMN_FAMILY));
+			conn.getAdmin().createTable(desc);
+		}
+		table = conn.getTable(name);
+		return table;
 	}
 	
 	private String getQualifiedTableName(
@@ -88,6 +98,20 @@ public class BasicHBaseOperations
 		return HBaseUtils.getQualifiedTableName(
 				tableNamespace,
 				unqualifiedTableName);
+	}
+
+	public void deleteAll() throws IOException {
+		TableName[] tableNamesArr = conn.getAdmin().listTableNames(); 
+		SortedSet<TableName> tableNames = new TreeSet<TableName>();
+		Collections.addAll(tableNames, tableNamesArr);
+		if ((tableNamespace != null) && !tableNamespace.isEmpty()) {
+			tableNames = tableNames.subSet(
+					getTableName(tableNamespace),
+					getTableName(tableNamespace + '\uffff'));
+		}
+		for (final TableName tableName : tableNames) {
+			conn.getAdmin().deleteTable(tableName);
+		}
 	}
 
 }

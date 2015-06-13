@@ -39,7 +39,6 @@ public class HBaseWriter
 	}
 
 	public void close() {
-		// TODO #406 Need to fix
 	}
 
 }
