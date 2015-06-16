@@ -23,9 +23,11 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class HBaseIndexWriter implements IndexWriter {
+public class HBaseIndexWriter implements
+		IndexWriter
+{
 
 	private final static Logger LOGGER = Logger.getLogger(HBaseIndexWriter.class);
 	private Index index;
@@ -33,7 +35,7 @@ public class HBaseIndexWriter implements IndexWriter {
 	private BasicHBaseOperations operations;
 	private String indexName;
 	protected HBaseWriter writer;
-	
+
 	public HBaseIndexWriter(
 			final Index index,
 			final BasicHBaseOperations operations,
@@ -49,11 +51,12 @@ public class HBaseIndexWriter implements IndexWriter {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close()
+			throws IOException {
 		// thread safe close
 		closeInternal();
 	}
-	
+
 	private synchronized void closeInternal() {
 		if (writer != null) {
 			writer.close();
@@ -62,8 +65,9 @@ public class HBaseIndexWriter implements IndexWriter {
 	}
 
 	@Override
-	public <T> List<ByteArrayId> write(WritableDataAdapter<T> writableAdapter,
-			T entry) {
+	public <T> List<ByteArrayId> write(
+			WritableDataAdapter<T> writableAdapter,
+			T entry ) {
 		if (writableAdapter instanceof IndexDependentDataAdapter) {
 			final IndexDependentDataAdapter adapter = ((IndexDependentDataAdapter) writableAdapter);
 			final Iterator<T> indexedEntries = adapter.convertToIndex(
@@ -83,7 +87,7 @@ public class HBaseIndexWriter implements IndexWriter {
 					entry);
 		}
 	}
-	
+
 	public <T> List<ByteArrayId> writeInternal(
 			final WritableDataAdapter<T> writableAdapter,
 			final T entry ) {
@@ -96,7 +100,7 @@ public class HBaseIndexWriter implements IndexWriter {
 			dataStore.store(writableAdapter);
 			dataStore.store(index);
 
-			ensureOpen();
+			ensureOpen(writableAdapter);
 			entryInfo = HBaseUtils.write(
 					writableAdapter,
 					index,
@@ -106,12 +110,11 @@ public class HBaseIndexWriter implements IndexWriter {
 		}
 		return entryInfo.getRowIds();
 	}
-	
-	private synchronized void ensureOpen() {
+
+	private synchronized <T> void ensureOpen(final WritableDataAdapter<T> writableAdapter) {
 		if (writer == null) {
 			try {
-				writer = operations.createWriter(
-						StringUtils.stringFromBinary(index.getId().getBytes()));
+				writer = operations.createWriter(StringUtils.stringFromBinary(index.getId().getBytes()), writableAdapter.getAdapterId().getString());
 			}
 			catch (final IOException e) {
 				LOGGER.error(
@@ -120,20 +123,24 @@ public class HBaseIndexWriter implements IndexWriter {
 			}
 		}
 	}
-	
+
 	@Override
 	public Index getIndex() {
 		return index;
 	}
-	
-	/* (non-Javadoc)
-	 * @see mil.nga.giat.geowave.core.store.IndexWriter#setupAdapter(mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * mil.nga.giat.geowave.core.store.IndexWriter#setupAdapter(mil.nga.giat
+	 * .geowave.core.store.adapter.WritableDataAdapter)
 	 */
 	@Override
-	public <T> void setupAdapter(WritableDataAdapter<T> writableAdapter) {
+	public <T> void setupAdapter(
+			WritableDataAdapter<T> writableAdapter ) {
 		LOGGER.error("This method is not yet coded. Need to fix it");
 
 	}
-
 
 }

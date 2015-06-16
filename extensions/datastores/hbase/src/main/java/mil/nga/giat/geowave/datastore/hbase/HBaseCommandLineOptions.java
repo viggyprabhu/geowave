@@ -14,18 +14,18 @@ import org.slf4j.LoggerFactory;
 /**
  * This class encapsulates all of the options and parsed values specific to
  * setting up GeoWave to appropriately connect to Accumulo.
- *
+ * 
  */
 public class HBaseCommandLineOptions
 {
 	private final static Logger LOGGER = LoggerFactory.getLogger(HBaseCommandLineOptions.class);
 	private final String zookeepers;
-    private final String namespace;
+	private final String namespace;
 	private BasicHBaseOperations operations;
 
 	public HBaseCommandLineOptions(
 			final String zookeepers,
-			final String namespace ){
+			final String namespace ) {
 		this.zookeepers = zookeepers;
 		this.namespace = namespace;
 
@@ -39,7 +39,8 @@ public class HBaseCommandLineOptions
 		return namespace;
 	}
 
-	public synchronized BasicHBaseOperations getHBaseOperations() throws IOException {
+	public synchronized BasicHBaseOperations getHBaseOperations()
+			throws IOException {
 		if (operations == null) {
 			operations = new BasicHBaseOperations(
 					zookeepers,
@@ -65,8 +66,8 @@ public class HBaseCommandLineOptions
 					"Required option is missing");
 		}
 		return new HBaseCommandLineOptions(
-					zookeepers,
-					namespace);
+				zookeepers,
+				namespace);
 	}
 
 	public static void applyOptions(

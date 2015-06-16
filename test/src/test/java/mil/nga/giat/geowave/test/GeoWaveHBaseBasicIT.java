@@ -23,6 +23,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.ingest.GeoWaveData;
 import mil.nga.giat.geowave.core.ingest.local.LocalFileIngestPlugin;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.IngestCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
@@ -42,7 +43,6 @@ import mil.nga.giat.geowave.datastore.hbase.HBaseDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.hbase.HBaseDataStore;
 import mil.nga.giat.geowave.datastore.hbase.HBaseIndexStore;
 import mil.nga.giat.geowave.format.geotools.vector.GeoToolsVectorDataStoreIngestPlugin;
-import mil.nga.giat.geowave.test.GeoWaveHBaseTestEnvironment;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -761,7 +761,7 @@ public class GeoWaveHBaseBasicIT extends
 			throws Exception {
 		LOGGER.info("querying " + queryDescription);
 		System.out.println("querying " + queryDescription);
-		final mil.nga.giat.geowave.core.store.DataStore geowaveStore = new HBaseDataStore(
+		final DataStore geowaveStore = new HBaseDataStore(
 				new HBaseIndexStore(
 						getOperations()),
 				new HBaseAdapterStore(
@@ -810,9 +810,9 @@ public class GeoWaveHBaseBasicIT extends
 			}
 			catch (IOException ex) {
 				LOGGER.error(
-						"Unable to clear accumulo namespace",
+						"Unable to clear hbase namespace",
 						ex);
-				Assert.fail("Unable to clear accumulo namespace");
+				Assert.fail("Unable to clear hbase namespace");
 			}
 		}
 		Assert.assertEquals(

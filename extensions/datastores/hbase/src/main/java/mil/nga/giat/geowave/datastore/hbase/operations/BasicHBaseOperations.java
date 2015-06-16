@@ -18,6 +18,8 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
@@ -36,7 +38,9 @@ public class BasicHBaseOperations
 	private final Connection conn;
 	private String tableNamespace;
 
-	public BasicHBaseOperations(String zookeeperInstances, String geowaveNamespace)
+	public BasicHBaseOperations(
+			String zookeeperInstances,
+			String geowaveNamespace )
 			throws IOException {
 		Configuration hConf = HBaseConfiguration.create();
 		hConf.set(
@@ -49,15 +53,22 @@ public class BasicHBaseOperations
 		conn = ConnectionFactory.createConnection(hConf);
 		tableNamespace = geowaveNamespace;
 	}
-	
-	public BasicHBaseOperations(String zookeeperInstances) throws IOException {
-		this(zookeeperInstances, DEFAULT_TABLE_NAMESPACE);
+
+	public BasicHBaseOperations(
+			String zookeeperInstances )
+			throws IOException {
+		this(
+				zookeeperInstances,
+				DEFAULT_TABLE_NAMESPACE);
 	}
 
 	public HBaseWriter createWriter(
-			String tableName )
-					throws IOException {
-		return createWriter(tableName, true);
+			String tableName, String columnFamily)
+			throws IOException {
+		return createWriter(
+				tableName, 
+				columnFamily, 
+				true );
 	}
 
 	private TableName getTableName(
@@ -66,33 +77,44 @@ public class BasicHBaseOperations
 	}
 
 	public HBaseWriter createWriter(
-			final String sTableName,
-			final boolean createTable ){
+			final String sTableName, 
+			final String columnFamily,
+			final boolean createTable ) throws IOException {
 		TableName tName = getTableName(getQualifiedTableName(sTableName));
-		Table table=null;
-		try {
-			table = getTable(createTable, tName);
-		}
-		catch (IOException e) {
-			LOGGER.error(
-					"Unable to create table '" + sTableName + "'",
-					e);
-		}
-		return new HBaseWriter(table);
+		Table table = null;
+		table = getTable(
+				createTable, 
+				columnFamily,
+				tName);
+		return new HBaseWriter(conn.getAdmin(),
+				table);
 	}
 
-	private Table getTable(final boolean create, TableName name)
+	private Table getTable(final boolean create,
+			TableName name )
+			throws IOException {
+		return getTable(create, DEFAULT_COLUMN_FAMILY, name);
+	}
+	
+	private Table getTable(
+			final boolean create,
+			final String columnFamily,
+			TableName name )
 			throws IOException {
 		Table table;
-		if (create && !conn.getAdmin().isTableAvailable(name)) {
-			HTableDescriptor desc = new HTableDescriptor(name);
-			desc.addFamily(new HColumnDescriptor(DEFAULT_COLUMN_FAMILY));
-			conn.getAdmin().createTable(desc);
+		if (create && !conn.getAdmin().isTableAvailable(
+				name)) {
+			HTableDescriptor desc = new HTableDescriptor(
+					name);
+			desc.addFamily(new HColumnDescriptor(
+					columnFamily));
+			conn.getAdmin().createTable(
+					desc);
 		}
 		table = conn.getTable(name);
 		return table;
 	}
-	
+
 	private String getQualifiedTableName(
 			final String unqualifiedTableName ) {
 		return HBaseUtils.getQualifiedTableName(
@@ -100,18 +122,27 @@ public class BasicHBaseOperations
 				unqualifiedTableName);
 	}
 
-	public void deleteAll() throws IOException {
-		TableName[] tableNamesArr = conn.getAdmin().listTableNames(); 
+	public void deleteAll()
+			throws IOException {
+		TableName[] tableNamesArr = conn.getAdmin().listTableNames();
 		SortedSet<TableName> tableNames = new TreeSet<TableName>();
-		Collections.addAll(tableNames, tableNamesArr);
-		if ((tableNamespace != null) && !tableNamespace.isEmpty()) {
-			tableNames = tableNames.subSet(
-					getTableName(tableNamespace),
-					getTableName(tableNamespace + '\uffff'));
-		}
+		Collections.addAll(
+				tableNames,
+				tableNamesArr);
 		for (final TableName tableName : tableNames) {
+			conn.getAdmin().disableTable(tableName);
 			conn.getAdmin().deleteTable(tableName);
 		}
+	}
+	
+	public boolean tableExists(
+			final String tableName ) throws IOException {
+		final String qName = getQualifiedTableName(tableName);
+		return conn.getAdmin().isTableAvailable(getTableName(qName));
+	}
+	
+	public ResultScanner getScannedResults(Scan scanner, String tableName) throws IOException {
+		return conn.getTable(getTableName(getQualifiedTableName(tableName))).getScanner(scanner);
 	}
 
 }

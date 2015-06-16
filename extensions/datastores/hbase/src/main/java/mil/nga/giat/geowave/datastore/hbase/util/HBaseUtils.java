@@ -10,7 +10,10 @@ import java.util.Collections;
 import java.util.List;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.ByteArrayRange;
+import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
@@ -44,7 +47,7 @@ public class HBaseUtils
 
 	private static final byte[] BEG_AND_BYTE = "&".getBytes(StringUtils.UTF8_CHAR_SET);
 	private static final byte[] END_AND_BYTE = ")".getBytes(StringUtils.UTF8_CHAR_SET);
-	
+
 	private static final UniformVisibilityWriter DEFAULT_VISIBILITY = new UniformVisibilityWriter(
 			new UnconstrainedVisibilityHandler());
 
@@ -83,7 +86,7 @@ public class HBaseUtils
 				ingestInfo);
 	}
 
-	private static <T> List<RowMutations> buildMutations(
+	private static List<RowMutations> buildMutations(
 			final byte[] adapterId,
 			final DataStoreEntryInfo ingestInfo ) {
 		final List<RowMutations> mutations = new ArrayList<RowMutations>();
@@ -91,22 +94,20 @@ public class HBaseUtils
 		for (final ByteArrayId rowId : ingestInfo.getRowIds()) {
 			final RowMutations mutation = new RowMutations(
 					rowId.getBytes());
-
-			for (final FieldInfo fieldInfo : fieldInfoList) {
-				try {
-					Put row = new Put(
-							rowId.getBytes());
+			try {
+				Put row = new Put(
+						rowId.getBytes());
+				for (final FieldInfo fieldInfo : fieldInfoList) {
 					row.addColumn(
 							adapterId,
 							fieldInfo.getDataValue().getId().getBytes(),
 							fieldInfo.getWrittenValue());
-					mutation.add(row);
-				}
-				catch (IOException e) {
-					LOGGER.warn("Could not add row to mutation.");
-				}
+				}	
+				mutation.add(row);
 			}
-
+			catch (IOException e) {
+				LOGGER.warn("Could not add row to mutation.");
+			}
 			mutations.add(mutation);
 		}
 		return mutations;
@@ -254,21 +255,56 @@ public class HBaseUtils
 				writableAdapter.getAdapterId().getBytes(),
 				ingestInfo);
 
-		writer.write(mutations);
+		writer.write(mutations,writableAdapter.getAdapterId().getString());
 		return ingestInfo;
 	}
-	
+
 	public static String getQualifiedTableName(
 			final String tableNamespace,
 			final String unqualifiedTableName ) {
 		return ((tableNamespace == null) || tableNamespace.isEmpty()) ? unqualifiedTableName : tableNamespace + "_" + unqualifiedTableName;
 	}
-	
+
 	public static <T> DataStoreEntryInfo write(
 			final WritableDataAdapter<T> writableAdapter,
 			final Index index,
 			final T entry,
-			final HBaseWriter writer) {
-		return write(writableAdapter, index, entry, writer, DEFAULT_VISIBILITY);
+			final HBaseWriter writer ) {
+		return write(
+				writableAdapter,
+				index,
+				entry,
+				writer,
+				DEFAULT_VISIBILITY);
 	}
+	
+	@SuppressWarnings({
+		"rawtypes",
+		"unchecked"
+	})
+	private static <T> FieldInfo<T> getFieldInfo(
+			final PersistentValue<T> fieldValue,
+			final byte[] value,
+			final byte[] visibility ) {
+		return new FieldInfo<T>(
+				fieldValue,
+				value,
+				visibility);
+	}
+	
+	public static List<ByteArrayRange> constraintsToByteArrayRanges(
+			final MultiDimensionalNumericData constraints,
+			final NumericIndexStrategy indexStrategy,
+			final int maxRanges ) {
+		if ((constraints == null) || constraints.isEmpty()) {
+			return new ArrayList<ByteArrayRange>(); // implies in negative and
+			// positive infinity
+		}
+		else {
+			return indexStrategy.getQueryRanges(
+					constraints,
+					maxRanges);
+		}
+	}
+
 }
