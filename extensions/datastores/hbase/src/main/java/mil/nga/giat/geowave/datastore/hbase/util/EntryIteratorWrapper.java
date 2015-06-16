@@ -8,7 +8,9 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 
-import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellUtil;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.log4j.Logger;
 
 /**
@@ -26,7 +28,7 @@ public class EntryIteratorWrapper<T> implements
 	private final static Logger LOGGER = Logger.getLogger(EntryIteratorWrapper.class);
 	private final AdapterStore adapterStore;
 	private final Index index;
-	private final Scan scannerIt;
+	private final Iterator<Result> scannerIt;
 	private final QueryFilter clientFilter;
 	private final ScanCallback<T> scanCallback;
 
@@ -35,7 +37,7 @@ public class EntryIteratorWrapper<T> implements
 	public EntryIteratorWrapper(
 			final AdapterStore adapterStore,
 			final Index index,
-			final Scan scannerIt,
+			final Iterator<Result> scannerIt,
 			final QueryFilter clientFilter ) {
 		this.adapterStore = adapterStore;
 		this.index = index;
@@ -47,7 +49,7 @@ public class EntryIteratorWrapper<T> implements
 	public EntryIteratorWrapper(
 			final AdapterStore adapterStore,
 			final Index index,
-			final Scan scannerIt,
+			final Iterator<Result> scannerIt,
 			final QueryFilter clientFilter,
 			final ScanCallback<T> scanCallback ) {
 		this.adapterStore = adapterStore;
@@ -70,9 +72,36 @@ public class EntryIteratorWrapper<T> implements
 
 	@Override
 	public boolean hasNext() {
-		// TODO #406 Need to fix
-		LOGGER.error("This method is not yet coded. Need to fix it");
-		return false;
+		findNext();
+		return nextValue != null;
+	}
+	
+	private void findNext() {
+		
+		while ((nextValue == null) && scannerIt.hasNext()) {
+			final Result row = scannerIt.next();
+			final T decodedValue = decodeRow(
+					row.listCells().get(0),
+					clientFilter,
+					index);
+			if (decodedValue != null) {
+				nextValue = decodedValue;
+				return;
+			}
+		}
+	}
+
+	private T decodeRow(
+			final Cell row,
+			final QueryFilter clientFilter,
+			final Index index ) {
+		return HBaseUtils.decodeRow(
+				CellUtil.cloneRow(row),
+				CellUtil.cloneValue(row),
+				adapterStore,
+				clientFilter,
+				index,
+				scanCallback);
 	}
 
 	@Override

@@ -109,20 +109,21 @@ public abstract class HBaseFilteredIndexQuery extends HBaseQuery{
 			LOGGER.error("Could not get scanner instance, getScanner returned null");
 			return new CloseableIterator.Empty();
 		}
-		Iterator it = initIterator(
-				adapterStore,
-				scanner);
-		if ((limit != null) && (limit > 0)) {
-			it = Iterators.limit(
-					it,
-					limit);
-		}
+		
 		ResultScanner results = null;
 		try {
 			results = operations.getScannedResults(scanner,
 					tableName);
 		} catch (IOException e) {
 			LOGGER.error("Could not get the results from scanner");
+		}
+		Iterator it = initIterator(
+				adapterStore,
+				results);
+		if ((limit != null) && (limit > 0)) {
+			it = Iterators.limit(
+					it,
+					limit);
 		}
 		return new CloseableIteratorWrapper(
 				new ScannerClosableWrapper(
@@ -188,11 +189,11 @@ public abstract class HBaseFilteredIndexQuery extends HBaseQuery{
 	
 	protected Iterator initIterator(
 			final AdapterStore adapterStore,
-			final Scan scanner ) {
+			final ResultScanner results ) {
 		return new EntryIteratorWrapper(
 				adapterStore,
 				index,
-				scanner,
+				results.iterator(),
 				new FilterList<QueryFilter>(
 						clientFilters),
 				scanCallback);
