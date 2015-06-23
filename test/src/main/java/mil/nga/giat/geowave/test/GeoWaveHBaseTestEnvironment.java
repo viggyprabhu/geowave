@@ -21,19 +21,21 @@ import org.junit.BeforeClass;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class GeoWaveHBaseTestEnvironment extends GeoWaveTestEnvironment{
+public class GeoWaveHBaseTestEnvironment extends
+		GeoWaveTestEnvironment
+{
 
 	private final static Logger LOGGER = Logger.getLogger(GeoWaveHBaseTestEnvironment.class);
 	private static BasicHBaseOperations operations;
 	protected static String zookeeper;
 	protected static File TEMP_DIR = new File(
 			"./target/hbase_temp"); // breaks on windows if temp directory
-										// isn't on same drive as project
+									// isn't on same drive as project
 	private static HBaseTestingUtility utilty;
-										private static MiniHBaseCluster hbaseInstance;
-	
+	private static MiniHBaseCluster hbaseInstance;
+
 	@BeforeClass
 	public static void setup()
 			throws IOException {
@@ -81,10 +83,10 @@ public class GeoWaveHBaseTestEnvironment extends GeoWaveTestEnvironment{
 		}
 	}
 
-	public BasicHBaseOperations getOperations(){
+	public BasicHBaseOperations getOperations() {
 		return operations;
 	}
-	
+
 	@Override
 	protected void testLocalIngest(
 			final IndexType indexType,
@@ -97,5 +99,5 @@ public class GeoWaveHBaseTestEnvironment extends GeoWaveTestEnvironment{
 				' ');
 		GeoWaveMain.main(args);
 	}
-	
+
 }

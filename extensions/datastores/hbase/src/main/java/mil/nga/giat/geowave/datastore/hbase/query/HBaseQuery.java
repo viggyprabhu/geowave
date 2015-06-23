@@ -13,16 +13,17 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
-abstract public class HBaseQuery {
+abstract public class HBaseQuery
+{
 
 	private final static Logger LOGGER = Logger.getLogger(HBaseQuery.class);
 	protected final List<ByteArrayId> adapterIds;
 	protected final Index index;
-	
+
 	private final String[] authorizations;
-	
+
 	public HBaseQuery(
 			final List<ByteArrayId> adapterIds,
 			final Index index,
@@ -31,10 +32,10 @@ abstract public class HBaseQuery {
 		this.index = index;
 		this.authorizations = authorizations;
 	}
-	
+
 	public String[] getAdditionalAuthorizations() {
 		return authorizations;
 	}
-	
+
 	abstract protected List<ByteArrayRange> getRanges();
 }

@@ -44,7 +44,7 @@ public class HBaseRowId
 		this.adapterId = adapterId;
 		this.numberOfDuplicates = numberOfDuplicates;
 	}
-	
+
 	public HBaseRowId(
 			final byte[] indexId,
 			final byte[] dataId,
@@ -65,5 +65,25 @@ public class HBaseRowId
 		buf.putInt(dataId.length);
 		buf.putInt(numberOfDuplicates);
 		return buf.array();
+	}
+
+	public byte[] getInsertionId() {
+		return insertionId;
+	}
+
+	public byte[] getDataId() {
+		return dataId;
+	}
+
+	public byte[] getAdapterId() {
+		return adapterId;
+	}
+
+	public int getNumberOfDuplicates() {
+		return numberOfDuplicates;
+	}
+
+	public boolean isDeduplicationEnabled() {
+		return numberOfDuplicates >= 0;
 	}
 }

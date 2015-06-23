@@ -20,21 +20,24 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class HBaseConstraintsQuery extends HBaseFilteredIndexQuery{
+public class HBaseConstraintsQuery extends
+		HBaseFilteredIndexQuery
+{
 
 	private final static Logger LOGGER = Logger.getLogger(HBaseConstraintsQuery.class);
 	private static final int MAX_RANGE_DECOMPOSITION = 5000;
 	private MultiDimensionalNumericData constraints;
 	protected final List<DistributableQueryFilter> distributableFilters;
 	protected boolean queryFiltersEnabled;
-	
-	public HBaseConstraintsQuery(final List<ByteArrayId> adapterIds,
+
+	public HBaseConstraintsQuery(
+			final List<ByteArrayId> adapterIds,
 			final Index index,
 			final MultiDimensionalNumericData constraints,
 			final List<QueryFilter> queryFilters,
-			final String[] authorizations) {
+			final String[] authorizations ) {
 		this(
 				adapterIds,
 				index,
@@ -61,7 +64,7 @@ public class HBaseConstraintsQuery extends HBaseFilteredIndexQuery{
 				scanCallback,
 				authorizations);
 	}
-	
+
 	public HBaseConstraintsQuery(
 			final List<ByteArrayId> adapterIds,
 			final Index index,
@@ -116,7 +119,7 @@ public class HBaseConstraintsQuery extends HBaseFilteredIndexQuery{
 				distributableFilters,
 				clientFilters);
 	}
-	
+
 	private static class SplitFilterLists
 	{
 		private final List<DistributableQueryFilter> distributableFilters;
@@ -129,7 +132,7 @@ public class HBaseConstraintsQuery extends HBaseFilteredIndexQuery{
 			this.clientFilters = clientFilters;
 		}
 	}
-	
+
 	@Override
 	protected List<ByteArrayRange> getRanges() {
 		return HBaseUtils.constraintsToByteArrayRanges(

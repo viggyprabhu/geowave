@@ -27,6 +27,7 @@ import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper.ScannerClosableWrapper;
 import mil.nga.giat.geowave.datastore.hbase.util.EntryIteratorWrapper;
 
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.log4j.Logger;
@@ -35,16 +36,17 @@ import com.google.common.collect.Iterators;
 
 /**
  * @author viggy
- *
+ * 
  */
-public abstract class HBaseFilteredIndexQuery extends HBaseQuery{
+public abstract class HBaseFilteredIndexQuery extends
+		HBaseQuery
+{
 
-	
 	protected final ScanCallback<?> scanCallback;
 	protected List<QueryFilter> clientFilters;
 	private final static Logger LOGGER = Logger.getLogger(HBaseFilteredIndexQuery.class);
 	private Collection<String> fieldIds = null;
-	
+
 	public HBaseFilteredIndexQuery(
 			final List<ByteArrayId> adapterIds,
 			final Index index,
@@ -56,17 +58,17 @@ public abstract class HBaseFilteredIndexQuery extends HBaseQuery{
 				authorizations);
 		this.scanCallback = scanCallback;
 	}
-	
+
 	protected void setClientFilters(
 			final List<QueryFilter> clientFilters ) {
 		this.clientFilters = clientFilters;
 	}
-	
+
 	public void setFieldIds(
 			Collection<String> fieldIds ) {
 		this.fieldIds = fieldIds;
 	}
-	
+
 	public CloseableIterator<?> query(
 			final BasicHBaseOperations operations,
 			final AdapterStore adapterStore,
@@ -77,26 +79,26 @@ public abstract class HBaseFilteredIndexQuery extends HBaseQuery{
 				limit,
 				false);
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	public CloseableIterator<?> query(
 			final BasicHBaseOperations operations,
 			final AdapterStore adapterStore,
 			final Integer limit,
 			final boolean withKeys ) {
-		try{
+		try {
 			if (!operations.tableExists(StringUtils.stringFromBinary(index.getId().getBytes()))) {
 				LOGGER.warn("Table does not exist " + StringUtils.stringFromBinary(index.getId().getBytes()));
 				return new CloseableIterator.Empty();
 			}
 		}
-		catch(IOException ex){
-			LOGGER.warn("Unabe to check if " + StringUtils.stringFromBinary(index.getId().getBytes())+" table exists");
+		catch (IOException ex) {
+			LOGGER.warn("Unabe to check if " + StringUtils.stringFromBinary(index.getId().getBytes()) + " table exists");
 			return new CloseableIterator.Empty();
 		}
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
 		Scan scanner = getScanner(limit);
-		
+
 		// a subset of fieldIds is being requested
 		if (fieldIds != null && !fieldIds.isEmpty()) {
 			// configure scanner to fetch only the fieldIds specified
@@ -109,50 +111,61 @@ public abstract class HBaseFilteredIndexQuery extends HBaseQuery{
 			LOGGER.error("Could not get scanner instance, getScanner returned null");
 			return new CloseableIterator.Empty();
 		}
-		
+
 		ResultScanner results = null;
 		try {
-			results = operations.getScannedResults(scanner,
+			results = operations.getScannedResults(
+					scanner,
 					tableName);
-		} catch (IOException e) {
+			
+			if(results.iterator().hasNext()){
+				Iterator it = initIterator(
+						adapterStore,
+						results.iterator());
+				if ((limit != null) && (limit > 0)) {
+					it = Iterators.limit(
+							it,
+							limit);
+				}
+				return new CloseableIteratorWrapper(
+						new ScannerClosableWrapper(
+								results),
+								it);
+			}
+			else{
+				LOGGER.error("Results were empty");
+				return null;
+			}
+		}
+		catch (IOException e) {
 			LOGGER.error("Could not get the results from scanner");
+			return null;
 		}
-		Iterator it = initIterator(
-				adapterStore,
-				results);
-		if ((limit != null) && (limit > 0)) {
-			it = Iterators.limit(
-					it,
-					limit);
-		}
-		return new CloseableIteratorWrapper(
-				new ScannerClosableWrapper(
-						results),
-				it);
 	}
-	
-	private Scan getScanner(Integer limit) {
+
+	private Scan getScanner(
+			Integer limit ) {
 		final List<ByteArrayRange> ranges = getRanges();
 		Scan scanner = new Scan();
 		if ((ranges != null) && (ranges.size() == 1)) {
 			final ByteArrayRange r = ranges.get(0);
 			scanner.setStartRow(r.getStart().getBytes());
 			if (!r.isSingleValue()) {
-				scanner.setStopRow(r.getStart().getBytes());
+				scanner.setStopRow(r.getEnd().getBytes());
 			}
-			
+
 			if ((limit != null) && (limit > 0) && (limit < scanner.getBatch())) {
 				scanner.setBatch(limit);
 			}
 		}
-		
+
 		if ((adapterIds != null) && !adapterIds.isEmpty()) {
 			for (final ByteArrayId adapterId : adapterIds) {
 				scanner.addFamily(adapterId.getBytes());
 			}
 		}
 		return scanner;
-		
+
 	}
 
 	private void handleSubsetOfFieldIds(
@@ -168,12 +181,16 @@ public abstract class HBaseFilteredIndexQuery extends HBaseQuery{
 
 			// dimension fields must be included
 			for (ByteArrayId dimension : uniqueDimensions) {
-				scanner.addColumn(dataAdapters.next().getAdapterId().getBytes(), dimension.getBytes());
+				scanner.addColumn(
+						dataAdapters.next().getAdapterId().getBytes(),
+						dimension.getBytes());
 			}
 
 			// configure scanner to fetch only the specified fieldIds
 			for (String fieldId : fieldIds) {
-				scanner.addColumn(dataAdapters.next().getAdapterId().getBytes(), StringUtils.stringToBinary(fieldId));
+				scanner.addColumn(
+						dataAdapters.next().getAdapterId().getBytes(),
+						StringUtils.stringToBinary(fieldId));
 			}
 		}
 
@@ -186,14 +203,14 @@ public abstract class HBaseFilteredIndexQuery extends HBaseQuery{
 					e);
 		}
 	}
-	
+
 	protected Iterator initIterator(
 			final AdapterStore adapterStore,
-			final ResultScanner results ) {
+			final Iterator<Result> iterator ) {
 		return new EntryIteratorWrapper(
 				adapterStore,
 				index,
-				results.iterator(),
+				iterator,
 				new FilterList<QueryFilter>(
 						clientFilters),
 				scanCallback);

@@ -8,8 +8,6 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 
-import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.log4j.Logger;
 
@@ -75,13 +73,12 @@ public class EntryIteratorWrapper<T> implements
 		findNext();
 		return nextValue != null;
 	}
-	
+
 	private void findNext() {
-		
 		while ((nextValue == null) && scannerIt.hasNext()) {
 			final Result row = scannerIt.next();
 			final T decodedValue = decodeRow(
-					row.listCells().get(0),
+					row,
 					clientFilter,
 					index);
 			if (decodedValue != null) {
@@ -92,12 +89,11 @@ public class EntryIteratorWrapper<T> implements
 	}
 
 	private T decodeRow(
-			final Cell row,
+			final Result row,
 			final QueryFilter clientFilter,
 			final Index index ) {
 		return HBaseUtils.decodeRow(
-				CellUtil.cloneRow(row),
-				CellUtil.cloneValue(row),
+				row,
 				adapterStore,
 				clientFilter,
 				index,

@@ -37,11 +37,11 @@ import mil.nga.giat.geowave.core.store.data.visibility.GlobalVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
-import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.datastore.hbase.HBaseAdapterStore;
 import mil.nga.giat.geowave.datastore.hbase.HBaseDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.hbase.HBaseDataStore;
 import mil.nga.giat.geowave.datastore.hbase.HBaseIndexStore;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 import mil.nga.giat.geowave.format.geotools.vector.GeoToolsVectorDataStoreIngestPlugin;
 
 import org.apache.commons.io.IOUtils;
@@ -102,7 +102,7 @@ public class GeoWaveHBaseBasicIT extends
 		// ingest both lines and points
 		testLocalIngest(
 				IndexType.SPATIAL_VECTOR,
-				HAIL_SHAPEFILE_FILE);  
+				HAIL_SHAPEFILE_FILE);
 		testLocalIngest(
 				IndexType.SPATIAL_VECTOR,
 				TORNADO_TRACKS_SHAPEFILE_FILE);
@@ -207,7 +207,6 @@ public class GeoWaveHBaseBasicIT extends
 		}
 	}
 
-
 	protected static class StatisticsCache implements
 			IngestCallback<SimpleFeature>
 	{
@@ -286,7 +285,7 @@ public class GeoWaveHBaseBasicIT extends
 									adapter.getAdapterId(),
 									cachedValues);
 						}
-						final DataStoreEntryInfo entryInfo = AccumuloUtils.getIngestInfo(
+						final DataStoreEntryInfo entryInfo = HBaseUtils.getIngestInfo(
 								adapter,
 								index,
 								data.getValue(),

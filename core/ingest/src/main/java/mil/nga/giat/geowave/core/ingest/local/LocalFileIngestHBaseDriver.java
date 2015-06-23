@@ -38,7 +38,8 @@ public class LocalFileIngestHBaseDriver extends
 
 	public LocalFileIngestHBaseDriver(
 			final String operation ) {
-		super(operation);
+		super(
+				operation);
 	}
 
 	@Override

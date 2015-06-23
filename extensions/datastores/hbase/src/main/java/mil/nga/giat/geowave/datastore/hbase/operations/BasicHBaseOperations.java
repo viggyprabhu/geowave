@@ -63,12 +63,13 @@ public class BasicHBaseOperations
 	}
 
 	public HBaseWriter createWriter(
-			String tableName, String columnFamily)
+			String tableName,
+			String columnFamily )
 			throws IOException {
 		return createWriter(
-				tableName, 
-				columnFamily, 
-				true );
+				tableName,
+				columnFamily,
+				true);
 	}
 
 	private TableName getTableName(
@@ -77,25 +78,31 @@ public class BasicHBaseOperations
 	}
 
 	public HBaseWriter createWriter(
-			final String sTableName, 
+			final String sTableName,
 			final String columnFamily,
-			final boolean createTable ) throws IOException {
+			final boolean createTable )
+			throws IOException {
 		TableName tName = getTableName(getQualifiedTableName(sTableName));
 		Table table = null;
 		table = getTable(
-				createTable, 
+				createTable,
 				columnFamily,
 				tName);
-		return new HBaseWriter(conn.getAdmin(),
+		return new HBaseWriter(
+				conn.getAdmin(),
 				table);
 	}
 
-	private Table getTable(final boolean create,
+	private Table getTable(
+			final boolean create,
 			TableName name )
 			throws IOException {
-		return getTable(create, DEFAULT_COLUMN_FAMILY, name);
+		return getTable(
+				create,
+				DEFAULT_COLUMN_FAMILY,
+				name);
 	}
-	
+
 	private Table getTable(
 			final boolean create,
 			final String columnFamily,
@@ -130,19 +137,28 @@ public class BasicHBaseOperations
 				tableNames,
 				tableNamesArr);
 		for (final TableName tableName : tableNames) {
-			conn.getAdmin().disableTable(tableName);
-			conn.getAdmin().deleteTable(tableName);
+			conn.getAdmin().disableTable(
+					tableName);
+			conn.getAdmin().deleteTable(
+					tableName);
 		}
 	}
-	
+
 	public boolean tableExists(
-			final String tableName ) throws IOException {
+			final String tableName )
+			throws IOException {
 		final String qName = getQualifiedTableName(tableName);
-		return conn.getAdmin().isTableAvailable(getTableName(qName));
+		return conn.getAdmin().isTableAvailable(
+				getTableName(qName));
 	}
-	
-	public ResultScanner getScannedResults(Scan scanner, String tableName) throws IOException {
-		return conn.getTable(getTableName(getQualifiedTableName(tableName))).getScanner(scanner);
+
+	public ResultScanner getScannedResults(
+			Scan scanner,
+			String tableName )
+			throws IOException {
+		return conn.getTable(
+				getTableName(getQualifiedTableName(tableName))).getScanner(
+				scanner);
 	}
 
 }

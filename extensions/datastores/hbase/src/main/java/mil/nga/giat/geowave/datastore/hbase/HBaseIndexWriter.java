@@ -111,10 +111,13 @@ public class HBaseIndexWriter implements
 		return entryInfo.getRowIds();
 	}
 
-	private synchronized <T> void ensureOpen(final WritableDataAdapter<T> writableAdapter) {
+	private synchronized <T> void ensureOpen(
+			final WritableDataAdapter<T> writableAdapter ) {
 		if (writer == null) {
 			try {
-				writer = operations.createWriter(StringUtils.stringFromBinary(index.getId().getBytes()), writableAdapter.getAdapterId().getString());
+				writer = operations.createWriter(
+						StringUtils.stringFromBinary(index.getId().getBytes()),
+						writableAdapter.getAdapterId().getString());
 			}
 			catch (final IOException e) {
 				LOGGER.error(

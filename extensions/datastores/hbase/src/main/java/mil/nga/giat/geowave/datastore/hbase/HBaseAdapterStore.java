@@ -7,72 +7,64 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.datastore.hbase.metadata.AbstractHBasePersistence;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author viggy
  * 
  */
-public class HBaseAdapterStore implements
+public class HBaseAdapterStore extends AbstractHBasePersistence<DataAdapter<?>> implements
 		AdapterStore
 {
+	private final static Logger LOGGER = Logger.getLogger(HBaseAdapterStore.class);
+	private static final String ADAPTER_CF = "ADAPTER";
 
 	public HBaseAdapterStore(
-			BasicHBaseOperations instance ) {
-		// TODO Auto-generated constructor stub
+			BasicHBaseOperations operation ) {
+		super(operation);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * mil.nga.giat.geowave.core.store.adapter.AdapterStore#addAdapter(mil.nga
-	 * .giat.geowave.core.store.adapter.DataAdapter)
-	 */
 	@Override
 	public void addAdapter(
 			DataAdapter<?> adapter ) {
-		// TODO Auto-generated method stub
+		addObject(adapter);
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * mil.nga.giat.geowave.core.store.adapter.AdapterStore#getAdapter(mil.nga
-	 * .giat.geowave.core.index.ByteArrayId)
-	 */
+	
 	@Override
 	public DataAdapter<?> getAdapter(
 			ByteArrayId adapterId ) {
-		// TODO Auto-generated method stub
-		return null;
+		return getObject(
+				adapterId,
+				null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * mil.nga.giat.geowave.core.store.adapter.AdapterStore#adapterExists(mil
-	 * .nga.giat.geowave.core.index.ByteArrayId)
-	 */
+
 	@Override
 	public boolean adapterExists(
 			ByteArrayId adapterId ) {
-		// TODO Auto-generated method stub
-		return false;
+		return objectExists(
+				adapterId,
+				null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see mil.nga.giat.geowave.core.store.adapter.AdapterStore#getAdapters()
-	 */
 	@Override
 	public CloseableIterator<DataAdapter<?>> getAdapters() {
-		// TODO Auto-generated method stub
-		return null;
+		return getObjects();
+	}
+
+	@Override
+	protected ByteArrayId getPrimaryId(DataAdapter<?> persistedObject) {
+		return persistedObject.getAdapterId();
+	}
+
+	@Override
+	protected String getPersistenceTypeName() {
+		return ADAPTER_CF;
 	}
 
 }

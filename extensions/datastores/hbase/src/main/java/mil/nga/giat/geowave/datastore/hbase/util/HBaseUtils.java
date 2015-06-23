@@ -3,9 +3,11 @@
  */
 package mil.nga.giat.geowave.datastore.hbase.util;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,22 +18,34 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo.FieldInfo;
+import mil.nga.giat.geowave.core.store.ScanCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
+import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.data.DataWriter;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
+import mil.nga.giat.geowave.core.store.data.field.FieldReader;
 import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
 import mil.nga.giat.geowave.core.store.data.visibility.UnconstrainedVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
+import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
+import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.hbase.entities.HBaseRowId;
 import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellUtil;
+import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.RowMutations;
 import org.apache.log4j.Logger;
 
@@ -94,6 +108,7 @@ public class HBaseUtils
 		for (final ByteArrayId rowId : ingestInfo.getRowIds()) {
 			final RowMutations mutation = new RowMutations(
 					rowId.getBytes());
+			
 			try {
 				Put row = new Put(
 						rowId.getBytes());
@@ -102,7 +117,7 @@ public class HBaseUtils
 							adapterId,
 							fieldInfo.getDataValue().getId().getBytes(),
 							fieldInfo.getWrittenValue());
-				}	
+				}
 				mutation.add(row);
 			}
 			catch (IOException e) {
@@ -255,7 +270,9 @@ public class HBaseUtils
 				writableAdapter.getAdapterId().getBytes(),
 				ingestInfo);
 
-		writer.write(mutations,writableAdapter.getAdapterId().getString());
+		writer.write(
+				mutations,
+				writableAdapter.getAdapterId().getString());
 		return ingestInfo;
 	}
 
@@ -277,7 +294,7 @@ public class HBaseUtils
 				writer,
 				DEFAULT_VISIBILITY);
 	}
-	
+
 	@SuppressWarnings({
 		"rawtypes",
 		"unchecked"
@@ -291,7 +308,7 @@ public class HBaseUtils
 				value,
 				visibility);
 	}
-	
+
 	public static List<ByteArrayRange> constraintsToByteArrayRanges(
 			final MultiDimensionalNumericData constraints,
 			final NumericIndexStrategy indexStrategy,
@@ -305,6 +322,230 @@ public class HBaseUtils
 					constraints,
 					maxRanges);
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T decodeRow(
+			Result row,
+			final AdapterStore adapterStore,
+			final QueryFilter clientFilter,
+			final Index index,
+			final ScanCallback<T> scanCallback ) {
+
+		final HBaseRowId rowId = new HBaseRowId(row.getRow());
+		return (T) decodeRowObj(
+				row,
+				rowId,
+				null,
+				adapterStore,
+				clientFilter,
+				index,
+				scanCallback);
+	}
+
+	private static <T> Object decodeRowObj(
+			final Result row,
+			final HBaseRowId rowId,
+			final DataAdapter<T> dataAdapter,
+			final AdapterStore adapterStore,
+			final QueryFilter clientFilter,
+			final Index index,
+			final ScanCallback<T> scanCallback ) {
+		final Pair<T, DataStoreEntryInfo> pair = decodeRow(
+				row,
+				rowId,
+				dataAdapter,
+				adapterStore,
+				clientFilter,
+				index,
+				scanCallback);
+		return pair != null ? pair.getLeft() : null;
+
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> Pair<T, DataStoreEntryInfo> decodeRow(
+			final Result row,
+			final HBaseRowId rowId,
+			final DataAdapter<T> dataAdapter,
+			final AdapterStore adapterStore,
+			final QueryFilter clientFilter,
+			final Index index,
+			final ScanCallback<T> scanCallback ) {
+		if ((dataAdapter == null) && (adapterStore == null)) {
+			LOGGER.error("Could not decode row from iterator. Either adapter or adapter store must be non-null.");
+			return null;
+		}
+		DataAdapter<T> adapter = dataAdapter;
+		List<KeyValue> rowMapping;
+		try {
+			rowMapping = getSortedRowMapping(row);
+		}
+		catch (final IOException e) {
+			LOGGER.error("Could not decode row from iterator. Ensure whole row iterators are being used.");
+			return null;
+		}
+		// build a persistence encoding object first, pass it through the
+		// client filters and if its accepted, use the data adapter to
+		// decode the persistence model into the native data type
+		final PersistentDataset<CommonIndexValue> indexData = new PersistentDataset<CommonIndexValue>();
+		final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
+		// for now we are assuming all entries in a row are of the same type
+		// and use the same adapter
+		boolean adapterMatchVerified;
+		ByteArrayId adapterId;
+		if (adapter != null) {
+			adapterId = adapter.getAdapterId();
+			adapterMatchVerified = false;
+		}
+		else {
+			adapterMatchVerified = true;
+			adapterId = null;
+		}
+		
+		final List<FieldInfo> fieldInfoList = new ArrayList<FieldInfo>(
+				rowMapping.size());
+
+		for (final KeyValue entry : rowMapping) {
+			// the column family is the data element's type ID
+			if (adapterId == null) {
+				adapterId = new ByteArrayId(
+						entry.getFamily());
+						//entry.getKey().getColumnFamilyData().getBackingArray());
+			}
+
+			if (adapter == null) {
+				adapter = (DataAdapter<T>) adapterStore.getAdapter(adapterId);
+				if (adapter == null) {
+					LOGGER.error("DataAdapter does not exist");
+					return null;
+				}
+			}
+			if (!adapterMatchVerified) {
+				if (!adapterId.equals(adapter.getAdapterId())) {
+					return null;
+				}
+				adapterMatchVerified = true;
+			}
+			final ByteArrayId fieldId = new ByteArrayId(
+					entry.getQualifier());
+					//entry.getKey().getColumnQualifierData().getBackingArray());
+			final CommonIndexModel indexModel;
+			indexModel = index.getIndexModel();
+			
+			// first check if this field is part of the index model
+			final FieldReader<? extends CommonIndexValue> indexFieldReader = indexModel.getReader(fieldId);
+			final byte byteValue[] = entry.getValueArray();
+			if (indexFieldReader != null) {
+				final CommonIndexValue indexValue = indexFieldReader.readField(byteValue);
+				//indexValue.setVisibility(entry.getKey().getColumnVisibilityData().getBackingArray());
+				final PersistentValue<CommonIndexValue> val = new PersistentValue<CommonIndexValue>(
+						fieldId,
+						indexValue);
+				indexData.addValue(val);
+				fieldInfoList.add(getFieldInfo(
+						val,
+						byteValue,
+						indexValue.getVisibility()));
+			}
+			else {
+				// next check if this field is part of the adapter's
+				// extended data model
+				final FieldReader<?> extFieldReader = adapter.getReader(fieldId);
+				if (extFieldReader == null) {
+					// if it still isn't resolved, log an error, and
+					// continue
+					LOGGER.error("field reader not found for data entry, the value will be ignored");
+					continue;
+				}
+				final Object value = extFieldReader.readField(byteValue);
+				final PersistentValue<Object> val = new PersistentValue<Object>(
+						fieldId,
+						value);
+				extendedData.addValue(val);
+				fieldInfoList.add(getFieldInfo(
+						val,
+						byteValue,
+						null));
+						//entry.getKey().getColumnVisibility().getBytes()));
+			}
+		}
+		
+		final IndexedAdapterPersistenceEncoding encodedRow = new IndexedAdapterPersistenceEncoding(
+				adapterId,
+				new ByteArrayId(
+						rowId.getDataId()),
+				new ByteArrayId(
+						rowId.getInsertionId()),
+				rowId.getNumberOfDuplicates(),
+				indexData,
+				extendedData);
+		if ((clientFilter == null) || clientFilter.accept(encodedRow)) {
+			// cannot get here unless adapter is found (not null)
+			if (adapter == null) {
+				LOGGER.error("Error, adapter was null when it should not be");
+			}
+			else {
+				final Pair<T, DataStoreEntryInfo> pair = Pair.of(
+						adapter.decode(
+								encodedRow,
+								index),
+						new DataStoreEntryInfo(
+								Arrays.asList(new ByteArrayId(
+										row.getRow())),
+								// getRowData().getBackingArray())),
+								fieldInfoList));
+				if (scanCallback != null) {
+					scanCallback.entryScanned(
+							pair.getRight(),
+							pair.getLeft());
+				}
+				return pair;
+			}
+		}
+		return null;
+	}
+
+	private static List<KeyValue> getSortedRowMapping(
+			Result row )
+			throws IOException {
+		List<KeyValue> map = new ArrayList<KeyValue>();
+		/*ByteArrayInputStream in = new ByteArrayInputStream(v.getValueArray());
+		DataInputStream din = new DataInputStream(
+				in);
+		int numKeys = din.readInt();
+		for (int i = 0; i < numKeys; i++) {
+			byte[] cf = readField(din); // read the col fam
+			byte[] cq = readField(din); // read the col qual
+			byte[] cv = readField(din); // read the col visibility
+			long timestamp = din.readLong(); // read the timestamp
+			byte[] valBytes = readField(din); // read the value
+			map.add(new KeyValue(
+					CellUtil.cloneRow(v),
+					cf,
+					cq,
+					timestamp,
+					valBytes));*/
+		for(Cell c: row.listCells()){
+			map.add(new KeyValue(CellUtil.cloneRow(c), CellUtil.cloneFamily(c), CellUtil.cloneQualifier(c),CellUtil.cloneValue(c)));
+		}
+		return map;
+	}
+
+	private static byte[] readField(
+			DataInputStream din )
+			throws IOException {
+		int len = din.readInt();
+		byte[] b = new byte[len];
+		int readLen = din.read(b);
+		if (len > 0 && len != readLen) {
+			throw new IOException(
+					String.format(
+							"Expected to read %d bytes but read %d",
+							len,
+							readLen));
+		}
+		return b;
 	}
 
 }

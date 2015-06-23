@@ -14,31 +14,35 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class CloseableIteratorWrapper<E> implements CloseableIterator<E> {
+public class CloseableIteratorWrapper<E> implements
+		CloseableIterator<E>
+{
 
 	private final static Logger LOGGER = Logger.getLogger(CloseableIteratorWrapper.class);
+
 	public static class ScannerClosableWrapper implements
-	Closeable
+			Closeable
 	{
 		private final ResultScanner results;
-		
+
 		public ScannerClosableWrapper(
 				final ResultScanner results ) {
 			this.results = results;
 		}
-		
+
 		@Override
-		public void close() {
-		}
-	
+		public void close() {}
+
 	}
-	
+
 	private final Closeable closeable;
 	private final Iterator<E> iterator;
-	
-	public CloseableIteratorWrapper(Closeable closeable, Iterator<E> iterator) {
+
+	public CloseableIteratorWrapper(
+			Closeable closeable,
+			Iterator<E> iterator ) {
 		this.closeable = closeable;
 		this.iterator = iterator;
 	}
@@ -66,11 +70,12 @@ public class CloseableIteratorWrapper<E> implements CloseableIterator<E> {
 
 	@Override
 	public void remove() {
-		iterator.remove();		
+		iterator.remove();
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close()
+			throws IOException {
 		try {
 			closeable.close();
 		}

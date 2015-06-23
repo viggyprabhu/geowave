@@ -31,10 +31,11 @@ import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class SimpleHBaseIngest {
-	
+public class SimpleHBaseIngest
+{
+
 	static Logger log = Logger.getLogger(SimpleHBaseIngest.class);
 	public static final String FEATURE_NAME = "GridPoint";
 
@@ -44,11 +45,13 @@ public class SimpleHBaseIngest {
 			log.error("Invalid arguments, expected: zookeepers, geowaveNamespace");
 			System.exit(1);
 		}
-		
+
 		final SimpleHBaseIngest si = new SimpleHBaseIngest();
 
 		try {
-			final BasicHBaseOperations bao = si.getHbaseOperationsInstance(args[0],args[1]);
+			final BasicHBaseOperations bao = si.getHbaseOperationsInstance(
+					args[0],
+					args[1]);
 
 			final DataStore geowaveDataStore = si.getGeowaveDataStore(bao);
 			si.generateGrid(geowaveDataStore);
@@ -59,7 +62,6 @@ public class SimpleHBaseIngest {
 					e);
 			System.exit(1);
 		}
-
 
 	}
 
@@ -169,8 +171,13 @@ public class SimpleHBaseIngest {
 				instance);
 	}
 
-	protected BasicHBaseOperations getHbaseOperationsInstance(String zookeeperInstances, String geowaveNamespace) throws IOException{
-		return new BasicHBaseOperations(zookeeperInstances, geowaveNamespace);
+	protected BasicHBaseOperations getHbaseOperationsInstance(
+			String zookeeperInstances,
+			String geowaveNamespace )
+			throws IOException {
+		return new BasicHBaseOperations(
+				zookeeperInstances,
+				geowaveNamespace);
 	}
 
 	/***

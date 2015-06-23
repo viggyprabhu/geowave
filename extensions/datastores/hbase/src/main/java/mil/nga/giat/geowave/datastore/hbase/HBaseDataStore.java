@@ -171,7 +171,7 @@ public class HBaseDataStore implements
 		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
-	
+
 	@Override
 	public <T> T getEntry(
 			Index index,
@@ -217,7 +217,11 @@ public class HBaseDataStore implements
 	public <T> CloseableIterator<T> query(
 			Index index,
 			Query query ) {
-		return query(index, query, null, null);
+		return query(
+				index,
+				query,
+				null,
+				null);
 	}
 
 	@Override
@@ -323,7 +327,7 @@ public class HBaseDataStore implements
 		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private <T> CloseableIterator<T> query(
 			final Index index,
@@ -348,7 +352,7 @@ public class HBaseDataStore implements
 				queryOptions,
 				null);
 	}
-	
+
 	private CloseableIterator<?> query(
 			final List<ByteArrayId> adapterIds,
 			final Query query,
@@ -430,7 +434,9 @@ public class HBaseDataStore implements
 		try {
 
 			final String indexName = StringUtils.stringFromBinary(index.getId().getBytes());
-			HBaseWriter writer = operations.createWriter(indexName, dataWriter.getAdapterId().getString());
+			HBaseWriter writer = operations.createWriter(
+					indexName,
+					dataWriter.getAdapterId().getString());
 
 			final List<IngestCallback<T>> callbacks = new ArrayList<IngestCallback<T>>();
 			final StatsCompositionTool<T> statsCompositionTool = this.getStatsCompositionTool(dataWriter);
@@ -451,39 +457,41 @@ public class HBaseDataStore implements
 				finalIngestCallback = null;
 			}
 
-			writer.write(new Iterable<RowMutations>() {
-				@Override
-				public Iterator<RowMutations> iterator() {
-					return new HBaseIteratorWrapper<T, RowMutations>(
-							entryIterator,
-							new Converter<T, RowMutations>() {
+			writer.write(
+					new Iterable<RowMutations>() {
+						@Override
+						public Iterator<RowMutations> iterator() {
+							return new HBaseIteratorWrapper<T, RowMutations>(
+									entryIterator,
+									new Converter<T, RowMutations>() {
 
-								@Override
-								public Iterator<RowMutations> convert(
-										final T entry ) {
-									return HBaseUtils.entryToMutations(
-											dataWriter,
-											index,
-											entry,
-											customFieldVisibilityWriter).iterator();
-								}
-							},
-							finalIngestCallback == null ? null : new Callback<T, RowMutations>() {
-
-								@Override
-								public void notifyIterationComplete(
-										final T entry ) {
-									finalIngestCallback.entryIngested(
-											HBaseUtils.getIngestInfo(
+										@Override
+										public Iterator<RowMutations> convert(
+												final T entry ) {
+											return HBaseUtils.entryToMutations(
 													dataWriter,
 													index,
 													entry,
-													customFieldVisibilityWriter),
-											entry);
-								}
-							});
-				}
-			},dataWriter.getAdapterId().getString());
+													customFieldVisibilityWriter).iterator();
+										}
+									},
+									finalIngestCallback == null ? null : new Callback<T, RowMutations>() {
+
+										@Override
+										public void notifyIterationComplete(
+												final T entry ) {
+											finalIngestCallback.entryIngested(
+													HBaseUtils.getIngestInfo(
+															dataWriter,
+															index,
+															entry,
+															customFieldVisibilityWriter),
+													entry);
+										}
+									});
+						}
+					},
+					dataWriter.getAdapterId().getString());
 			writer.close();
 
 			synchronizeStatsWithStore(
@@ -559,7 +567,9 @@ public class HBaseDataStore implements
 		statisticsTool = getStatsCompositionTool(writableAdapter);
 
 		try {
-			writer = operations.createWriter(indexName, writableAdapter.getAdapterId().getString());
+			writer = operations.createWriter(
+					indexName,
+					writableAdapter.getAdapterId().getString());
 		}
 		catch (IOException e) {
 			LOGGER.warn(
@@ -594,6 +604,7 @@ public class HBaseDataStore implements
 			Iterator<T> entryIterator,
 			IngestCallback<T> ingestCallback ) {
 		// TODO #406 Need to fix
+		LOGGER.error("This method is not yet coded. Need to fix it");
 	}
 
 	public void store(
@@ -611,7 +622,8 @@ public class HBaseDataStore implements
 	}
 
 	@Override
-	public CloseableIterator<?> query(Query query) {
+	public CloseableIterator<?> query(
+			Query query ) {
 		// TODO #406 Need to fix
 		LOGGER.error("This method is not yet coded. Need to fix it");
 		return null;

@@ -32,7 +32,7 @@ public class IngestCLIOperationProvider implements
 				"localhbaseingest",
 				"ingest supported files in local file system directly, without using HDFS through HBase",
 				new LocalFileIngestHBaseDriver(
-						"localhbaseingest")),										
+						"localhbaseingest")),
 		new CLIOperation(
 				"hdfsstage",
 				"stage supported files in local file system to HDFS",

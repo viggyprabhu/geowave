@@ -23,7 +23,8 @@ public class HBaseWriter
 	private Admin admin;
 
 	public HBaseWriter(
-			Admin admin, Table table ) {
+			Admin admin,
+			Table table ) {
 		this.admin = admin;
 		this.table = table;
 	}
@@ -31,38 +32,67 @@ public class HBaseWriter
 	public void write(
 			Iterable<RowMutations> iterable ) {
 		for (RowMutations rowMutation : iterable) {
-			try {
-				table.mutateRow(rowMutation);
-			}
-			catch (IOException e) {
-				LOGGER.warn(
-						"Unable to insert row into the table",
-						e);
-			}
+			write(rowMutation);
+		}
+	}
+
+	private void write(RowMutations rowMutation) {
+		try {
+			table.mutateRow(rowMutation);
+		}
+		catch (IOException e) {
+			LOGGER.warn(
+					"Unable to insert row into the table",
+					e);
 		}
 	}
 
 	public void close() {}
 
-	public void write(Iterable<RowMutations> iterable, String columnFamily) {
+	public void write(
+			Iterable<RowMutations> iterable,
+			String columnFamily ) {
 		try {
-			if(!columnFamilyExists(columnFamily)){
-				admin.addColumn(table.getName(), new HColumnDescriptor(columnFamily));
+			if (!columnFamilyExists(columnFamily)) {
+				admin.addColumn(
+						table.getName(),
+						new HColumnDescriptor(
+								columnFamily));
 			}
 			write(iterable);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			LOGGER.warn(
-					"Unable to add column family "+columnFamily,
+					"Unable to add column family " + columnFamily,
 					e);
 		}
 	}
 
-	private boolean columnFamilyExists(String columnFamily) throws IOException {
-		for(HColumnDescriptor cDesc: table.getTableDescriptor().getColumnFamilies()){
-			if(cDesc.getNameAsString().matches(columnFamily))
-				return true;
+	private boolean columnFamilyExists(
+			String columnFamily )
+			throws IOException {
+		for (HColumnDescriptor cDesc : table.getTableDescriptor().getColumnFamilies()) {
+			if (cDesc.getNameAsString().matches(
+					columnFamily)) return true;
 		}
 		return false;
+	}
+
+	public void write(RowMutations mutation, String columnFamily) {
+		try {
+			if (!columnFamilyExists(columnFamily)) {
+				admin.addColumn(
+						table.getName(),
+						new HColumnDescriptor(
+								columnFamily));
+			}
+			write(mutation);
+		}
+		catch (IOException e) {
+			LOGGER.warn(
+					"Unable to add column family " + columnFamily,
+					e);
+		}
 	}
 
 }
