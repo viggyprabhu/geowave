@@ -42,7 +42,6 @@ import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -435,7 +434,7 @@ public class HBaseUtils
 			
 			// first check if this field is part of the index model
 			final FieldReader<? extends CommonIndexValue> indexFieldReader = indexModel.getReader(fieldId);
-			final byte byteValue[] = entry.getValueArray();
+			final byte byteValue[] = entry.getValue();
 			if (indexFieldReader != null) {
 				final CommonIndexValue indexValue = indexFieldReader.readField(byteValue);
 				//indexValue.setVisibility(entry.getKey().getColumnVisibilityData().getBackingArray());
@@ -527,7 +526,7 @@ public class HBaseUtils
 					timestamp,
 					valBytes));*/
 		for(Cell c: row.listCells()){
-			map.add(new KeyValue(CellUtil.cloneRow(c), CellUtil.cloneFamily(c), CellUtil.cloneQualifier(c),CellUtil.cloneValue(c)));
+			map.add(new KeyValue(c));
 		}
 		return map;
 	}
