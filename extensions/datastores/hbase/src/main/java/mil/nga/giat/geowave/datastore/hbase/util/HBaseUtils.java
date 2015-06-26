@@ -479,6 +479,7 @@ public class HBaseUtils
 				rowId.getNumberOfDuplicates(),
 				indexData,
 				extendedData);
+		
 		if ((clientFilter == null) || clientFilter.accept(encodedRow)) {
 			// cannot get here unless adapter is found (not null)
 			if (adapter == null) {

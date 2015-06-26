@@ -7,72 +7,62 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.datastore.hbase.metadata.AbstractHBasePersistence;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author viggy
  * 
  */
-public class HBaseIndexStore implements
+public class HBaseIndexStore extends AbstractHBasePersistence<Index> implements
 		IndexStore
 {
 
+	private final static Logger LOGGER = Logger.getLogger(HBaseIndexStore.class);
+	private static final String INDEX_CF = "INDEX";
+	
 	public HBaseIndexStore(
-			BasicHBaseOperations instance ) {
-		// TODO Auto-generated constructor stub
+			BasicHBaseOperations operations ) {
+		super(
+				operations);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * mil.nga.giat.geowave.core.store.index.IndexStore#addIndex(mil.nga.giat
-	 * .geowave.core.store.index.Index)
-	 */
 	@Override
-	public void addIndex(
-			Index index ) {
-		// TODO Auto-generated method stub
-
+	public void addIndex(Index index) {
+		addObject(index);
+		
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * mil.nga.giat.geowave.core.store.index.IndexStore#getIndex(mil.nga.giat
-	 * .geowave.core.index.ByteArrayId)
-	 */
 	@Override
-	public Index getIndex(
-			ByteArrayId indexId ) {
-		// TODO Auto-generated method stub
-		return null;
+	public Index getIndex(ByteArrayId indexId) {
+		return getObject(
+				indexId,
+				null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * mil.nga.giat.geowave.core.store.index.IndexStore#indexExists(mil.nga.
-	 * giat.geowave.core.index.ByteArrayId)
-	 */
 	@Override
-	public boolean indexExists(
-			ByteArrayId indexId ) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean indexExists(ByteArrayId id) {
+		return objectExists(
+				id,
+				null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see mil.nga.giat.geowave.core.store.index.IndexStore#getIndices()
-	 */
 	@Override
 	public CloseableIterator<Index> getIndices() {
-		// TODO Auto-generated method stub
-		return null;
+		return getObjects();
 	}
 
+	@Override
+	protected ByteArrayId getPrimaryId(Index persistedObject) {
+		return persistedObject.getId();
+	}
+
+	@Override
+	protected String getPersistenceTypeName() {
+		return INDEX_CF;
+	}
+
+	
 }

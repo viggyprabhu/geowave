@@ -7,113 +7,90 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
+import mil.nga.giat.geowave.datastore.hbase.metadata.AbstractHBasePersistence;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author viggy
  * 
  */
-public class HBaseDataStatisticsStore implements
+public class HBaseDataStatisticsStore extends
+AbstractHBasePersistence<DataStatistics<?>> implements
 		DataStatisticsStore
 {
 
+	private static final String STATISTICS_CF = "STATS";
+	private final static Logger LOGGER = Logger.getLogger(HBaseDataStatisticsStore.class);
+	
 	public HBaseDataStatisticsStore(
-			BasicHBaseOperations instance ) {
-		// TODO Auto-generated constructor stub
+			BasicHBaseOperations operations ) {
+		super(operations);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore
-	 * #setStatistics
-	 * (mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics)
-	 */
 	@Override
 	public void setStatistics(
 			DataStatistics<?> statistics ) {
-		// TODO Auto-generated method stub
+		removeStatistics(
+				statistics.getDataAdapterId(),
+				statistics.getStatisticsId());
+		addObject(statistics);
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore
-	 * #incorporateStatistics
-	 * (mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics)
-	 */
 	@Override
 	public void incorporateStatistics(
 			DataStatistics<?> statistics ) {
-		// TODO Auto-generated method stub
+		addObject(statistics);
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore
-	 * #getDataStatistics(mil.nga.giat.geowave.core.index.ByteArrayId,
-	 * java.lang.String[])
-	 */
 	@Override
 	public CloseableIterator<DataStatistics<?>> getDataStatistics(
 			ByteArrayId adapterId,
 			String... authorizations ) {
-		// TODO Auto-generated method stub
-		return null;
+		return getAllObjectsWithSecondaryId(
+				adapterId,
+				authorizations);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore
-	 * #getAllDataStatistics(java.lang.String[])
-	 */
 	@Override
 	public CloseableIterator<DataStatistics<?>> getAllDataStatistics(
 			String... authorizations ) {
-		// TODO Auto-generated method stub
-		return null;
+		return getObjects(authorizations);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore
-	 * #getDataStatistics(mil.nga.giat.geowave.core.index.ByteArrayId,
-	 * mil.nga.giat.geowave.core.index.ByteArrayId, java.lang.String[])
-	 */
 	@Override
 	public DataStatistics<?> getDataStatistics(
 			ByteArrayId adapterId,
 			ByteArrayId statisticsId,
 			String... authorizations ) {
-		// TODO Auto-generated method stub
-		return null;
+		return getObject(
+				statisticsId,
+				adapterId,
+				authorizations);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore
-	 * #removeStatistics(mil.nga.giat.geowave.core.index.ByteArrayId,
-	 * mil.nga.giat.geowave.core.index.ByteArrayId, java.lang.String[])
-	 */
 	@Override
 	public boolean removeStatistics(
 			ByteArrayId adapterId,
 			ByteArrayId statisticsId,
 			String... authorizations ) {
-		// TODO Auto-generated method stub
-		return false;
+		return deleteObject(
+				statisticsId,
+				adapterId,
+				authorizations);
+	}
+
+	@Override
+	protected ByteArrayId getPrimaryId(DataStatistics<?> persistedObject) {
+		return persistedObject.getStatisticsId();
+	}
+
+	@Override
+	protected String getPersistenceTypeName() {
+		return STATISTICS_CF;
 	}
 
 }

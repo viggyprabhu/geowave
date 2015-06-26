@@ -4,6 +4,7 @@
 package mil.nga.giat.geowave.datastore.hbase.query;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -207,12 +208,22 @@ public abstract class HBaseFilteredIndexQuery extends
 	protected Iterator initIterator(
 			final AdapterStore adapterStore,
 			final Iterator<Result> iterator ) {
+		//TODO Fix #406 Since currently we are not supporting server side iterator/coprocessors, we also cannot run
+		// server side filters and hence they have to run on clients itself. So need to add server side filters also in list of client filters.
+		List<QueryFilter> filters = getAllFiltersList();
 		return new EntryIteratorWrapper(
 				adapterStore,
 				index,
 				iterator,
 				new FilterList<QueryFilter>(
-						clientFilters),
+						filters),
 				scanCallback);
+	}
+
+	protected List<QueryFilter> getAllFiltersList() {
+		//This method is so that it can be overridden to also add distributed filter list
+		List<QueryFilter> filters = new ArrayList<QueryFilter>();
+		filters.addAll(clientFilters);
+		return filters;
 	}
 }

@@ -5,6 +5,7 @@ package mil.nga.giat.geowave.datastore.hbase.metadata;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -174,7 +175,9 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 				scanner.addFamily(columnFamily);
 			}
 		}
-		scanner.setStartRow(primaryId.getBytes());
+		if (primaryId != null) {
+			scanner.setStartRow(primaryId.getBytes());
+		}
 		return scanner;
 	}
 
@@ -324,4 +327,50 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 
 	}
 
+	protected CloseableIterator<T> getAllObjectsWithSecondaryId(
+			final ByteArrayId secondaryId,
+			final String... authorizations ) {
+		try {
+			final Scan scanner = getScanner(
+					null,
+					secondaryId,
+					authorizations);
+			ResultScanner rS = operations.getScannedResults(scanner, getTablename());
+			final Iterator<Result> it = rS.iterator();
+			return new CloseableIteratorWrapper<T>(
+					new ScannerClosableWrapper(
+							rS),
+					new NativeIteratorWrapper(
+							it));
+		}
+		catch (final IOException e) {
+			LOGGER.warn(
+					"Unable to find objects, table '" + getTablename() + "' does not exist",
+					e);
+		}
+		return new CloseableIterator.Empty<T>();
+	}
+	
+	protected boolean deleteObject(
+			final ByteArrayId primaryId,
+			final ByteArrayId secondaryId,
+			final String... authorizations ) {
+		return deleteObjectFromCache(
+				primaryId,
+				secondaryId) && operations.delete(
+				getTablename(),
+				Arrays.asList(primaryId),
+				getColumnFamily(),
+				getColumnQualifier(secondaryId),
+				authorizations);
+	}
+	
+	protected boolean deleteObjectFromCache(
+			final ByteArrayId primaryId,
+			final ByteArrayId secondaryId ) {
+		final ByteArrayId combinedId = getCombinedId(
+				primaryId,
+				secondaryId);
+		return (cache.remove(combinedId) != null);
+	}
 }
