@@ -25,6 +25,15 @@ abstract public class HBaseQuery
 	private final String[] authorizations;
 
 	public HBaseQuery(
+			final Index index,
+			final String... authorizations ) {
+		this(
+				null,
+				index,
+				authorizations);
+	}
+	
+	public HBaseQuery(
 			final List<ByteArrayId> adapterIds,
 			final Index index,
 			final String... authorizations ) {
@@ -36,6 +45,7 @@ abstract public class HBaseQuery
 	public String[] getAdditionalAuthorizations() {
 		return authorizations;
 	}
-
+	
 	abstract protected List<ByteArrayRange> getRanges();
+
 }

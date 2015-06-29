@@ -5,11 +5,9 @@ package mil.nga.giat.geowave.datastore.hbase.operations;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
@@ -147,11 +145,11 @@ public class BasicHBaseOperations
 	}
 
 	public boolean tableExists(
-			final String tableName )
-			throws IOException {
+			final String tableName ) throws IOException {
 		final String qName = getQualifiedTableName(tableName);
 		return conn.getAdmin().isTableAvailable(
-				getTableName(qName));
+					getTableName(qName));
+		
 	}
 
 	public ResultScanner getScannedResults(
@@ -163,62 +161,19 @@ public class BasicHBaseOperations
 				scanner);
 	}
 
-	public boolean delete(String tablename, List<ByteArrayId> asList,
-			String columnFamily, byte[] columnQualifier, String[] authorizations) {
-		/*boolean success = true;
-		BatchDeleter deleter = null;
+	public boolean deleteTable(String tableName) {
+		final String qName = getQualifiedTableName(tableName);
 		try {
-			deleter = createBatchDeleter(
-					tableName,
-					authorizations);
-			if ((columnFamily != null) && !columnFamily.isEmpty()) {
-				if ((columnQualifier != null) && !columnQualifier.isEmpty()) {
-					deleter.fetchColumn(
-							new Text(
-									columnFamily),
-							new Text(
-									columnQualifier));
-				}
-				else {
-					deleter.fetchColumnFamily(new Text(
-							columnFamily));
-				}
-			}
-			final Set<ByteArrayId> removeSet = new HashSet<ByteArrayId>();
-			final List<Range> rowRanges = new ArrayList<Range>();
-			for (final ByteArrayId rowId : rowIds) {
-				rowRanges.add(Range.exact(new Text(
-						rowId.getBytes())));
-				removeSet.add(new ByteArrayId(
-						rowId.getBytes()));
-			}
-			deleter.setRanges(rowRanges);
-
-			final Iterator<Map.Entry<Key, Value>> iterator = deleter.iterator();
-			while (iterator.hasNext()) {
-				final Entry<Key, Value> entry = iterator.next();
-				removeSet.remove(new ByteArrayId(
-						entry.getKey().getRowData().getBackingArray()));
-			}
-
-			if (removeSet.isEmpty()) {
-				deleter.delete();
-			}
-
-			deleter.close();
+			conn.getAdmin().deleteTable(getTableName(qName));
+			return true;
 		}
-		catch (final TableNotFoundException | MutationsRejectedException e) {
+		catch(IOException ex){
 			LOGGER.warn(
-					"Unable to delete row from table [" + tableName + "].",
-					e);
-			if (deleter != null) {
-				deleter.close();
-			}
-			success = false;
+					"Unable to delete table '" + qName + "'",
+					ex);
 		}
-
-		return success;
-	*/
-		return true;
+		return false;
+		
 	}
+
 }

@@ -5,33 +5,23 @@ package mil.nga.giat.geowave.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TimeZone;
 
 import mil.nga.giat.geowave.core.cli.GeoWaveMain;
 import mil.nga.giat.geowave.core.geotime.IndexType;
-import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
-import mil.nga.giat.geowave.core.geotime.store.query.SpatialTemporalQuery;
-import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.MiniHBaseCluster;
 import org.apache.log4j.Logger;
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
-import org.geotools.data.simple.SimpleFeatureIterator;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Geometry;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * @author viggy
@@ -97,6 +87,51 @@ public class GeoWaveHBaseTestEnvironment extends
 		}
 	}
 
+	@SuppressFBWarnings(value = {
+		"SWL_SLEEP_WITH_LOCK_HELD"
+	}, justification = "Sleep in lock while waiting for external resources")
+	@AfterClass
+	public static void cleanup() {
+		synchronized (MUTEX) {
+			if (!DEFER_CLEANUP.get()) {
+				
+				if (operations == null) {
+					Assert.fail("Invalid state <null> for hbase operations during CLEANUP phase");
+				}
+				try {
+					operations.deleteAll();
+				}
+				catch (IOException ex) {
+					LOGGER.error(
+							"Unable to clear hbase namespace",
+							ex);
+					Assert.fail("Index not deleted successfully");
+				}
+
+				operations = null;
+				zookeeper = null;
+				
+				if (TEMP_DIR != null) {
+					try {
+						// sleep because mini accumulo processes still have a
+						// hold
+						// on the log files and there is no hook to get notified
+						// when it is completely stopped
+						Thread.sleep(1000);
+						FileUtils.deleteDirectory(TEMP_DIR);
+						TEMP_DIR = null;
+					}
+					catch (final IOException | InterruptedException e) {
+						LOGGER.warn(
+								"Unable to delete mini hbase temporary directory",
+								e);
+					}
+				}
+			}
+		}
+	}
+
+	
 	public BasicHBaseOperations getOperations() {
 		return operations;
 	}
@@ -112,80 +147,9 @@ public class GeoWaveHBaseTestEnvironment extends
 				"-localhbaseingest -f geotools-vector -b " + ingestFilePath + " -z " + zookeeper + " -n " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
 				' ');
 		GeoWaveMain.main(args);
+		//TODO #406 Currently verifyStats is not implemented in HBase as some of the common classes are in geowave-datastore-accumulo package.
+		//verifyStats();
 	}
 	
-	protected static DistributableQuery resourceToQuery(
-			final URL filterResource )
-			throws IOException {
-		return featureToQuery(resourceToFeature(filterResource));
-	}
-
-	protected static SimpleFeature resourceToFeature(
-			final URL filterResource )
-			throws IOException {
-		final Map<String, Object> map = new HashMap<String, Object>();
-		DataStore dataStore = null;
-		map.put(
-				"url",
-				filterResource);
-		final SimpleFeature savedFilter;
-		SimpleFeatureIterator sfi = null;
-		try {
-			dataStore = DataStoreFinder.getDataStore(map);
-			if (dataStore == null) {
-				LOGGER.error("Could not get dataStore instance, getDataStore returned null");
-				throw new IOException(
-						"Could not get dataStore instance, getDataStore returned null");
-			}
-			// just grab the first feature and use it as a filter
-			sfi = dataStore.getFeatureSource(
-					dataStore.getNames().get(
-							0)).getFeatures().features();
-			savedFilter = sfi.next();
-
-		}
-		finally {
-			if (sfi != null) {
-				sfi.close();
-			}
-			if (dataStore != null) {
-				dataStore.dispose();
-			}
-		}
-		return savedFilter;
-	}
-
-	protected static DistributableQuery featureToQuery(
-			final SimpleFeature savedFilter ) {
-		final Geometry filterGeometry = (Geometry) savedFilter.getDefaultGeometry();
-		final Object startObj = savedFilter.getAttribute(TEST_FILTER_START_TIME_ATTRIBUTE_NAME);
-		final Object endObj = savedFilter.getAttribute(TEST_FILTER_END_TIME_ATTRIBUTE_NAME);
-
-		if ((startObj != null) && (endObj != null)) {
-			// if we can resolve start and end times, make it a spatial temporal
-			// query
-			Date startDate = null, endDate = null;
-			if (startObj instanceof Calendar) {
-				startDate = ((Calendar) startObj).getTime();
-			}
-			else if (startObj instanceof Date) {
-				startDate = (Date) startObj;
-			}
-			if (endObj instanceof Calendar) {
-				endDate = ((Calendar) endObj).getTime();
-			}
-			else if (endObj instanceof Date) {
-				endDate = (Date) endObj;
-			}
-			if ((startDate != null) && (endDate != null)) {
-				return new SpatialTemporalQuery(
-						startDate,
-						endDate,
-						filterGeometry);
-			}
-		}
-		// otherwise just return a spatial query
-		return new SpatialQuery(
-				filterGeometry);
-	}
+		
 }

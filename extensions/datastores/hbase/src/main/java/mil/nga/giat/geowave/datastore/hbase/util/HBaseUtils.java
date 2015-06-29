@@ -43,6 +43,7 @@ import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.RowMutations;
@@ -269,9 +270,13 @@ public class HBaseUtils
 				writableAdapter.getAdapterId().getBytes(),
 				ingestInfo);
 
-		writer.write(
-				mutations,
-				writableAdapter.getAdapterId().getString());
+		try {
+			writer.write(
+					mutations,
+					writableAdapter.getAdapterId().getString());
+		} catch (IOException e) {
+			LOGGER.warn("Writing to table failed."+ e);
+		}
 		return ingestInfo;
 	}
 
@@ -546,6 +551,54 @@ public class HBaseUtils
 							readLen));
 		}
 		return b;
+	}
+	
+	public static <T> void writeAltIndex(
+			final WritableDataAdapter<T> writableAdapter,
+			final DataStoreEntryInfo entryInfo,
+			final T entry,
+			final HBaseWriter writer ) {
+
+		final byte[] adapterId = writableAdapter.getAdapterId().getBytes();
+		final byte[] dataId = writableAdapter.getDataId(
+				entry).getBytes();
+		if ((dataId != null) && (dataId.length > 0)) {
+			final List<RowMutations> mutations = new ArrayList<RowMutations>();
+
+			for (final ByteArrayId rowId : entryInfo.getRowIds()) {
+				final RowMutations mutation = new RowMutations(
+						rowId.getBytes());
+				
+				try {
+					Put row = new Put(
+							rowId.getBytes());
+					row.addColumn(
+							adapterId,
+							rowId.getBytes(),
+							"".getBytes(StringUtils.UTF8_CHAR_SET));
+					mutation.add(row);
+				}
+				catch (IOException e) {
+					LOGGER.warn("Could not add row to mutation.");
+				}
+				mutations.add(mutation);
+			}
+			try {
+				writer.write(mutations,writableAdapter.getAdapterId().getString());
+			} catch (IOException e) {
+				LOGGER.warn("Writing to table failed."+ e);
+			}
+			
+		}
+	}
+
+	public static RowMutations getDeleteMutations(byte[] rowId, byte[] columnFamily,
+			byte[] columnQualifier, String[] authorizations) throws IOException {
+		RowMutations m = new RowMutations(rowId);
+		Delete d = new Delete(rowId);
+		d.addColumn(columnFamily, columnQualifier);
+		m.add(d);
+		return m;
 	}
 
 }

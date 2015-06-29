@@ -92,5 +92,11 @@ AbstractHBasePersistence<DataStatistics<?>> implements
 	protected String getPersistenceTypeName() {
 		return STATISTICS_CF;
 	}
+	
+	@Override
+	protected ByteArrayId getSecondaryId(
+			final DataStatistics<?> persistedObject ) {
+		return persistedObject.getDataAdapterId();
+	}
 
 }

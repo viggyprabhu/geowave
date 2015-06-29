@@ -202,7 +202,7 @@ public class GeoWaveHBaseBasicIT extends
 		}
 		catch (IOException ex) {
 			LOGGER.error(
-					"Unable to clear accumulo namespace",
+					"Unable to clear hbase namespace",
 					ex);
 		}
 	}
@@ -323,7 +323,7 @@ public class GeoWaveHBaseBasicIT extends
 				final Collection<DataStatistics<SimpleFeature>> expectedStats = cachedValue.statsCache.values();
 				try (CloseableIterator<DataStatistics<?>> statsIterator = statsStore.getDataStatistics(adapter.getAdapterId())) {
 					int statsCount = 0;
-					while (statsIterator.hasNext()) {
+					while (statsIterator!=null && statsIterator.hasNext()) {
 						statsIterator.next();
 						statsCount++;
 					}

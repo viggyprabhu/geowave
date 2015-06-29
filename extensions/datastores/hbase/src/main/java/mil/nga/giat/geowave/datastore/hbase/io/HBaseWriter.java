@@ -6,6 +6,8 @@ package mil.nga.giat.geowave.datastore.hbase.io;
 import java.io.IOException;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.RowMutations;
 import org.apache.hadoop.hbase.client.Table;
@@ -29,46 +31,22 @@ public class HBaseWriter
 		this.table = table;
 	}
 
-	public void write(
-			Iterable<RowMutations> iterable ) {
-		for (RowMutations rowMutation : iterable) {
-			write(rowMutation);
-		}
-	}
-
-	private void write(RowMutations rowMutation) {
-		try {
-			table.mutateRow(rowMutation);
-		}
-		catch (IOException e) {
-			LOGGER.warn(
-					"Unable to insert row into the table",
-					e);
-		}
+	private void write(RowMutations rowMutation) throws IOException {
+			table.mutateRow(rowMutation);	
 	}
 
 	public void close() {}
 
 	public void write(
 			Iterable<RowMutations> iterable,
-			String columnFamily ) {
-		try {
-			if (!columnFamilyExists(columnFamily)) {
-				admin.addColumn(
-						table.getName(),
-						new HColumnDescriptor(
-								columnFamily));
-			}
-			write(iterable);
-		}
-		catch (IOException e) {
-			LOGGER.warn(
-					"Unable to add column family " + columnFamily,
-					e);
+			String columnFamily ) throws IOException {
+		addColumnFamilyToTable(table.getName(), columnFamily);
+		for (RowMutations rowMutation : iterable) {
+			write(rowMutation);
 		}
 	}
 
-	private boolean columnFamilyExists(
+	/*private boolean columnFamilyExists(
 			String columnFamily )
 			throws IOException {
 		for (HColumnDescriptor cDesc : table.getTableDescriptor().getColumnFamilies()) {
@@ -76,22 +54,53 @@ public class HBaseWriter
 					columnFamily)) return true;
 		}
 		return false;
-	}
+	}*/
 
 	public void write(RowMutations mutation, String columnFamily) {
 		try {
-			if (!columnFamilyExists(columnFamily)) {
-				admin.addColumn(
-						table.getName(),
-						new HColumnDescriptor(
-								columnFamily));
-			}
+			addColumnFamilyToTable(table.getName(), columnFamily);
 			write(mutation);
 		}
 		catch (IOException e) {
 			LOGGER.warn(
 					"Unable to add column family " + columnFamily,
 					e);
+		}
+	}
+	
+	private void addColumnFamilyToTable(TableName name, String columnFamilyName) throws IOException
+    {
+        HColumnDescriptor cfDesciptor = new HColumnDescriptor(columnFamilyName);
+        if (admin.tableExists(name)) {
+        	// Before any modification to table schema, it's necessary to
+        	// disable it
+        	if (!admin.isTableEnabled(name)){
+        		admin.enableTable(name);
+        	}
+        	HTableDescriptor descriptor = admin.getTableDescriptor(name);
+        	boolean found = false;
+        	for (HColumnDescriptor hColumnDescriptor : descriptor.getColumnFamilies()){
+        		if (hColumnDescriptor.getNameAsString().equalsIgnoreCase(columnFamilyName))
+        			found = true;
+        	}
+        	if (!found){
+        		if (admin.isTableEnabled(name)){
+        			admin.disableTable(name);
+        		}
+        		admin.addColumn(name, cfDesciptor);
+        		// Enable table once done
+        		admin.enableTable(name);
+        	}
+        }
+        else{
+        	LOGGER.warn("Table " + name.getNameAsString() + " doesn't exist, so no question of adding column family "
+        			+ columnFamilyName + " to it!");
+        }
+    }
+
+	public void delete(Iterable<RowMutations> iterable) throws IOException {
+		for (RowMutations rowMutation : iterable) {
+			write(rowMutation);
 		}
 	}
 

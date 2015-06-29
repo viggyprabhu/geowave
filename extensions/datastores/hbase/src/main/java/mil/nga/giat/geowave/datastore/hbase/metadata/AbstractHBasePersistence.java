@@ -5,10 +5,11 @@ package mil.nga.giat.geowave.datastore.hbase.metadata;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -19,6 +20,7 @@ import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper.ScannerClosableWrapper;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
@@ -340,8 +342,8 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 			return new CloseableIteratorWrapper<T>(
 					new ScannerClosableWrapper(
 							rS),
-					new NativeIteratorWrapper(
-							it));
+							new NativeIteratorWrapper(
+									it));
 		}
 		catch (final IOException e) {
 			LOGGER.warn(
@@ -357,12 +359,23 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 			final String... authorizations ) {
 		return deleteObjectFromCache(
 				primaryId,
-				secondaryId) && operations.delete(
-				getTablename(),
-				Arrays.asList(primaryId),
-				getColumnFamily(),
-				getColumnQualifier(secondaryId),
-				authorizations);
+				secondaryId) && deleteRows(primaryId, secondaryId, authorizations);
+	}
+
+
+	private boolean deleteRows(final ByteArrayId primaryId,
+			final ByteArrayId secondaryId, final String... authorizations) {
+		try {
+			RowMutations deleteMutations = HBaseUtils.getDeleteMutations(primaryId.getBytes(),getColumnFamily().getBytes(), getColumnQualifier(secondaryId), authorizations);
+			HBaseWriter deleter = operations.createWriter(getTablename(), getColumnFamily(), false);
+			List<RowMutations> l = new ArrayList<RowMutations>();
+			l.add(deleteMutations);
+			deleter.delete(l);
+			return true;
+		} catch (IOException e) {
+			LOGGER.warn("Unable to delete row from "+getTablename()+" "+ e);
+			return false;
+		}
 	}
 	
 	protected boolean deleteObjectFromCache(
