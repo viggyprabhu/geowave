@@ -188,14 +188,15 @@ public class HBaseDataStore implements DataStore {
 						adapterId,
 						1,
 						additionalAuthorizations);
-				//final KeyValue row = rows.size() > 0 ? rows.get(0) : null;
-				Result r = new Result(rows);
-				return (T) HBaseUtils.decodeRow(
-						r,
-						adapterStore,
-						null,
-						index,
-						null);
+				if(rows!=null & rows.size()>0){
+					Result r = new Result(rows);
+					return (T) HBaseUtils.decodeRow(
+							r,
+							adapterStore,
+							null,
+							index,
+							null);
+				}
 			}
 		} catch (IOException e) {
 			LOGGER.warn("Table does not exists "+e);
@@ -264,16 +265,11 @@ public class HBaseDataStore implements DataStore {
 
 		try {
 			HBaseWriter deleter = operations.createWriter(tableName, "", false);
-			List<RowMutations> mutations = new ArrayList<RowMutations>();
 			for (final KeyValue rowData : rows) {
 				final byte[] id = rowData.getRow();
 				Delete d = new Delete(id);
-				d.addColumn(rowData.getFamily(), rowData.getQualifier());
-				RowMutations m = new RowMutations(id);
-				m.add(d);
-				mutations.add(m);
+				deleter.delete(d);
 			}
-			deleter.delete(mutations);
 			return true;
 		} catch (final IOException e) {
 			LOGGER.warn("Unable to delete row from table [" + tableName + "].",
@@ -404,7 +400,7 @@ public class HBaseDataStore implements DataStore {
 
 			final Iterator<Result> iterator = results.iterator();
 			int i = 0;
-			if (iterator.hasNext() && (i < limit)) { // FB supression as FB not
+			while (iterator.hasNext() && (i < limit)) { // FB supression as FB not
 														// detecting i reference
 														// here
 				Cell cell = iterator.next().listCells().get(0);

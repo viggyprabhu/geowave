@@ -9,6 +9,7 @@ import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.RowMutations;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
@@ -102,6 +103,10 @@ public class HBaseWriter
 		for (RowMutations rowMutation : iterable) {
 			write(rowMutation);
 		}
+	}
+	
+	public void delete(Delete delete) throws IOException {
+		table.delete(delete);
 	}
 
 }

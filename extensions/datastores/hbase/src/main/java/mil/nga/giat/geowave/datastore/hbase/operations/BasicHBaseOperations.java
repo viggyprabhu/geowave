@@ -137,10 +137,12 @@ public class BasicHBaseOperations
 				tableNames,
 				tableNamesArr);
 		for (final TableName tableName : tableNames) {
-			conn.getAdmin().disableTable(
-					tableName);
-			conn.getAdmin().deleteTable(
-					tableName);
+			if(conn.getAdmin().isTableAvailable(tableName)){
+				conn.getAdmin().disableTable(
+						tableName);
+				conn.getAdmin().deleteTable(
+						tableName);
+			}
 		}
 	}
 

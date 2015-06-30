@@ -127,7 +127,7 @@ public class GeoWaveHBaseBasicIT extends
 			}
 			catch (IOException ex) {
 				LOGGER.error(
-						"Unable to clear accumulo namespace",
+						"Unable to clear hbase namespace",
 						ex);
 			}
 			Assert.fail("Error occurred while testing a bounding box query of spatial index: '" + e.getLocalizedMessage() + "'");
@@ -152,7 +152,7 @@ public class GeoWaveHBaseBasicIT extends
 			}
 			catch (IOException ex) {
 				LOGGER.error(
-						"Unable to clear accumulo namespace",
+						"Unable to clear hbase namespace",
 						ex);
 			}
 			Assert.fail("Error occurred while testing a polygon query of spatial index: '" + e.getLocalizedMessage() + "'");
@@ -174,7 +174,7 @@ public class GeoWaveHBaseBasicIT extends
 			}
 			catch (IOException ex) {
 				LOGGER.error(
-						"Unable to clear accumulo namespace",
+						"Unable to clear hbase namespace",
 						ex);
 			}
 			Assert.fail("Error occurred while testing a bounding box stats on spatial index: '" + e.getLocalizedMessage() + "'");
@@ -192,7 +192,7 @@ public class GeoWaveHBaseBasicIT extends
 			}
 			catch (IOException ex) {
 				LOGGER.error(
-						"Unable to clear accumulo namespace",
+						"Unable to clear hbase namespace",
 						ex);
 			}
 			Assert.fail("Error occurred while testing deletion of an entry using spatial index: '" + e.getLocalizedMessage() + "'");
@@ -305,7 +305,7 @@ public class GeoWaveHBaseBasicIT extends
 				}
 				catch (IOException ex) {
 					LOGGER.error(
-							"Unable to clear accumulo namespace",
+							"Unable to clear hbase namespace",
 							ex);
 				}
 				Assert.fail("Error occurred while reading data from file '" + inputFile.getAbsolutePath() + "': '" + e.getLocalizedMessage() + "'");
@@ -380,7 +380,7 @@ public class GeoWaveHBaseBasicIT extends
 			}
 			catch (IOException ex) {
 				LOGGER.error(
-						"Unable to clear accumulo namespace",
+						"Unable to clear hbase namespace",
 						ex);
 			}
 			Assert.fail("Error occurred while retrieving adapters or statistics from metadata table: '" + e.getLocalizedMessage() + "'");
@@ -416,7 +416,7 @@ public class GeoWaveHBaseBasicIT extends
 			}
 			catch (IOException ex) {
 				LOGGER.error(
-						"Unable to clear accumulo namespace",
+						"Unable to clear hbase namespace",
 						ex);
 			}
 			Assert.fail("Error occurred while testing a bounding box and time range query of spatial temporal index: '" + e.getLocalizedMessage() + "'");
@@ -439,7 +439,7 @@ public class GeoWaveHBaseBasicIT extends
 			}
 			catch (IOException ex) {
 				LOGGER.error(
-						"Unable to clear accumulo namespace",
+						"Unable to clear hbase namespace",
 						ex);
 			}
 			Assert.fail("Error occurred while testing a polygon and time range query of spatial temporal index: '" + e.getLocalizedMessage() + "'");
@@ -462,7 +462,7 @@ public class GeoWaveHBaseBasicIT extends
 			}
 			catch (IOException ex) {
 				LOGGER.error(
-						"Unable to clear accumulo namespace",
+						"Unable to clear hbase namespace",
 						ex);
 			}
 			Assert.fail("Error occurred while testing a bounding box stats on spatial temporal index: '" + e.getLocalizedMessage() + "'");
@@ -480,7 +480,7 @@ public class GeoWaveHBaseBasicIT extends
 			}
 			catch (IOException ex) {
 				LOGGER.error(
-						"Unable to clear accumulo namespace",
+						"Unable to clear hbase namespace",
 						ex);
 			}
 			Assert.fail("Error occurred while testing deletion of an entry using spatial temporal index: '" + e.getLocalizedMessage() + "'");
@@ -490,7 +490,7 @@ public class GeoWaveHBaseBasicIT extends
 		}
 		catch (IOException ex) {
 			LOGGER.error(
-					"Unable to clear accumulo namespace",
+					"Unable to clear hbase namespace",
 					ex);
 		}
 	}
@@ -716,7 +716,7 @@ public class GeoWaveHBaseBasicIT extends
 		}
 		catch (IOException ex) {
 			LOGGER.error(
-					"Unable to clear accumulo namespace",
+					"Unable to clear hbase namespace",
 					ex);
 		}
 	}
@@ -798,7 +798,7 @@ public class GeoWaveHBaseBasicIT extends
 				}
 				catch (IOException ex) {
 					LOGGER.error(
-							"Unable to clear accumulo namespace",
+							"Unable to clear hbase namespace",
 							ex);
 				}
 				Assert.fail("Actual result '" + obj.toString() + "' is not of type Simple Feature.");
