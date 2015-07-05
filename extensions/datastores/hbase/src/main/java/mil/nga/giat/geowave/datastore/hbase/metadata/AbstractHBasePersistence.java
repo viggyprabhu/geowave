@@ -34,9 +34,10 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
-public abstract class AbstractHBasePersistence<T extends Persistable> {
+public abstract class AbstractHBasePersistence<T extends Persistable>
+{
 
 	public final static String METADATA_TABLE = "GEOWAVE_METADATA";
 	private final static Logger LOGGER = Logger.getLogger(AbstractHBasePersistence.class);
@@ -59,13 +60,12 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 			return size() > MAX_ENTRIES;
 		}
 	});
-	
+
 	public AbstractHBasePersistence(
 			final BasicHBaseOperations operations ) {
 		this.operations = operations;
 	}
-	
-	
+
 	@SuppressWarnings("unchecked")
 	protected T getObject(
 			final ByteArrayId primaryId,
@@ -82,7 +82,9 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 				secondaryId,
 				authorizations);
 		try {
-			final Iterator<Result> it = operations.getScannedResults(scanner, getTablename()).iterator();
+			final Iterator<Result> it = operations.getScannedResults(
+					scanner,
+					getTablename()).iterator();
 			if (!it.hasNext()) {
 				LOGGER.warn("Object '" + getCombinedId(
 						primaryId,
@@ -90,7 +92,8 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 				return null;
 			}
 			final Result entry = it.next();
-			return entryToValue(entry.listCells().get(0));
+			return entryToValue(entry.listCells().get(
+					0));
 		}
 		catch (final IOException e) {
 			LOGGER.error(
@@ -101,7 +104,7 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 		}
 		return null;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	protected T entryToValue(
 			final Cell entry ) {
@@ -113,7 +116,7 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 		}
 		return result;
 	}
-	
+
 	protected void addObjectToCache(
 			final T object ) {
 		final ByteArrayId combinedId = getCombinedId(
@@ -123,40 +126,45 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 				combinedId,
 				object);
 	}
-	
+
 	abstract protected ByteArrayId getPrimaryId(
 			T persistedObject );
-	
+
 	protected ByteArrayId getSecondaryId(
 			final T persistedObject ) {
 		// this is the default implementation, if the persistence store requires
 		// secondary indices,
 		return null;
 	}
+
 	protected Scan getScanner(
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId,
-			final String... authorizations ){
+			final String... authorizations ) {
 		final Scan scanner = new Scan();
-		applyScannerSettings(scanner,primaryId,secondaryId);
+		applyScannerSettings(
+				scanner,
+				primaryId,
+				secondaryId);
 		return scanner;
 	}
-	
+
 	protected String getColumnFamily() {
 		return getPersistenceTypeName();
 	}
-	
-	private byte[] toBytes(String s){
+
+	private byte[] toBytes(
+			String s ) {
 		return s.getBytes(Charset.forName("UTF-8"));
 	}
-	
+
 	abstract protected String getPersistenceTypeName();
-	
+
 	protected byte[] getColumnQualifier(
 			final T persistedObject ) {
 		return getColumnQualifier(getSecondaryId(persistedObject));
 	}
-	
+
 	protected byte[] getColumnQualifier(
 			final ByteArrayId secondaryId ) {
 		if (secondaryId != null) {
@@ -164,14 +172,19 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 		}
 		return null;
 	}
-	
-	protected Scan applyScannerSettings(Scan scanner, ByteArrayId primaryId, ByteArrayId secondaryId) {
-		
+
+	protected Scan applyScannerSettings(
+			Scan scanner,
+			ByteArrayId primaryId,
+			ByteArrayId secondaryId ) {
+
 		final byte[] columnFamily = toBytes(getColumnFamily());
 		final byte[] columnQualifier = getColumnQualifier(secondaryId);
 		if (columnFamily != null) {
 			if (columnQualifier != null) {
-				scanner.addColumn(columnFamily, columnQualifier);
+				scanner.addColumn(
+						columnFamily,
+						columnQualifier);
 			}
 			else {
 				scanner.addFamily(columnFamily);
@@ -193,11 +206,11 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 		}
 		return primaryId;
 	}
-	
+
 	protected String getTablename() {
 		return METADATA_TABLE;
 	}
-	
+
 	protected Object getObjectFromCache(
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId ) {
@@ -206,12 +219,14 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 				secondaryId);
 		return cache.get(combinedId);
 	}
-	
+
 	protected CloseableIterator<T> getObjects(
 			final String... authorizations ) {
 		try {
 			final Scan scanner = getFullScanner(authorizations);
-			ResultScanner rS = operations.getScannedResults(scanner, getTablename());
+			ResultScanner rS = operations.getScannedResults(
+					scanner,
+					getTablename());
 			final Iterator<Result> it = rS.iterator();
 			return new CloseableIteratorWrapper<T>(
 					new ScannerClosableWrapper(
@@ -226,7 +241,7 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 		}
 		return new CloseableIterator.Empty<T>();
 	}
-	
+
 	private Scan getFullScanner(
 			final String... authorizations )
 			throws TableNotFoundException {
@@ -235,7 +250,7 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 				null,
 				authorizations);
 	}
-	
+
 	protected void addObject(
 			final T object ) {
 		final ByteArrayId id = getPrimaryId(object);
@@ -255,8 +270,10 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 					getColumnQualifier(object),
 					PersistenceUtils.toBinary(object));
 			mutation.add(row);
-			
-			writer.write(mutation,getColumnFamily().toString());
+
+			writer.write(
+					mutation,
+					getColumnFamily().toString());
 			writer.close();
 		}
 		catch (final IOException e) {
@@ -265,7 +282,7 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 					e);
 		}
 	}
-	
+
 	protected boolean objectExists(
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId ) {
@@ -278,16 +295,19 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 			final Scan scanner = getScanner(
 					primaryId,
 					secondaryId);
-			ResultScanner rS = operations.getScannedResults(scanner, getTablename());
+			ResultScanner rS = operations.getScannedResults(
+					scanner,
+					getTablename());
 			final Iterator<Result> it = rS.iterator();
 			if (it.hasNext()) {
 				// may as well cache the result
-				Cell c = it.next().listCells().get(0);
+				Cell c = it.next().listCells().get(
+						0);
 				return (entryToValue(c) != null);
 			}
 			else {
 				return false;
-			}			
+			}
 		}
 		catch (final IOException e) {
 			// this is only debug, because if the table doesn't exist, its
@@ -300,28 +320,29 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 		}
 		return false;
 	}
-	
+
 	private class NativeIteratorWrapper implements
-	Iterator<T>
+			Iterator<T>
 	{
 		final private Iterator<Result> it;
-		
+
 		private NativeIteratorWrapper(
 				final Iterator<Result> it ) {
 			this.it = it;
 		}
-		
+
 		@Override
 		public boolean hasNext() {
 			return it.hasNext();
 		}
-		
+
 		@Override
 		public T next() {
-			Cell cell = it.next().listCells().get(0);
+			Cell cell = it.next().listCells().get(
+					0);
 			return entryToValue(cell);
 		}
-		
+
 		@Override
 		public void remove() {
 			it.remove();
@@ -337,13 +358,15 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 					null,
 					secondaryId,
 					authorizations);
-			ResultScanner rS = operations.getScannedResults(scanner, getTablename());
+			ResultScanner rS = operations.getScannedResults(
+					scanner,
+					getTablename());
 			final Iterator<Result> it = rS.iterator();
 			return new CloseableIteratorWrapper<T>(
 					new ScannerClosableWrapper(
 							rS),
-							new NativeIteratorWrapper(
-									it));
+					new NativeIteratorWrapper(
+							it));
 		}
 		catch (final IOException e) {
 			LOGGER.warn(
@@ -352,32 +375,44 @@ public abstract class AbstractHBasePersistence<T extends Persistable> {
 		}
 		return new CloseableIterator.Empty<T>();
 	}
-	
+
 	protected boolean deleteObject(
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
 		return deleteObjectFromCache(
 				primaryId,
-				secondaryId) && deleteRows(primaryId, secondaryId, authorizations);
+				secondaryId) && deleteRows(
+				primaryId,
+				secondaryId,
+				authorizations);
 	}
 
-
-	private boolean deleteRows(final ByteArrayId primaryId,
-			final ByteArrayId secondaryId, final String... authorizations) {
+	private boolean deleteRows(
+			final ByteArrayId primaryId,
+			final ByteArrayId secondaryId,
+			final String... authorizations ) {
 		try {
-			RowMutations deleteMutations = HBaseUtils.getDeleteMutations(primaryId.getBytes(),getColumnFamily().getBytes(), getColumnQualifier(secondaryId), authorizations);
-			HBaseWriter deleter = operations.createWriter(getTablename(), getColumnFamily(), false);
+			RowMutations deleteMutations = HBaseUtils.getDeleteMutations(
+					primaryId.getBytes(),
+					getColumnFamily().getBytes(),
+					getColumnQualifier(secondaryId),
+					authorizations);
+			HBaseWriter deleter = operations.createWriter(
+					getTablename(),
+					getColumnFamily(),
+					false);
 			List<RowMutations> l = new ArrayList<RowMutations>();
 			l.add(deleteMutations);
 			deleter.delete(l);
 			return true;
-		} catch (IOException e) {
-			LOGGER.warn("Unable to delete row from "+getTablename()+" "+ e);
+		}
+		catch (IOException e) {
+			LOGGER.warn("Unable to delete row from " + getTablename() + " " + e);
 			return false;
 		}
 	}
-	
+
 	protected boolean deleteObjectFromCache(
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId ) {

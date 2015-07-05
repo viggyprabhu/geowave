@@ -14,12 +14,13 @@ import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper;
 
 import org.apache.log4j.Logger;
 
-
 /**
  * @author viggy
- *
+ * 
  */
-public class HBaseRowIdQuery extends AbstractHBaseRowQuery<Object>{
+public class HBaseRowIdQuery extends
+		AbstractHBaseRowQuery<Object>
+{
 
 	private final static Logger LOGGER = Logger.getLogger(HBaseRowIdQuery.class);
 
@@ -40,7 +41,8 @@ public class HBaseRowIdQuery extends AbstractHBaseRowQuery<Object>{
 	}
 
 	@Override
-	protected Object queryResultFromIterator(CloseableIteratorWrapper<?> it) {
+	protected Object queryResultFromIterator(
+			CloseableIteratorWrapper<?> it ) {
 		Object retVal = null;
 		if (it.hasNext()) {
 			retVal = it.next();
@@ -65,5 +67,5 @@ public class HBaseRowIdQuery extends AbstractHBaseRowQuery<Object>{
 				true));
 		return ranges;
 	}
-	
+
 }

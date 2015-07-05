@@ -16,7 +16,8 @@ import org.apache.log4j.Logger;
  * @author viggy
  * 
  */
-public class HBaseAdapterStore extends AbstractHBasePersistence<DataAdapter<?>> implements
+public class HBaseAdapterStore extends
+		AbstractHBasePersistence<DataAdapter<?>> implements
 		AdapterStore
 {
 	private final static Logger LOGGER = Logger.getLogger(HBaseAdapterStore.class);
@@ -24,7 +25,8 @@ public class HBaseAdapterStore extends AbstractHBasePersistence<DataAdapter<?>> 
 
 	public HBaseAdapterStore(
 			BasicHBaseOperations operation ) {
-		super(operation);
+		super(
+				operation);
 	}
 
 	@Override
@@ -34,7 +36,6 @@ public class HBaseAdapterStore extends AbstractHBasePersistence<DataAdapter<?>> 
 
 	}
 
-	
 	@Override
 	public DataAdapter<?> getAdapter(
 			ByteArrayId adapterId ) {
@@ -42,7 +43,6 @@ public class HBaseAdapterStore extends AbstractHBasePersistence<DataAdapter<?>> 
 				adapterId,
 				null);
 	}
-
 
 	@Override
 	public boolean adapterExists(
@@ -58,7 +58,8 @@ public class HBaseAdapterStore extends AbstractHBasePersistence<DataAdapter<?>> 
 	}
 
 	@Override
-	protected ByteArrayId getPrimaryId(DataAdapter<?> persistedObject) {
+	protected ByteArrayId getPrimaryId(
+			DataAdapter<?> persistedObject ) {
 		return persistedObject.getAdapterId();
 	}
 

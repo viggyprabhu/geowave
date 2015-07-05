@@ -45,17 +45,20 @@ public class HBaseIndexWriter implements
 	protected HBaseWriter writer;
 	protected HBaseWriter altIdxWriter;
 	protected final HBaseOptions options;
-	
+
 	protected final Map<ByteArrayId, List<DataStatisticsBuilder>> statsMap = new HashMap<ByteArrayId, List<DataStatisticsBuilder>>();
 	protected boolean useAltIndex;
 	protected String altIdxTableName;
 
-	
 	public HBaseIndexWriter(
 			final Index index,
 			final BasicHBaseOperations operations,
 			final HBaseDataStore dataStore ) {
-		this(index, operations, new HBaseOptions(), dataStore);
+		this(
+				index,
+				operations,
+				new HBaseOptions(),
+				dataStore);
 	}
 
 	public HBaseIndexWriter(
@@ -90,8 +93,9 @@ public class HBaseIndexWriter implements
 						LOGGER.warn("Deleting current alternate index table [" + altIdxTableName + "] as main table does not yet exist.");
 					}
 				}
-			} catch (IOException e) {
-				LOGGER.warn("Unable to check if Table "+indexName+" exists");
+			}
+			catch (IOException e) {
+				LOGGER.warn("Unable to check if Table " + indexName + " exists");
 			}
 		}
 	}
@@ -101,7 +105,7 @@ public class HBaseIndexWriter implements
 			throws IOException {
 		// thread safe close
 		closeInternal();
-		
+
 		// write the statistics
 		if (persistStats) {
 			final List<DataStatistics> accumulatedStats = new ArrayList<DataStatistics>();

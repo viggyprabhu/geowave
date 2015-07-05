@@ -21,9 +21,11 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
-abstract public class AbstractHBaseRowQuery<T> extends HBaseQuery{
+abstract public class AbstractHBaseRowQuery<T> extends
+		HBaseQuery
+{
 
 	private static final Logger LOGGER = Logger.getLogger(AbstractHBaseRowQuery.class);
 	protected final ByteArrayId row;
@@ -39,23 +41,25 @@ abstract public class AbstractHBaseRowQuery<T> extends HBaseQuery{
 		this.row = row;
 		this.scanCallback = scanCallback;
 	}
-	
+
 	public T query(
 			final BasicHBaseOperations operations,
 			final AdapterStore adapterStore ) {
-		final Scan scanner = new Scan(); 
-		scanner.setMaxResultSize(getScannerLimit());	
+		final Scan scanner = new Scan();
+		scanner.setMaxResultSize(getScannerLimit());
 		ResultScanner results = null;
 		try {
-			results = operations.getScannedResults(scanner, StringUtils.stringFromBinary(index.getId().getBytes()));
-		} catch (IOException e) {
-			LOGGER.error("Unable to get the scanned results "+e);
+			results = operations.getScannedResults(
+					scanner,
+					StringUtils.stringFromBinary(index.getId().getBytes()));
 		}
-				/*
-				getScanner(
-				accumuloOperations,
-				getScannerLimit());
-		addScanIteratorSettings(scanner);*/
+		catch (IOException e) {
+			LOGGER.error("Unable to get the scanned results " + e);
+		}
+		/*
+		 * getScanner( accumuloOperations, getScannerLimit());
+		 * addScanIteratorSettings(scanner);
+		 */
 		final CloseableIteratorWrapper<Object> it = new CloseableIteratorWrapper<Object>(
 				new ScannerClosableWrapper(
 						results),
@@ -66,8 +70,9 @@ abstract public class AbstractHBaseRowQuery<T> extends HBaseQuery{
 						null));
 		return queryResultFromIterator(it);
 	}
+
 	abstract protected Integer getScannerLimit();
-	
+
 	abstract protected T queryResultFromIterator(
 			final CloseableIteratorWrapper<?> it );
 }

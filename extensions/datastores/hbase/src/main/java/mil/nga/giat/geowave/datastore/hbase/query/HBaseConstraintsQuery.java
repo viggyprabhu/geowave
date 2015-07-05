@@ -140,11 +140,11 @@ public class HBaseConstraintsQuery extends
 				index.getIndexStrategy(),
 				MAX_RANGE_DECOMPOSITION);
 	}
-	
+
 	@Override
 	protected List<QueryFilter> getAllFiltersList() {
 		List<QueryFilter> filters = super.getAllFiltersList();
 		filters.addAll(distributableFilters);
-		return filters; 
+		return filters;
 	}
 }

@@ -1,0 +1,33 @@
+/**
+ * 
+ */
+package mil.nga.giat.geowave.datastore.hbase.mapreduce.dedupe;
+
+import java.io.IOException;
+
+import mil.nga.giat.geowave.datastore.hbase.mapreduce.input.GeoWaveHBaseInputKey;
+import mil.nga.giat.geowave.test.mapreduce.GeoWaveHBaseWritableOutputMapper;
+
+import org.apache.hadoop.mapreduce.MapContext;
+
+/**
+ * @author viggy
+ * 
+ */
+public class GeoWaveHBaseDedupeMapper extends
+		GeoWaveHBaseWritableOutputMapper<GeoWaveHBaseInputKey, Object>
+{
+
+	@Override
+	protected void mapNativeValue(
+			GeoWaveHBaseInputKey key,
+			Object value,
+			MapContext<GeoWaveHBaseInputKey, Object, GeoWaveHBaseInputKey, Object> context )
+			throws IOException,
+			InterruptedException {
+		context.write(
+				key,
+				value);
+	}
+
+}

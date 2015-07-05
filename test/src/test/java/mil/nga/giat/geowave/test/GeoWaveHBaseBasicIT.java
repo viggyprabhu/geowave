@@ -323,7 +323,7 @@ public class GeoWaveHBaseBasicIT extends
 				final Collection<DataStatistics<SimpleFeature>> expectedStats = cachedValue.statsCache.values();
 				try (CloseableIterator<DataStatistics<?>> statsIterator = statsStore.getDataStatistics(adapter.getAdapterId())) {
 					int statsCount = 0;
-					while (statsIterator!=null && statsIterator.hasNext()) {
+					while (statsIterator != null && statsIterator.hasNext()) {
 						statsIterator.next();
 						statsCount++;
 					}

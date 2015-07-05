@@ -1,0 +1,120 @@
+/**
+ * 
+ */
+package mil.nga.giat.geowave.datastore.hbase.mapreduce;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.datastore.hbase.HBaseIndexStore;
+import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.log4j.Logger;
+
+/**
+ * @author viggy
+ * 
+ */
+public class JobContextHBaseIndexStore implements
+		IndexStore
+{
+
+	private static final Class<?> CLASS = JobContextHBaseIndexStore.class;
+	private final JobContext context;
+	private final BasicHBaseOperations operations;
+	private final Map<ByteArrayId, Index> indexCache = new HashMap<ByteArrayId, Index>();
+	protected static final Logger LOGGER = Logger.getLogger(CLASS);
+
+	public JobContextHBaseIndexStore(
+			final JobContext context,
+			final BasicHBaseOperations operations ) {
+		this.context = context;
+		this.operations = operations;
+
+	}
+
+	@Override
+	public void addIndex(
+			final Index index ) {
+		indexCache.put(
+				index.getId(),
+				index);
+	}
+
+	@Override
+	public Index getIndex(
+			final ByteArrayId indexId ) {
+		Index index = indexCache.get(indexId);
+		if (index == null) {
+			index = getIndexInternal(indexId);
+		}
+		return index;
+	}
+
+	@Override
+	public boolean indexExists(
+			ByteArrayId indexId ) {
+		// TODO #406 Need to fix
+		LOGGER.warn("Need to code this method getIndex1");
+		return false;
+	}
+
+	@Override
+	public CloseableIterator<Index> getIndices() {
+		// TODO #406 Need to fix
+		LOGGER.warn("Need to code this method getIndices");
+		return null;
+	}
+
+	public static Index[] getIndices(
+			JobContext context ) {
+		return GeoWaveHBaseConfiguratorBase.getIndices(
+				CLASS,
+				context);
+	}
+
+	private Index getIndexInternal(
+			final ByteArrayId indexId ) {
+		// first try to get it from the job context
+		Index index = getIndex(
+				context,
+				indexId);
+		if (index == null) {
+			// then try to get it from the accumulo persistent store
+			final HBaseIndexStore indexStore = new HBaseIndexStore(
+					operations);
+			index = indexStore.getIndex(indexId);
+		}
+
+		if (index != null) {
+			indexCache.put(
+					indexId,
+					index);
+		}
+		return index;
+	}
+
+	protected static Index getIndex(
+			final JobContext context,
+			final ByteArrayId indexId ) {
+		return GeoWaveHBaseConfiguratorBase.getIndex(
+				CLASS,
+				context,
+				indexId);
+	}
+
+	public static void addIndex(
+			final Configuration config,
+			final Index index ) {
+		GeoWaveHBaseConfiguratorBase.addIndex(
+				CLASS,
+				config,
+				index);
+	}
+}

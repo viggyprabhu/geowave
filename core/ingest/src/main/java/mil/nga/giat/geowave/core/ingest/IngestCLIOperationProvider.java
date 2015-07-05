@@ -5,6 +5,7 @@ import mil.nga.giat.geowave.core.cli.CLIOperationCategory;
 import mil.nga.giat.geowave.core.cli.CLIOperationProviderSpi;
 import mil.nga.giat.geowave.core.ingest.hdfs.StageToHdfsDriver;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestFromHdfsDriver;
+import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.hbase.IngestFromHBaseHdfsDriver;
 import mil.nga.giat.geowave.core.ingest.kafka.StageToKafkaDriver;
 import mil.nga.giat.geowave.core.ingest.local.LocalFileIngestDriver;
 import mil.nga.giat.geowave.core.ingest.local.LocalFileIngestHBaseDriver;
@@ -52,6 +53,17 @@ public class IngestCLIOperationProvider implements
 							new StageToHdfsDriver(
 									"hdfsingest"),
 							new IngestFromHdfsDriver(
+									"hdfsingest")
+						})),
+		new CLIOperation(
+				"hdfshbaseingest",
+				"copy supported files from local file system to HDFS and ingest from HDFS",
+				new MultiStageHBaseCommandLineDriver(
+						"hdfshbaseingest",
+						new AbstractIngestCommandLineDriver[] {
+							new StageToHdfsDriver(
+									"hdfsingest"),
+							new IngestFromHBaseHdfsDriver(
 									"hdfsingest")
 						})),
 		new CLIOperation(

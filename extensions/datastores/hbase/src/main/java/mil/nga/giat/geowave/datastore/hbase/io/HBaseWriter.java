@@ -32,34 +32,41 @@ public class HBaseWriter
 		this.table = table;
 	}
 
-	private void write(RowMutations rowMutation) throws IOException {
-			table.mutateRow(rowMutation);	
+	private void write(
+			RowMutations rowMutation )
+			throws IOException {
+		table.mutateRow(rowMutation);
 	}
 
 	public void close() {}
 
 	public void write(
 			Iterable<RowMutations> iterable,
-			String columnFamily ) throws IOException {
-		addColumnFamilyToTable(table.getName(), columnFamily);
+			String columnFamily )
+			throws IOException {
+		addColumnFamilyToTable(
+				table.getName(),
+				columnFamily);
 		for (RowMutations rowMutation : iterable) {
 			write(rowMutation);
 		}
 	}
 
-	/*private boolean columnFamilyExists(
-			String columnFamily )
-			throws IOException {
-		for (HColumnDescriptor cDesc : table.getTableDescriptor().getColumnFamilies()) {
-			if (cDesc.getNameAsString().matches(
-					columnFamily)) return true;
-		}
-		return false;
-	}*/
+	/*
+	 * private boolean columnFamilyExists( String columnFamily ) throws
+	 * IOException { for (HColumnDescriptor cDesc :
+	 * table.getTableDescriptor().getColumnFamilies()) { if
+	 * (cDesc.getNameAsString().matches( columnFamily)) return true; } return
+	 * false; }
+	 */
 
-	public void write(RowMutations mutation, String columnFamily) {
+	public void write(
+			RowMutations mutation,
+			String columnFamily ) {
 		try {
-			addColumnFamilyToTable(table.getName(), columnFamily);
+			addColumnFamilyToTable(
+					table.getName(),
+					columnFamily);
 			write(mutation);
 		}
 		catch (IOException e) {
@@ -68,44 +75,52 @@ public class HBaseWriter
 					e);
 		}
 	}
-	
-	private void addColumnFamilyToTable(TableName name, String columnFamilyName) throws IOException
-    {
-        HColumnDescriptor cfDesciptor = new HColumnDescriptor(columnFamilyName);
-        if (admin.tableExists(name)) {
-        	// Before any modification to table schema, it's necessary to
-        	// disable it
-        	if (!admin.isTableEnabled(name)){
-        		admin.enableTable(name);
-        	}
-        	HTableDescriptor descriptor = admin.getTableDescriptor(name);
-        	boolean found = false;
-        	for (HColumnDescriptor hColumnDescriptor : descriptor.getColumnFamilies()){
-        		if (hColumnDescriptor.getNameAsString().equalsIgnoreCase(columnFamilyName))
-        			found = true;
-        	}
-        	if (!found){
-        		if (admin.isTableEnabled(name)){
-        			admin.disableTable(name);
-        		}
-        		admin.addColumn(name, cfDesciptor);
-        		// Enable table once done
-        		admin.enableTable(name);
-        	}
-        }
-        else{
-        	LOGGER.warn("Table " + name.getNameAsString() + " doesn't exist, so no question of adding column family "
-        			+ columnFamilyName + " to it!");
-        }
-    }
 
-	public void delete(Iterable<RowMutations> iterable) throws IOException {
+	private void addColumnFamilyToTable(
+			TableName name,
+			String columnFamilyName )
+			throws IOException {
+		HColumnDescriptor cfDesciptor = new HColumnDescriptor(
+				columnFamilyName);
+		if (admin.tableExists(name)) {
+			// Before any modification to table schema, it's necessary to
+			// disable it
+			if (!admin.isTableEnabled(name)) {
+				admin.enableTable(name);
+			}
+			HTableDescriptor descriptor = admin.getTableDescriptor(name);
+			boolean found = false;
+			for (HColumnDescriptor hColumnDescriptor : descriptor.getColumnFamilies()) {
+				if (hColumnDescriptor.getNameAsString().equalsIgnoreCase(
+						columnFamilyName)) found = true;
+			}
+			if (!found) {
+				if (admin.isTableEnabled(name)) {
+					admin.disableTable(name);
+				}
+				admin.addColumn(
+						name,
+						cfDesciptor);
+				// Enable table once done
+				admin.enableTable(name);
+			}
+		}
+		else {
+			LOGGER.warn("Table " + name.getNameAsString() + " doesn't exist, so no question of adding column family " + columnFamilyName + " to it!");
+		}
+	}
+
+	public void delete(
+			Iterable<RowMutations> iterable )
+			throws IOException {
 		for (RowMutations rowMutation : iterable) {
 			write(rowMutation);
 		}
 	}
-	
-	public void delete(Delete delete) throws IOException {
+
+	public void delete(
+			Delete delete )
+			throws IOException {
 		table.delete(delete);
 	}
 

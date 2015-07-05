@@ -16,13 +16,14 @@ import org.apache.log4j.Logger;
  * @author viggy
  * 
  */
-public class HBaseIndexStore extends AbstractHBasePersistence<Index> implements
+public class HBaseIndexStore extends
+		AbstractHBasePersistence<Index> implements
 		IndexStore
 {
 
 	private final static Logger LOGGER = Logger.getLogger(HBaseIndexStore.class);
 	private static final String INDEX_CF = "INDEX";
-	
+
 	public HBaseIndexStore(
 			BasicHBaseOperations operations ) {
 		super(
@@ -30,20 +31,23 @@ public class HBaseIndexStore extends AbstractHBasePersistence<Index> implements
 	}
 
 	@Override
-	public void addIndex(Index index) {
+	public void addIndex(
+			Index index ) {
 		addObject(index);
-		
+
 	}
 
 	@Override
-	public Index getIndex(ByteArrayId indexId) {
+	public Index getIndex(
+			ByteArrayId indexId ) {
 		return getObject(
 				indexId,
 				null);
 	}
 
 	@Override
-	public boolean indexExists(ByteArrayId id) {
+	public boolean indexExists(
+			ByteArrayId id ) {
 		return objectExists(
 				id,
 				null);
@@ -55,7 +59,8 @@ public class HBaseIndexStore extends AbstractHBasePersistence<Index> implements
 	}
 
 	@Override
-	protected ByteArrayId getPrimaryId(Index persistedObject) {
+	protected ByteArrayId getPrimaryId(
+			Index persistedObject ) {
 		return persistedObject.getId();
 	}
 
@@ -64,5 +69,4 @@ public class HBaseIndexStore extends AbstractHBasePersistence<Index> implements
 		return INDEX_CF;
 	}
 
-	
 }

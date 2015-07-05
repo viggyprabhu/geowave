@@ -17,16 +17,17 @@ import org.apache.log4j.Logger;
  * 
  */
 public class HBaseDataStatisticsStore extends
-AbstractHBasePersistence<DataStatistics<?>> implements
+		AbstractHBasePersistence<DataStatistics<?>> implements
 		DataStatisticsStore
 {
 
 	private static final String STATISTICS_CF = "STATS";
 	private final static Logger LOGGER = Logger.getLogger(HBaseDataStatisticsStore.class);
-	
+
 	public HBaseDataStatisticsStore(
 			BasicHBaseOperations operations ) {
-		super(operations);
+		super(
+				operations);
 	}
 
 	@Override
@@ -84,7 +85,8 @@ AbstractHBasePersistence<DataStatistics<?>> implements
 	}
 
 	@Override
-	protected ByteArrayId getPrimaryId(DataStatistics<?> persistedObject) {
+	protected ByteArrayId getPrimaryId(
+			DataStatistics<?> persistedObject ) {
 		return persistedObject.getStatisticsId();
 	}
 
@@ -92,7 +94,7 @@ AbstractHBasePersistence<DataStatistics<?>> implements
 	protected String getPersistenceTypeName() {
 		return STATISTICS_CF;
 	}
-	
+
 	@Override
 	protected ByteArrayId getSecondaryId(
 			final DataStatistics<?> persistedObject ) {

@@ -5,9 +5,10 @@ package mil.nga.giat.geowave.datastore.hbase;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class HBaseOptions {
+public class HBaseOptions
+{
 
 	protected boolean persistAdapter = true;
 	protected boolean persistIndex = true;

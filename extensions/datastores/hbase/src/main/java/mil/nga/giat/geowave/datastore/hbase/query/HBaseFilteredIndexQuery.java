@@ -118,8 +118,8 @@ public abstract class HBaseFilteredIndexQuery extends
 			results = operations.getScannedResults(
 					scanner,
 					tableName);
-			
-			if(results.iterator().hasNext()){
+
+			if (results.iterator().hasNext()) {
 				Iterator it = initIterator(
 						adapterStore,
 						results.iterator());
@@ -131,9 +131,9 @@ public abstract class HBaseFilteredIndexQuery extends
 				return new CloseableIteratorWrapper(
 						new ScannerClosableWrapper(
 								results),
-								it);
+						it);
 			}
-			else{
+			else {
 				LOGGER.error("Results were empty");
 				return null;
 			}
@@ -208,8 +208,10 @@ public abstract class HBaseFilteredIndexQuery extends
 	protected Iterator initIterator(
 			final AdapterStore adapterStore,
 			final Iterator<Result> iterator ) {
-		//TODO Fix #406 Since currently we are not supporting server side iterator/coprocessors, we also cannot run
-		// server side filters and hence they have to run on clients itself. So need to add server side filters also in list of client filters.
+		// TODO Fix #406 Since currently we are not supporting server side
+		// iterator/coprocessors, we also cannot run
+		// server side filters and hence they have to run on clients itself. So
+		// need to add server side filters also in list of client filters.
 		List<QueryFilter> filters = getAllFiltersList();
 		return new EntryIteratorWrapper(
 				adapterStore,
@@ -221,7 +223,8 @@ public abstract class HBaseFilteredIndexQuery extends
 	}
 
 	protected List<QueryFilter> getAllFiltersList() {
-		//This method is so that it can be overridden to also add distributed filter list
+		// This method is so that it can be overridden to also add distributed
+		// filter list
 		List<QueryFilter> filters = new ArrayList<QueryFilter>();
 		filters.addAll(clientFilters);
 		return filters;

@@ -94,7 +94,7 @@ public class GeoWaveHBaseTestEnvironment extends
 	public static void cleanup() {
 		synchronized (MUTEX) {
 			if (!DEFER_CLEANUP.get()) {
-				
+
 				if (operations == null) {
 					Assert.fail("Invalid state <null> for hbase operations during CLEANUP phase");
 				}
@@ -110,7 +110,7 @@ public class GeoWaveHBaseTestEnvironment extends
 
 				operations = null;
 				zookeeper = null;
-				
+
 				if (TEMP_DIR != null) {
 					try {
 						// sleep because mini accumulo processes still have a
@@ -131,7 +131,6 @@ public class GeoWaveHBaseTestEnvironment extends
 		}
 	}
 
-	
 	public BasicHBaseOperations getOperations() {
 		return operations;
 	}
@@ -147,9 +146,9 @@ public class GeoWaveHBaseTestEnvironment extends
 				"-localhbaseingest -f geotools-vector -b " + ingestFilePath + " -z " + zookeeper + " -n " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
 				' ');
 		GeoWaveMain.main(args);
-		//TODO #406 Currently verifyStats is not implemented in HBase as some of the common classes are in geowave-datastore-accumulo package.
-		//verifyStats();
+		// TODO #406 Currently verifyStats is not implemented in HBase as some
+		// of the common classes are in geowave-datastore-accumulo package.
+		// verifyStats();
 	}
-	
-		
+
 }

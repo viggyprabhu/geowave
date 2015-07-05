@@ -137,7 +137,8 @@ public class BasicHBaseOperations
 				tableNames,
 				tableNamesArr);
 		for (final TableName tableName : tableNames) {
-			if(conn.getAdmin().isTableAvailable(tableName)){
+			if (conn.getAdmin().isTableAvailable(
+					tableName)) {
 				conn.getAdmin().disableTable(
 						tableName);
 				conn.getAdmin().deleteTable(
@@ -147,11 +148,12 @@ public class BasicHBaseOperations
 	}
 
 	public boolean tableExists(
-			final String tableName ) throws IOException {
+			final String tableName )
+			throws IOException {
 		final String qName = getQualifiedTableName(tableName);
 		return conn.getAdmin().isTableAvailable(
-					getTableName(qName));
-		
+				getTableName(qName));
+
 	}
 
 	public ResultScanner getScannedResults(
@@ -163,19 +165,21 @@ public class BasicHBaseOperations
 				scanner);
 	}
 
-	public boolean deleteTable(String tableName) {
+	public boolean deleteTable(
+			String tableName ) {
 		final String qName = getQualifiedTableName(tableName);
 		try {
-			conn.getAdmin().deleteTable(getTableName(qName));
+			conn.getAdmin().deleteTable(
+					getTableName(qName));
 			return true;
 		}
-		catch(IOException ex){
+		catch (IOException ex) {
 			LOGGER.warn(
 					"Unable to delete table '" + qName + "'",
 					ex);
 		}
 		return false;
-		
+
 	}
 
 }

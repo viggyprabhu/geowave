@@ -108,7 +108,7 @@ public class HBaseUtils
 		for (final ByteArrayId rowId : ingestInfo.getRowIds()) {
 			final RowMutations mutation = new RowMutations(
 					rowId.getBytes());
-			
+
 			try {
 				Put row = new Put(
 						rowId.getBytes());
@@ -274,8 +274,9 @@ public class HBaseUtils
 			writer.write(
 					mutations,
 					writableAdapter.getAdapterId().getString());
-		} catch (IOException e) {
-			LOGGER.warn("Writing to table failed."+ e);
+		}
+		catch (IOException e) {
+			LOGGER.warn("Writing to table failed." + e);
 		}
 		return ingestInfo;
 	}
@@ -336,7 +337,8 @@ public class HBaseUtils
 			final Index index,
 			final ScanCallback<T> scanCallback ) {
 
-		final HBaseRowId rowId = new HBaseRowId(row.getRow());
+		final HBaseRowId rowId = new HBaseRowId(
+				row.getRow());
 		return (T) decodeRowObj(
 				row,
 				rowId,
@@ -406,7 +408,7 @@ public class HBaseUtils
 			adapterMatchVerified = true;
 			adapterId = null;
 		}
-		
+
 		final List<FieldInfo> fieldInfoList = new ArrayList<FieldInfo>(
 				rowMapping.size());
 
@@ -415,7 +417,7 @@ public class HBaseUtils
 			if (adapterId == null) {
 				adapterId = new ByteArrayId(
 						entry.getFamily());
-						//entry.getKey().getColumnFamilyData().getBackingArray());
+				// entry.getKey().getColumnFamilyData().getBackingArray());
 			}
 
 			if (adapter == null) {
@@ -433,16 +435,16 @@ public class HBaseUtils
 			}
 			final ByteArrayId fieldId = new ByteArrayId(
 					entry.getQualifier());
-					//entry.getKey().getColumnQualifierData().getBackingArray());
+			// entry.getKey().getColumnQualifierData().getBackingArray());
 			final CommonIndexModel indexModel;
 			indexModel = index.getIndexModel();
-			
+
 			// first check if this field is part of the index model
 			final FieldReader<? extends CommonIndexValue> indexFieldReader = indexModel.getReader(fieldId);
 			final byte byteValue[] = entry.getValue();
 			if (indexFieldReader != null) {
 				final CommonIndexValue indexValue = indexFieldReader.readField(byteValue);
-				//indexValue.setVisibility(entry.getKey().getColumnVisibilityData().getBackingArray());
+				// indexValue.setVisibility(entry.getKey().getColumnVisibilityData().getBackingArray());
 				final PersistentValue<CommonIndexValue> val = new PersistentValue<CommonIndexValue>(
 						fieldId,
 						indexValue);
@@ -471,10 +473,10 @@ public class HBaseUtils
 						val,
 						byteValue,
 						null));
-						//entry.getKey().getColumnVisibility().getBytes()));
+				// entry.getKey().getColumnVisibility().getBytes()));
 			}
 		}
-		
+
 		final IndexedAdapterPersistenceEncoding encodedRow = new IndexedAdapterPersistenceEncoding(
 				adapterId,
 				new ByteArrayId(
@@ -484,7 +486,7 @@ public class HBaseUtils
 				rowId.getNumberOfDuplicates(),
 				indexData,
 				extendedData);
-		
+
 		if ((clientFilter == null) || clientFilter.accept(encodedRow)) {
 			// cannot get here unless adapter is found (not null)
 			if (adapter == null) {
@@ -515,24 +517,20 @@ public class HBaseUtils
 			Result row )
 			throws IOException {
 		List<KeyValue> map = new ArrayList<KeyValue>();
-		/*ByteArrayInputStream in = new ByteArrayInputStream(v.getValueArray());
-		DataInputStream din = new DataInputStream(
-				in);
-		int numKeys = din.readInt();
-		for (int i = 0; i < numKeys; i++) {
-			byte[] cf = readField(din); // read the col fam
-			byte[] cq = readField(din); // read the col qual
-			byte[] cv = readField(din); // read the col visibility
-			long timestamp = din.readLong(); // read the timestamp
-			byte[] valBytes = readField(din); // read the value
+		/*
+		 * ByteArrayInputStream in = new
+		 * ByteArrayInputStream(v.getValueArray()); DataInputStream din = new
+		 * DataInputStream( in); int numKeys = din.readInt(); for (int i = 0; i
+		 * < numKeys; i++) { byte[] cf = readField(din); // read the col fam
+		 * byte[] cq = readField(din); // read the col qual byte[] cv =
+		 * readField(din); // read the col visibility long timestamp =
+		 * din.readLong(); // read the timestamp byte[] valBytes =
+		 * readField(din); // read the value map.add(new KeyValue(
+		 * CellUtil.cloneRow(v), cf, cq, timestamp, valBytes));
+		 */
+		for (Cell c : row.listCells()) {
 			map.add(new KeyValue(
-					CellUtil.cloneRow(v),
-					cf,
-					cq,
-					timestamp,
-					valBytes));*/
-		for(Cell c: row.listCells()){
-			map.add(new KeyValue(c));
+					c));
 		}
 		return map;
 	}
@@ -552,7 +550,7 @@ public class HBaseUtils
 		}
 		return b;
 	}
-	
+
 	public static <T> void writeAltIndex(
 			final WritableDataAdapter<T> writableAdapter,
 			final DataStoreEntryInfo entryInfo,
@@ -568,7 +566,7 @@ public class HBaseUtils
 			for (final ByteArrayId rowId : entryInfo.getRowIds()) {
 				final RowMutations mutation = new RowMutations(
 						rowId.getBytes());
-				
+
 				try {
 					Put row = new Put(
 							rowId.getBytes());
@@ -584,19 +582,30 @@ public class HBaseUtils
 				mutations.add(mutation);
 			}
 			try {
-				writer.write(mutations,writableAdapter.getAdapterId().getString());
-			} catch (IOException e) {
-				LOGGER.warn("Writing to table failed."+ e);
+				writer.write(
+						mutations,
+						writableAdapter.getAdapterId().getString());
 			}
-			
+			catch (IOException e) {
+				LOGGER.warn("Writing to table failed." + e);
+			}
+
 		}
 	}
 
-	public static RowMutations getDeleteMutations(byte[] rowId, byte[] columnFamily,
-			byte[] columnQualifier, String[] authorizations) throws IOException {
-		RowMutations m = new RowMutations(rowId);
-		Delete d = new Delete(rowId);
-		d.addColumn(columnFamily, columnQualifier);
+	public static RowMutations getDeleteMutations(
+			byte[] rowId,
+			byte[] columnFamily,
+			byte[] columnQualifier,
+			String[] authorizations )
+			throws IOException {
+		RowMutations m = new RowMutations(
+				rowId);
+		Delete d = new Delete(
+				rowId);
+		d.addColumn(
+				columnFamily,
+				columnQualifier);
 		m.add(d);
 		return m;
 	}
