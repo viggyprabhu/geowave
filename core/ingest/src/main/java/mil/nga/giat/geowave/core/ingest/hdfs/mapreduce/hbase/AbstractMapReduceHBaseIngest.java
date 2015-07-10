@@ -6,10 +6,8 @@ import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.ingest.DataAdapterProvider;
 import mil.nga.giat.geowave.core.ingest.IngestCommandLineOptions;
-import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestFromHdfsPlugin;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.output.GeoWaveOutputFormat;
 import mil.nga.giat.geowave.datastore.hbase.HBaseCommandLineOptions;
 import mil.nga.giat.geowave.datastore.hbase.mapreduce.output.GeoWaveHBaseOutputFormat;
 
@@ -43,7 +41,7 @@ abstract public class AbstractMapReduceHBaseIngest<T extends Persistable & DataA
 	protected final IngestCommandLineOptions ingestOptions;
 	protected final Path inputFile;
 	protected final String typeName;
-	protected final IngestFromHdfsPlugin parentPlugin;
+	protected final IngestFromHBaseHdfsPlugin parentPlugin;
 	protected final T ingestPlugin;
 
 	public AbstractMapReduceHBaseIngest(
@@ -51,7 +49,7 @@ abstract public class AbstractMapReduceHBaseIngest<T extends Persistable & DataA
 			final IngestCommandLineOptions ingestOptions,
 			final Path inputFile,
 			final String typeName,
-			final IngestFromHdfsPlugin parentPlugin,
+			final IngestFromHBaseHdfsPlugin parentPlugin,
 			final T ingestPlugin ) {
 		this.hbaseOptions = accumuloOptions;
 		this.ingestOptions = ingestOptions;
@@ -117,7 +115,7 @@ abstract public class AbstractMapReduceHBaseIngest<T extends Persistable & DataA
 
 		final WritableDataAdapter<?>[] dataAdapters = ingestPlugin.getDataAdapters(ingestOptions.getVisibility());
 		for (final WritableDataAdapter<?> dataAdapter : dataAdapters) {
-			GeoWaveOutputFormat.addDataAdapter(
+			GeoWaveHBaseOutputFormat.addDataAdapter(
 					job.getConfiguration(),
 					dataAdapter);
 		}
@@ -125,7 +123,7 @@ abstract public class AbstractMapReduceHBaseIngest<T extends Persistable & DataA
 		job.setSpeculativeExecution(false);
 
 		// add primary index
-		GeoWaveOutputFormat.addIndex(
+		GeoWaveHBaseOutputFormat.addIndex(
 				job.getConfiguration(),
 				primaryIndex);
 
@@ -133,7 +131,7 @@ abstract public class AbstractMapReduceHBaseIngest<T extends Persistable & DataA
 		final Index[] requiredIndices = parentPlugin.getRequiredIndices();
 		if (requiredIndices != null) {
 			for (final Index requiredIndex : requiredIndices) {
-				GeoWaveOutputFormat.addIndex(
+				GeoWaveHBaseOutputFormat.addIndex(
 						job.getConfiguration(),
 						requiredIndex);
 			}

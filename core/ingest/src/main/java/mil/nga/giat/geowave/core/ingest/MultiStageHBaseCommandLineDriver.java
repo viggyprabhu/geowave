@@ -12,13 +12,13 @@ import org.apache.commons.cli.ParseException;
  * first stage intermediate data to HDFS and then to ingest it.
  */
 public class MultiStageHBaseCommandLineDriver extends
-		AbstractIngestCommandLineDriver
+		AbstractIngestHBaseCommandLineDriver
 {
-	private final AbstractIngestCommandLineDriver[] orderedStages;
+	private final AbstractIngestHBaseCommandLineDriver[] orderedStages;
 
 	public MultiStageHBaseCommandLineDriver(
 			final String operation,
-			final AbstractIngestCommandLineDriver[] orderedStages ) {
+			final AbstractIngestHBaseCommandLineDriver[] orderedStages ) {
 		super(
 				operation);
 		this.orderedStages = orderedStages;
@@ -27,8 +27,8 @@ public class MultiStageHBaseCommandLineDriver extends
 	@Override
 	protected void runInternal(
 			final String[] args,
-			final List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders ) {
-		for (final AbstractIngestCommandLineDriver stage : orderedStages) {
+			final List<IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviders ) {
+		for (final AbstractIngestHBaseCommandLineDriver stage : orderedStages) {
 			stage.runInternal(
 					args,
 					pluginProviders);
@@ -39,7 +39,7 @@ public class MultiStageHBaseCommandLineDriver extends
 	public void parseOptionsInternal(
 			final CommandLine commandLine )
 			throws ParseException {
-		for (final AbstractIngestCommandLineDriver stage : orderedStages) {
+		for (final AbstractIngestHBaseCommandLineDriver stage : orderedStages) {
 			stage.parseOptionsInternal(commandLine);
 		}
 	}
@@ -47,7 +47,7 @@ public class MultiStageHBaseCommandLineDriver extends
 	@Override
 	public void applyOptionsInternal(
 			final Options allOptions ) {
-		for (final AbstractIngestCommandLineDriver stage : orderedStages) {
+		for (final AbstractIngestHBaseCommandLineDriver stage : orderedStages) {
 			stage.applyOptionsInternal(allOptions);
 		}
 	}

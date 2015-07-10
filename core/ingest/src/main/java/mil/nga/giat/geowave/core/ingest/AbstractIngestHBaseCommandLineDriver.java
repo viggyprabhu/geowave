@@ -1,0 +1,236 @@
+/**
+ * 
+ */
+package mil.nga.giat.geowave.core.ingest;
+
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.ServiceLoader;
+
+import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
+import mil.nga.giat.geowave.core.index.StringUtils;
+
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.log4j.Logger;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+/**
+ * @author viggy
+ *
+ */
+abstract public class AbstractIngestHBaseCommandLineDriver implements
+CLIOperationDriver
+{
+	private final static Logger LOGGER = Logger.getLogger(AbstractIngestHBaseCommandLineDriver.class);
+	final protected Map<String, IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviderRegistry;
+	private final String operation;
+
+	public AbstractIngestHBaseCommandLineDriver(
+			final String operation ) {
+		super();
+		pluginProviderRegistry = new HashMap<String, IngestFormatPluginHBaseProviderSpi<?, ?>>();
+		this.operation = operation;
+		initPluginProviderRegistry();
+	}
+
+	private void initPluginProviderRegistry() {
+		final Iterator<IngestFormatPluginHBaseProviderSpi> pluginProviders = ServiceLoader.load(
+				IngestFormatPluginHBaseProviderSpi.class).iterator();
+		while (pluginProviders.hasNext()) {
+			final IngestFormatPluginHBaseProviderSpi pluginProvider = pluginProviders.next();
+			pluginProviderRegistry.put(
+					cleanIngestFormatName(pluginProvider.getIngestFormatName()),
+					pluginProvider);
+		}
+	}
+
+	private static String cleanIngestFormatName(
+			String ingestFormatName ) {
+		ingestFormatName = ingestFormatName.trim().toLowerCase().replaceAll(
+				" ",
+				"_");
+		ingestFormatName = ingestFormatName.replaceAll(
+				",",
+				"");
+		return ingestFormatName;
+	}
+
+	@Override
+	public void run(
+			final String[] args )
+					throws ParseException {
+		final List<IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviders = applyArguments(args);
+		runInternal(
+				args,
+				pluginProviders);
+	}
+
+	@SuppressFBWarnings(value = "DM_EXIT", justification = "Exiting JVM with System.exit(0) is intentional")
+	protected List<IngestFormatPluginHBaseProviderSpi<?, ?>> applyArguments(
+			final String[] args ) {
+		List<IngestFormatPluginHBaseProviderSpi<?, ?>> selectedPluginProviders = new ArrayList<IngestFormatPluginHBaseProviderSpi<?, ?>>();
+		final Options options = new Options();
+		final OptionGroup baseOptionGroup = new OptionGroup();
+		baseOptionGroup.setRequired(false);
+		baseOptionGroup.addOption(new Option(
+				"h",
+				"help",
+				false,
+				"Display help"));
+		baseOptionGroup.addOption(new Option(
+				"l",
+				"list",
+				false,
+				"List the available ingest formats"));
+		baseOptionGroup.addOption(new Option(
+				"f",
+				"formats",
+				true,
+				"Explicitly set the ingest formats by name (or multiple comma-delimited formats), if not set all available ingest formats will be used"));
+		options.addOptionGroup(baseOptionGroup);
+		applyOptionsInternal(options);
+		final int optionCount = options.getOptions().size();
+		final BasicParser parser = new BasicParser();
+		try {
+			CommandLine commandLine = parser.parse(
+					options,
+					args);
+			if (commandLine.hasOption("h")) {
+				printHelp(
+						options,
+						operation);
+				System.exit(0);
+			}
+			else if (commandLine.hasOption("l")) {
+				final HelpFormatter formatter = new HelpFormatter();
+				final PrintWriter pw = new PrintWriter(
+						new OutputStreamWriter(
+								System.out,
+								StringUtils.UTF8_CHAR_SET));
+				pw.println("Available ingest formats currently registered as plugins:\n");
+				for (final Entry<String, IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviderEntry : pluginProviderRegistry.entrySet()) {
+					final IngestFormatPluginHBaseProviderSpi<?, ?> pluginProvider = pluginProviderEntry.getValue();
+					final String desc = pluginProvider.getIngestFormatDescription() == null ? "no description" : pluginProvider.getIngestFormatDescription();
+					final String text = pluginProviderEntry.getKey() + ":\n" + desc;
+
+					formatter.printWrapped(
+							pw,
+							formatter.getWidth(),
+							5,
+							text);
+					pw.println();
+				}
+				pw.flush();
+				System.exit(0);
+			}
+			else if (commandLine.hasOption("f")) {
+				try {
+					selectedPluginProviders = getPluginProviders(
+							commandLine,
+							options);
+				}
+				catch (final Exception e) {
+					LOGGER.fatal(
+							"Error parsing plugins",
+							e);
+					System.exit(-3);
+				}
+			}
+			else {
+				selectedPluginProviders.addAll(pluginProviderRegistry.values());
+				if (selectedPluginProviders.isEmpty()) {
+					LOGGER.fatal("There were no ingest format plugin providers found");
+					System.exit(-3);
+				}
+			}
+			if (options.getOptions().size() > optionCount) {
+				// custom options have been added, reparse the commandline
+				// arguments with the new set of options
+				commandLine = parser.parse(
+						options,
+						args);
+				for (final IngestFormatPluginHBaseProviderSpi<?, ?> plugin : selectedPluginProviders) {
+					final IngestFormatOptionProvider optionProvider = plugin.getIngestFormatOptionProvider();
+					if (optionProvider != null) {
+						optionProvider.parseOptions(commandLine);
+					}
+				}
+			}
+			parseOptionsInternal(commandLine);
+		}
+		catch (final ParseException e) {
+			LOGGER.fatal(
+					"",
+					e);
+			printHelp(
+					options,
+					operation);
+			System.exit(-1);
+		}
+		return selectedPluginProviders;
+	}
+
+	private List<IngestFormatPluginHBaseProviderSpi<?, ?>> getPluginProviders(
+			final CommandLine commandLine,
+			final Options options ) {
+		final List<IngestFormatPluginHBaseProviderSpi<?, ?>> selectedPluginProviders = new ArrayList<IngestFormatPluginHBaseProviderSpi<?, ?>>();
+		final String[] pluginProviderNames = commandLine.getOptionValue(
+				"f").split(
+						",");
+		for (final String pluginProviderName : pluginProviderNames) {
+			final IngestFormatPluginHBaseProviderSpi<?, ?> pluginProvider = pluginProviderRegistry.get(pluginProviderName);
+			if (pluginProvider == null) {
+				throw new IllegalArgumentException(
+						"Unable to find SPI plugin provider for ingest format '" + pluginProviderName + "'");
+			}
+			selectedPluginProviders.add(pluginProvider);
+		}
+		if (selectedPluginProviders.isEmpty()) {
+			throw new IllegalArgumentException(
+					"There were no ingest format plugin providers found");
+		}
+		for (final IngestFormatPluginHBaseProviderSpi<?, ?> plugin : selectedPluginProviders) {
+			final IngestFormatOptionProvider optionProvider = plugin.getIngestFormatOptionProvider();
+			if (optionProvider != null) {
+				optionProvider.applyOptions(options);
+			}
+		}
+		return selectedPluginProviders;
+	}
+
+	private static void printHelp(
+			final Options options,
+			final String operation ) {
+		final HelpFormatter formatter = new HelpFormatter();
+		formatter.printHelp(
+				"-" + operation + " <options>",
+				"\nOptions:",
+				options,
+				"");
+	}
+
+	abstract protected void parseOptionsInternal(
+			final CommandLine commandLine )
+					throws ParseException;
+
+	abstract protected void applyOptionsInternal(
+			final Options allOptions );
+
+	abstract protected void runInternal(
+			String[] args,
+			List<IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviders );
+}
+

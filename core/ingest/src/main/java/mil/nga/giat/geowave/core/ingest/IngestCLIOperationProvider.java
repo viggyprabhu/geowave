@@ -4,6 +4,7 @@ import mil.nga.giat.geowave.core.cli.CLIOperation;
 import mil.nga.giat.geowave.core.cli.CLIOperationCategory;
 import mil.nga.giat.geowave.core.cli.CLIOperationProviderSpi;
 import mil.nga.giat.geowave.core.ingest.hdfs.StageToHdfsDriver;
+import mil.nga.giat.geowave.core.ingest.hdfs.StageToHdfsHBaseDriver;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestFromHdfsDriver;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.hbase.IngestFromHBaseHdfsDriver;
 import mil.nga.giat.geowave.core.ingest.kafka.StageToKafkaDriver;
@@ -25,6 +26,11 @@ public class IngestCLIOperationProvider implements
 				new ClearNamespaceDriver(
 						"clear")),
 		new CLIOperation(
+				"clearhbase",
+				"clear ALL data from a GeoWave namespace, this actually deletes HBase tables prefixed by the given namespace",
+				new ClearNamespaceHBaseDriver(
+						"clearhbase")),
+		new CLIOperation(
 				"localingest",
 				"ingest supported files in local file system directly, without using HDFS",
 				new LocalFileIngestDriver(
@@ -40,10 +46,20 @@ public class IngestCLIOperationProvider implements
 				new StageToHdfsDriver(
 						"hdfsstage")),
 		new CLIOperation(
+				"hdfshbasestage",
+				"stage supported files in local file system to HDFS",
+				new StageToHdfsHBaseDriver(
+						"hdfshbasestage")),
+		new CLIOperation(
 				"poststage",
 				"ingest supported files that already exist in HDFS",
 				new IngestFromHdfsDriver(
 						"poststage")),
+		new CLIOperation(
+				"posthbasestage",
+				"ingest supported files that already exist in HDFS",
+				new IngestFromHBaseHdfsDriver(
+						"posthbasestage")),
 		new CLIOperation(
 				"hdfsingest",
 				"copy supported files from local file system to HDFS and ingest from HDFS",
@@ -60,11 +76,11 @@ public class IngestCLIOperationProvider implements
 				"copy supported files from local file system to HDFS and ingest from HDFS",
 				new MultiStageHBaseCommandLineDriver(
 						"hdfshbaseingest",
-						new AbstractIngestCommandLineDriver[] {
-							new StageToHdfsDriver(
-									"hdfsingest"),
+						new AbstractIngestHBaseCommandLineDriver[] {
+							new StageToHdfsHBaseDriver(
+									"hdfshbaseingest"),
 							new IngestFromHBaseHdfsDriver(
-									"hdfsingest")
+									"hdfshbaseingest")
 						})),
 		new CLIOperation(
 				"kafkastage",

@@ -6,15 +6,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import mil.nga.giat.geowave.core.ingest.AbstractIngestCommandLineDriver;
+import mil.nga.giat.geowave.core.ingest.AbstractIngestHBaseCommandLineDriver;
 import mil.nga.giat.geowave.core.ingest.IngestCommandLineOptions;
-import mil.nga.giat.geowave.core.ingest.IngestFormatPluginProviderSpi;
+import mil.nga.giat.geowave.core.ingest.IngestFormatPluginHBaseProviderSpi;
 import mil.nga.giat.geowave.core.ingest.hdfs.HdfsCommandLineOptions;
-import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestFromHdfsPlugin;
-import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithMapper;
-import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithReducer;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.MapReduceCommandLineOptions;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloCommandLineOptions;
 import mil.nga.giat.geowave.datastore.hbase.HBaseCommandLineOptions;
 import mil.nga.giat.geowave.datastore.hbase.mapreduce.GeoWaveHBaseConfiguratorBase;
 
@@ -32,7 +28,7 @@ import org.apache.log4j.Logger;
  * that had been staged in HDFS.
  */
 public class IngestFromHBaseHdfsDriver extends
-		AbstractIngestCommandLineDriver
+		AbstractIngestHBaseCommandLineDriver
 {
 	private final static Logger LOGGER = Logger.getLogger(IngestFromHBaseHdfsDriver.class);
 	private final static int NUM_CONCURRENT_JOBS = 5;
@@ -59,7 +55,7 @@ public class IngestFromHBaseHdfsDriver extends
 	@Override
 	protected void runInternal(
 			final String[] args,
-			final List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders ) {
+			final List<IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviders ) {
 
 		final Path hdfsBaseDirectory = new Path(
 				hdfsOptions.getBasePath());
@@ -74,7 +70,7 @@ public class IngestFromHBaseHdfsDriver extends
 				LOGGER.fatal("HDFS base directory " + hdfsBaseDirectory + " does not exist");
 				return;
 			}
-			for (final IngestFormatPluginProviderSpi<?, ?> pluginProvider : pluginProviders) {
+			for (final IngestFormatPluginHBaseProviderSpi<?, ?> pluginProvider : pluginProviders) {
 				// if an appropriate sequence file does not exist, continue
 
 				// TODO: we should probably clean up the type name to make it
@@ -86,7 +82,7 @@ public class IngestFromHBaseHdfsDriver extends
 					LOGGER.warn("HDFS file '" + inputFile + "' does not exist for ingest type '" + pluginProvider.getIngestFormatName() + "'");
 					continue;
 				}
-				IngestFromHdfsPlugin ingestFromHdfsPlugin = null;
+				IngestFromHBaseHdfsPlugin ingestFromHdfsPlugin = null;
 				try {
 					ingestFromHdfsPlugin = pluginProvider.getIngestFromHdfsPlugin();
 
@@ -106,8 +102,8 @@ public class IngestFromHBaseHdfsDriver extends
 					continue;
 				}
 
-				IngestWithReducer ingestWithReducer = null;
-				IngestWithMapper ingestWithMapper = null;
+				IngestWithHBaseReducer ingestWithReducer = null;
+				IngestWithHBaseMapper ingestWithMapper = null;
 
 				// first find one preferred method of ingest from HDFS
 				// (exclusively setting one or the other instance above)
@@ -206,7 +202,7 @@ public class IngestFromHBaseHdfsDriver extends
 	@Override
 	protected void applyOptionsInternal(
 			final Options allOptions ) {
-		AccumuloCommandLineOptions.applyOptions(allOptions);
+		HBaseCommandLineOptions.applyOptions(allOptions);
 		IngestCommandLineOptions.applyOptions(allOptions);
 		HdfsCommandLineOptions.applyOptions(allOptions);
 		MapReduceCommandLineOptions.applyOptions(allOptions);

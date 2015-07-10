@@ -1,9 +1,6 @@
 package mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.hbase;
 
 import mil.nga.giat.geowave.core.ingest.IngestCommandLineOptions;
-import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestFromHdfsPlugin;
-import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestReducer;
-import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithReducer;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IntermediateKeyValueMapper;
 import mil.nga.giat.geowave.core.store.filter.GenericTypeResolver;
 import mil.nga.giat.geowave.datastore.hbase.HBaseCommandLineOptions;
@@ -16,15 +13,15 @@ import org.apache.hadoop.mapreduce.Job;
  * value pairs and a reducer to ingest data into GeoWave.
  */
 public class IngestWithHBaseReducerJobRunner extends
-		AbstractMapReduceHBaseIngest<IngestWithReducer>
+		AbstractMapReduceHBaseIngest<IngestWithHBaseReducer>
 {
 	public IngestWithHBaseReducerJobRunner(
 			final HBaseCommandLineOptions accumuloOptions,
 			final IngestCommandLineOptions ingestOptions,
 			final Path inputFile,
 			final String typeName,
-			final IngestFromHdfsPlugin parentPlugin,
-			final IngestWithReducer ingestPlugin ) {
+			final IngestFromHBaseHdfsPlugin parentPlugin,
+			final IngestWithHBaseReducer ingestPlugin ) {
 		super(
 				accumuloOptions,
 				ingestOptions,
@@ -45,7 +42,7 @@ public class IngestWithHBaseReducerJobRunner extends
 		job.setMapperClass(IntermediateKeyValueMapper.class);
 		final Class<?>[] genericClasses = GenericTypeResolver.resolveTypeArguments(
 				ingestPlugin.getClass(),
-				IngestWithReducer.class);
+				IngestWithHBaseReducer.class);
 		// set mapper output info
 		job.setMapOutputKeyClass(genericClasses[1]);
 		job.setMapOutputValueClass(genericClasses[2]);
@@ -54,7 +51,7 @@ public class IngestWithHBaseReducerJobRunner extends
 	@Override
 	protected void setupReducer(
 			final Job job ) {
-		job.setReducerClass(IngestReducer.class);
+		job.setReducerClass(IngestHBaseReducer.class);
 		if (job.getNumReduceTasks() <= 1) {
 			// the default is one reducer, if its only one, set it to 8 as the
 			// default

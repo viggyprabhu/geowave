@@ -3,9 +3,9 @@
  */
 package mil.nga.giat.geowave.datastore.hbase.mapreduce.dedupe;
 
+import mil.nga.giat.geowave.datastore.hbase.mapreduce.GeoWaveHBaseJobRunner;
 import mil.nga.giat.geowave.datastore.hbase.mapreduce.input.GeoWaveHBaseInputFormat;
 import mil.nga.giat.geowave.datastore.hbase.mapreduce.input.GeoWaveHBaseInputKey;
-import mil.nga.giat.geowave.test.mapreduce.GeoWaveHBaseJobRunner;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;

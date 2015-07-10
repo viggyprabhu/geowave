@@ -1,7 +1,7 @@
 /**
  * 
  */
-package mil.nga.giat.geowave.test.mapreduce;
+package mil.nga.giat.geowave.datastore.hbase.mapreduce;
 
 import java.util.ArrayList;
 import java.util.List;

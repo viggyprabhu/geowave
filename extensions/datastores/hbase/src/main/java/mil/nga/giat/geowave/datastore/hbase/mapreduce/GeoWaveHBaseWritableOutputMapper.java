@@ -1,13 +1,10 @@
 /**
  * 
  */
-package mil.nga.giat.geowave.test.mapreduce;
+package mil.nga.giat.geowave.datastore.hbase.mapreduce;
 
 import java.io.IOException;
 
-import mil.nga.giat.geowave.datastore.hbase.mapreduce.HBaseHadoopWritableSerializationTool;
-import mil.nga.giat.geowave.datastore.hbase.mapreduce.JobContextHBaseAdapterStore;
-import mil.nga.giat.geowave.datastore.hbase.mapreduce.NativeHBaseMapContext;
 import mil.nga.giat.geowave.datastore.hbase.mapreduce.input.GeoWaveHBaseInputFormat;
 import mil.nga.giat.geowave.datastore.hbase.mapreduce.input.GeoWaveHBaseInputKey;
 

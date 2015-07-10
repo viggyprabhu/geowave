@@ -110,4 +110,12 @@ public class HBaseCommandLineOptions
 				"The table namespace (optional; default is no namespace)");
 		allOptions.addOption(namespace);
 	}
+	
+	public synchronized BasicHBaseOperations getOperations()
+			throws IOException{
+		if (operations == null) {
+			operations = new BasicHBaseOperations(zookeepers, namespace); 					
+		}
+		return operations;
+	}
 }

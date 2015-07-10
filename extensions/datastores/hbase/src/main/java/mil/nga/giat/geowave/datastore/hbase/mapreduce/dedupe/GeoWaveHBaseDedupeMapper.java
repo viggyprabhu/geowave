@@ -5,8 +5,8 @@ package mil.nga.giat.geowave.datastore.hbase.mapreduce.dedupe;
 
 import java.io.IOException;
 
+import mil.nga.giat.geowave.datastore.hbase.mapreduce.GeoWaveHBaseWritableOutputMapper;
 import mil.nga.giat.geowave.datastore.hbase.mapreduce.input.GeoWaveHBaseInputKey;
-import mil.nga.giat.geowave.test.mapreduce.GeoWaveHBaseWritableOutputMapper;
 
 import org.apache.hadoop.mapreduce.MapContext;
 
