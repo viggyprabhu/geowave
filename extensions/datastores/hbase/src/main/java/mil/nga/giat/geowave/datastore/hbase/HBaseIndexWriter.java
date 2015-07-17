@@ -167,7 +167,7 @@ public class HBaseIndexWriter implements
 			final T entry ) {
 		final ByteArrayId adapterIdObj = writableAdapter.getAdapterId();
 
-		final byte[] adapterId = writableAdapter.getAdapterId().getBytes();
+		// final byte[] adapterId = writableAdapter.getAdapterId().getBytes();
 
 		DataStoreEntryInfo entryInfo;
 		synchronized (this) {

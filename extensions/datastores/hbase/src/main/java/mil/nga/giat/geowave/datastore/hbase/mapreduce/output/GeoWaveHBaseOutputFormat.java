@@ -274,7 +274,7 @@ public class GeoWaveHBaseOutputFormat extends
 		LOGGER.warn("Need to code this method getLogLevel1. Currently it is hardcoded");
 		return Level.INFO;
 	}
-	
+
 	public static void addIndex(
 			final Configuration config,
 			final Index index ) {

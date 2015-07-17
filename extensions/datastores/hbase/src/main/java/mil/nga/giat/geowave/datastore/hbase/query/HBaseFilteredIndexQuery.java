@@ -108,10 +108,11 @@ public abstract class HBaseFilteredIndexQuery extends
 					adapterStore.getAdapters());
 		}
 
-		if (scanner == null) {
-			LOGGER.error("Could not get scanner instance, getScanner returned null");
-			return new CloseableIterator.Empty();
-		}
+		/*
+		 * if (scanner == null) {
+		 * LOGGER.error("Could not get scanner instance, getScanner returned null"
+		 * ); return new CloseableIterator.Empty(); }
+		 */
 
 		ResultScanner results = null;
 		try {

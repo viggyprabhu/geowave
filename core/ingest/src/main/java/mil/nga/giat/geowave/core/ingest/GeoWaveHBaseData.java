@@ -13,9 +13,10 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class GeoWaveHBaseData<T> {
+public class GeoWaveHBaseData<T>
+{
 	private final static Logger LOGGER = Logger.getLogger(GeoWaveHBaseData.class);
 	private final ByteArrayId adapterId;
 	private final ByteArrayId indexId;

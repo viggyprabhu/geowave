@@ -395,7 +395,8 @@ public abstract class AbstractHBasePersistence<T extends Persistable>
 		try {
 			RowMutations deleteMutations = HBaseUtils.getDeleteMutations(
 					primaryId.getBytes(),
-					getColumnFamily().getBytes(),
+					getColumnFamily().getBytes(
+							Charset.forName("UTF-8")),
 					getColumnQualifier(secondaryId),
 					authorizations);
 			HBaseWriter deleter = operations.createWriter(

@@ -27,7 +27,7 @@ public class MultiStageHBaseCommandLineDriver extends
 	@Override
 	protected void runInternal(
 			final String[] args,
-			final List<IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviders ) {
+			final List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders ) {
 		for (final AbstractIngestHBaseCommandLineDriver stage : orderedStages) {
 			stage.runInternal(
 					args,

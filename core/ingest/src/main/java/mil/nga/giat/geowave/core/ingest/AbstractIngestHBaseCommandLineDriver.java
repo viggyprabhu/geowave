@@ -29,28 +29,28 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * @author viggy
- *
+ * 
  */
 abstract public class AbstractIngestHBaseCommandLineDriver implements
-CLIOperationDriver
+		CLIOperationDriver
 {
 	private final static Logger LOGGER = Logger.getLogger(AbstractIngestHBaseCommandLineDriver.class);
-	final protected Map<String, IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviderRegistry;
+	final protected Map<String, IngestFormatPluginProviderSpi<?, ?>> pluginProviderRegistry;
 	private final String operation;
 
 	public AbstractIngestHBaseCommandLineDriver(
 			final String operation ) {
 		super();
-		pluginProviderRegistry = new HashMap<String, IngestFormatPluginHBaseProviderSpi<?, ?>>();
+		pluginProviderRegistry = new HashMap<String, IngestFormatPluginProviderSpi<?, ?>>();
 		this.operation = operation;
 		initPluginProviderRegistry();
 	}
 
 	private void initPluginProviderRegistry() {
-		final Iterator<IngestFormatPluginHBaseProviderSpi> pluginProviders = ServiceLoader.load(
-				IngestFormatPluginHBaseProviderSpi.class).iterator();
+		final Iterator<IngestFormatPluginProviderSpi> pluginProviders = ServiceLoader.load(
+				IngestFormatPluginProviderSpi.class).iterator();
 		while (pluginProviders.hasNext()) {
-			final IngestFormatPluginHBaseProviderSpi pluginProvider = pluginProviders.next();
+			final IngestFormatPluginProviderSpi pluginProvider = pluginProviders.next();
 			pluginProviderRegistry.put(
 					cleanIngestFormatName(pluginProvider.getIngestFormatName()),
 					pluginProvider);
@@ -71,17 +71,17 @@ CLIOperationDriver
 	@Override
 	public void run(
 			final String[] args )
-					throws ParseException {
-		final List<IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviders = applyArguments(args);
+			throws ParseException {
+		final List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders = applyArguments(args);
 		runInternal(
 				args,
 				pluginProviders);
 	}
 
 	@SuppressFBWarnings(value = "DM_EXIT", justification = "Exiting JVM with System.exit(0) is intentional")
-	protected List<IngestFormatPluginHBaseProviderSpi<?, ?>> applyArguments(
+	protected List<IngestFormatPluginProviderSpi<?, ?>> applyArguments(
 			final String[] args ) {
-		List<IngestFormatPluginHBaseProviderSpi<?, ?>> selectedPluginProviders = new ArrayList<IngestFormatPluginHBaseProviderSpi<?, ?>>();
+		List<IngestFormatPluginProviderSpi<?, ?>> selectedPluginProviders = new ArrayList<IngestFormatPluginProviderSpi<?, ?>>();
 		final Options options = new Options();
 		final OptionGroup baseOptionGroup = new OptionGroup();
 		baseOptionGroup.setRequired(false);
@@ -121,8 +121,8 @@ CLIOperationDriver
 								System.out,
 								StringUtils.UTF8_CHAR_SET));
 				pw.println("Available ingest formats currently registered as plugins:\n");
-				for (final Entry<String, IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviderEntry : pluginProviderRegistry.entrySet()) {
-					final IngestFormatPluginHBaseProviderSpi<?, ?> pluginProvider = pluginProviderEntry.getValue();
+				for (final Entry<String, IngestFormatPluginProviderSpi<?, ?>> pluginProviderEntry : pluginProviderRegistry.entrySet()) {
+					final IngestFormatPluginProviderSpi<?, ?> pluginProvider = pluginProviderEntry.getValue();
 					final String desc = pluginProvider.getIngestFormatDescription() == null ? "no description" : pluginProvider.getIngestFormatDescription();
 					final String text = pluginProviderEntry.getKey() + ":\n" + desc;
 
@@ -162,7 +162,7 @@ CLIOperationDriver
 				commandLine = parser.parse(
 						options,
 						args);
-				for (final IngestFormatPluginHBaseProviderSpi<?, ?> plugin : selectedPluginProviders) {
+				for (final IngestFormatPluginProviderSpi<?, ?> plugin : selectedPluginProviders) {
 					final IngestFormatOptionProvider optionProvider = plugin.getIngestFormatOptionProvider();
 					if (optionProvider != null) {
 						optionProvider.parseOptions(commandLine);
@@ -183,15 +183,15 @@ CLIOperationDriver
 		return selectedPluginProviders;
 	}
 
-	private List<IngestFormatPluginHBaseProviderSpi<?, ?>> getPluginProviders(
+	private List<IngestFormatPluginProviderSpi<?, ?>> getPluginProviders(
 			final CommandLine commandLine,
 			final Options options ) {
-		final List<IngestFormatPluginHBaseProviderSpi<?, ?>> selectedPluginProviders = new ArrayList<IngestFormatPluginHBaseProviderSpi<?, ?>>();
+		final List<IngestFormatPluginProviderSpi<?, ?>> selectedPluginProviders = new ArrayList<IngestFormatPluginProviderSpi<?, ?>>();
 		final String[] pluginProviderNames = commandLine.getOptionValue(
 				"f").split(
-						",");
+				",");
 		for (final String pluginProviderName : pluginProviderNames) {
-			final IngestFormatPluginHBaseProviderSpi<?, ?> pluginProvider = pluginProviderRegistry.get(pluginProviderName);
+			final IngestFormatPluginProviderSpi<?, ?> pluginProvider = pluginProviderRegistry.get(pluginProviderName);
 			if (pluginProvider == null) {
 				throw new IllegalArgumentException(
 						"Unable to find SPI plugin provider for ingest format '" + pluginProviderName + "'");
@@ -202,7 +202,7 @@ CLIOperationDriver
 			throw new IllegalArgumentException(
 					"There were no ingest format plugin providers found");
 		}
-		for (final IngestFormatPluginHBaseProviderSpi<?, ?> plugin : selectedPluginProviders) {
+		for (final IngestFormatPluginProviderSpi<?, ?> plugin : selectedPluginProviders) {
 			final IngestFormatOptionProvider optionProvider = plugin.getIngestFormatOptionProvider();
 			if (optionProvider != null) {
 				optionProvider.applyOptions(options);
@@ -224,13 +224,12 @@ CLIOperationDriver
 
 	abstract protected void parseOptionsInternal(
 			final CommandLine commandLine )
-					throws ParseException;
+			throws ParseException;
 
 	abstract protected void applyOptionsInternal(
 			final Options allOptions );
 
 	abstract protected void runInternal(
 			String[] args,
-			List<IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviders );
+			List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders );
 }
-

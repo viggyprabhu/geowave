@@ -10,7 +10,7 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.core.ingest.GeoWaveData;
 import mil.nga.giat.geowave.core.ingest.IngestCommandLineOptions;
-import mil.nga.giat.geowave.core.ingest.IngestFormatPluginHBaseProviderSpi;
+import mil.nga.giat.geowave.core.ingest.IngestFormatPluginProviderSpi;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.IndexWriter;
@@ -62,11 +62,11 @@ public class LocalFileIngestHBaseDriver extends
 	@Override
 	protected void runInternal(
 			final String[] args,
-			final List<IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviders ) {
+			final List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders ) {
 		// first collect the local file ingest plugins
 		final Map<String, LocalFileIngestPlugin<?>> localFileIngestPlugins = new HashMap<String, LocalFileIngestPlugin<?>>();
 		final List<WritableDataAdapter<?>> adapters = new ArrayList<WritableDataAdapter<?>>();
-		for (final IngestFormatPluginHBaseProviderSpi<?, ?> pluginProvider : pluginProviders) {
+		for (final IngestFormatPluginProviderSpi<?, ?> pluginProvider : pluginProviders) {
 			LocalFileIngestPlugin<?> localFileIngestPlugin = null;
 			try {
 				localFileIngestPlugin = pluginProvider.getLocalFileIngestPlugin();

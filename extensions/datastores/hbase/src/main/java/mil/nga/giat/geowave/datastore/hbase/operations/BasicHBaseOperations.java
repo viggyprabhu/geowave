@@ -93,15 +93,10 @@ public class BasicHBaseOperations
 				table);
 	}
 
-	private Table getTable(
-			final boolean create,
-			TableName name )
-			throws IOException {
-		return getTable(
-				create,
-				DEFAULT_COLUMN_FAMILY,
-				name);
-	}
+	/*
+	 * private Table getTable( final boolean create, TableName name ) throws
+	 * IOException { return getTable( create, DEFAULT_COLUMN_FAMILY, name); }
+	 */
 
 	private Table getTable(
 			final boolean create,

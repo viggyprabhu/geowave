@@ -16,10 +16,11 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
 public class ClearNamespaceHBaseDriver extends
-AbstractIngestHBaseCommandLineDriver {
+		AbstractIngestHBaseCommandLineDriver
+{
 
 	private final static Logger LOGGER = Logger.getLogger(ClearNamespaceHBaseDriver.class);
 	protected HBaseCommandLineOptions hbase;
@@ -50,7 +51,7 @@ AbstractIngestHBaseCommandLineDriver {
 	@Override
 	protected void runInternal(
 			final String[] args,
-			final List<IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviders ) {
+			final List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders ) {
 		// just check if the flag to clear namespaces is set, and even if it is
 		// not, clear it, but only if a namespace is provided
 		if (!ingest.isClearNamespace()) {

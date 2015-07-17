@@ -39,6 +39,7 @@ import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 import mil.nga.giat.geowave.datastore.hbase.query.HBaseConstraintsQuery;
 import mil.nga.giat.geowave.datastore.hbase.query.HBaseFilteredIndexQuery;
 import mil.nga.giat.geowave.datastore.hbase.query.HBaseRowIdQuery;
+import mil.nga.giat.geowave.datastore.hbase.query.SingleEntryFilter;
 import mil.nga.giat.geowave.datastore.hbase.util.AltIndexIngestCallback;
 import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseIteratorWrapper;
@@ -248,7 +249,7 @@ public class HBaseDataStore implements
 						adapterId,
 						1,
 						additionalAuthorizations);
-				if (rows != null & rows.size() > 0) {
+				if (rows != null && rows.size() > 0) {
 					Result r = new Result(
 							rows);
 					return (T) HBaseUtils.decodeRow(
@@ -480,40 +481,51 @@ public class HBaseDataStore implements
 			final int limit,
 			final String... authorizations ) {
 
+		/*
+		 * final List<KeyValue> resultList = new ArrayList<KeyValue>(); Scan
+		 * scanner = new Scan(); try { scanner.addFamily(adapterId.getBytes());
+		 * ResultScanner results = operations.getScannedResults( scanner,
+		 * tableName);
+		 * 
+		 * TODO #406 Need to see how to add these iterators to fine grain the
+		 * results final IteratorSetting rowIteratorSettings = new
+		 * IteratorSetting(
+		 * SingleEntryFilterIterator.WHOLE_ROW_ITERATOR_PRIORITY,
+		 * SingleEntryFilterIterator.WHOLE_ROW_ITERATOR_NAME,
+		 * WholeRowIterator.class);
+		 * scanner.addScanIterator(rowIteratorSettings);
+		 * 
+		 * final IteratorSetting filterIteratorSettings = new IteratorSetting(
+		 * SingleEntryFilterIterator.ENTRY_FILTER_ITERATOR_PRIORITY,
+		 * SingleEntryFilterIterator.ENTRY_FILTER_ITERATOR_NAME,
+		 * SingleEntryFilterIterator.class);
+		 * 
+		 * filterIteratorSettings.addOption(
+		 * SingleEntryFilterIterator.ADAPTER_ID,
+		 * ByteArrayUtils.byteArrayToString(adapterId.getBytes()));
+		 * 
+		 * filterIteratorSettings.addOption( SingleEntryFilterIterator.DATA_ID,
+		 * ByteArrayUtils.byteArrayToString(dataId.getBytes()));
+		 * scanner.addScanIterator(filterIteratorSettings);
+		 * 
+		 * final Iterator<Result> iterator = results.iterator(); int i = 0;
+		 * while (iterator.hasNext() && (i < limit)) { // FB supression as FB //
+		 * not // detecting i reference // here Cell cell =
+		 * iterator.next().listCells().get( 0); resultList.add(new KeyValue(
+		 * cell)); i++; } } catch (final IOException e) { LOGGER.warn(
+		 * "Unable to query table '" + tableName + "'. Table does not exist.",
+		 * e); } return resultList;
+		 */
 		final List<KeyValue> resultList = new ArrayList<KeyValue>();
 		Scan scanner = new Scan();
 		try {
 
-			scanner.addFamily(adapterId.getBytes());
-
+			scanner.setFilter(new SingleEntryFilter(
+					dataId.getBytes(),
+					adapterId.getBytes()));
 			ResultScanner results = operations.getScannedResults(
 					scanner,
 					tableName);
-
-			/*
-			 * TODO #406 Need to see how to add these iterators to fine grain
-			 * the results final IteratorSetting rowIteratorSettings = new
-			 * IteratorSetting(
-			 * SingleEntryFilterIterator.WHOLE_ROW_ITERATOR_PRIORITY,
-			 * SingleEntryFilterIterator.WHOLE_ROW_ITERATOR_NAME,
-			 * WholeRowIterator.class);
-			 * scanner.addScanIterator(rowIteratorSettings);
-			 * 
-			 * final IteratorSetting filterIteratorSettings = new
-			 * IteratorSetting(
-			 * SingleEntryFilterIterator.ENTRY_FILTER_ITERATOR_PRIORITY,
-			 * SingleEntryFilterIterator.ENTRY_FILTER_ITERATOR_NAME,
-			 * SingleEntryFilterIterator.class);
-			 * 
-			 * filterIteratorSettings.addOption(
-			 * SingleEntryFilterIterator.ADAPTER_ID,
-			 * ByteArrayUtils.byteArrayToString(adapterId.getBytes()));
-			 * 
-			 * filterIteratorSettings.addOption(
-			 * SingleEntryFilterIterator.DATA_ID,
-			 * ByteArrayUtils.byteArrayToString(dataId.getBytes()));
-			 * scanner.addScanIterator(filterIteratorSettings);
-			 */
 
 			final Iterator<Result> iterator = results.iterator();
 			int i = 0;
@@ -850,7 +862,7 @@ public class HBaseDataStore implements
 
 			final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
 			final String altIdxTableName = tableName + HBaseUtils.ALT_INDEX_TABLE;
-			final byte[] adapterId = dataWriter.getAdapterId().getBytes();
+			// final byte[] adapterId = dataWriter.getAdapterId().getBytes();
 
 			boolean useAltIndex = options.isUseAltIndex();
 
@@ -1025,7 +1037,8 @@ public class HBaseDataStore implements
 		try {
 			final String indexName = StringUtils.stringFromBinary(index.getId().getBytes());
 			final String altIdxTableName = indexName + HBaseUtils.ALT_INDEX_TABLE;
-			final byte[] adapterId = writableAdapter.getAdapterId().getBytes();
+			// final byte[] adapterId =
+			// writableAdapter.getAdapterId().getBytes();
 
 			boolean useAltIndex = options.isUseAltIndex();
 

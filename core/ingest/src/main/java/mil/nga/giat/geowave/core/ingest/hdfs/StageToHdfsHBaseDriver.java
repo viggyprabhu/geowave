@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mil.nga.giat.geowave.core.ingest.IngestFormatPluginHBaseProviderSpi;
+import mil.nga.giat.geowave.core.ingest.IngestFormatPluginProviderSpi;
 import mil.nga.giat.geowave.core.ingest.avro.StageToAvroPlugin;
 import mil.nga.giat.geowave.core.ingest.local.AbstractLocalHBaseFileDriver;
 
@@ -24,10 +24,11 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * 
  */
-public class StageToHdfsHBaseDriver extends AbstractLocalHBaseFileDriver<StageToAvroPlugin<?>, StageRunData>
-		 
+public class StageToHdfsHBaseDriver extends
+		AbstractLocalHBaseFileDriver<StageToAvroPlugin<?>, StageRunData>
+
 {
 	private final static Logger LOGGER = Logger.getLogger(StageToHdfsHBaseDriver.class);
 	private HdfsCommandLineOptions hdfsOptions;
@@ -80,11 +81,11 @@ public class StageToHdfsHBaseDriver extends AbstractLocalHBaseFileDriver<StageTo
 	@Override
 	protected void runInternal(
 			final String[] args,
-			final List<IngestFormatPluginHBaseProviderSpi<?, ?>> pluginProviders ) {
+			final List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders ) {
 
 		// first collect the stage to hdfs plugins
 		final Map<String, StageToAvroPlugin<?>> stageToHdfsPlugins = new HashMap<String, StageToAvroPlugin<?>>();
-		for (final IngestFormatPluginHBaseProviderSpi<?, ?> pluginProvider : pluginProviders) {
+		for (final IngestFormatPluginProviderSpi<?, ?> pluginProvider : pluginProviders) {
 			StageToAvroPlugin<?> stageToHdfsPlugin = null;
 			try {
 				stageToHdfsPlugin = pluginProvider.getStageToAvroPlugin();
@@ -141,4 +142,3 @@ public class StageToHdfsHBaseDriver extends AbstractLocalHBaseFileDriver<StageTo
 		}
 	}
 }
-
