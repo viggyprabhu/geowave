@@ -10,14 +10,10 @@ import mil.nga.giat.geowave.core.ingest.AbstractIngestHBaseCommandLineDriver;
 import mil.nga.giat.geowave.core.ingest.IngestCommandLineOptions;
 import mil.nga.giat.geowave.core.ingest.IngestFormatPluginProviderSpi;
 import mil.nga.giat.geowave.core.ingest.hdfs.HdfsCommandLineOptions;
-import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.AbstractMapReduceIngest;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestFromHdfsPlugin;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithMapper;
-import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithMapperJobRunner;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithReducer;
-import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithReducerJobRunner;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.MapReduceCommandLineOptions;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloCommandLineOptions;
 import mil.nga.giat.geowave.datastore.hbase.HBaseCommandLineOptions;
 import mil.nga.giat.geowave.datastore.hbase.mapreduce.GeoWaveHBaseConfiguratorBase;
 
@@ -41,7 +37,7 @@ public class IngestFromHBaseHdfsDriver extends
 	private final static int NUM_CONCURRENT_JOBS = 5;
 	private final static int DAYS_TO_AWAIT_COMPLETION = 999;
 	private HdfsCommandLineOptions hdfsOptions;
-	private AccumuloCommandLineOptions hbaseOptions;
+	private HBaseCommandLineOptions hbaseOptions;
 	private IngestCommandLineOptions ingestOptions;
 	private MapReduceCommandLineOptions mapReduceOptions;
 	private static ExecutorService singletonExecutor;
@@ -136,9 +132,9 @@ public class IngestFromHBaseHdfsDriver extends
 					}
 				}
 
-				AbstractMapReduceIngest jobRunner = null;
+				AbstractMapReduceHBaseIngest jobRunner = null;
 				if (ingestWithReducer != null) {
-					jobRunner = new IngestWithReducerJobRunner(
+					jobRunner = new IngestWithHBaseReducerJobRunner(
 							hbaseOptions,
 							ingestOptions,
 							inputFile,
@@ -148,7 +144,7 @@ public class IngestFromHBaseHdfsDriver extends
 
 				}
 				else if (ingestWithMapper != null) {
-					jobRunner = new IngestWithMapperJobRunner(
+					jobRunner = new IngestWithHBaseMapperJobRunner(
 							hbaseOptions,
 							ingestOptions,
 							inputFile,
@@ -200,7 +196,7 @@ public class IngestFromHBaseHdfsDriver extends
 	protected void parseOptionsInternal(
 			final CommandLine commandLine )
 			throws ParseException {
-		hbaseOptions = AccumuloCommandLineOptions.parseOptions(commandLine);
+		hbaseOptions = HBaseCommandLineOptions.parseOptions(commandLine);
 		ingestOptions = IngestCommandLineOptions.parseOptions(commandLine);
 		hdfsOptions = HdfsCommandLineOptions.parseOptions(commandLine);
 		mapReduceOptions = MapReduceCommandLineOptions.parseOptions(commandLine);
@@ -217,7 +213,7 @@ public class IngestFromHBaseHdfsDriver extends
 
 	private void runJob(
 			final Configuration conf,
-			final AbstractMapReduceIngest jobRunner,
+			final AbstractMapReduceHBaseIngest jobRunner,
 			final String[] args )
 			throws Exception {
 		final ExecutorService executorService = getSingletonExecutorService();

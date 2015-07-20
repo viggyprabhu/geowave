@@ -59,10 +59,12 @@ public class JobContextHBaseIndexStore implements
 
 	@Override
 	public boolean indexExists(
-			ByteArrayId indexId ) {
-		// TODO #406 Need to fix
-		LOGGER.warn("Need to code this method getIndex1");
-		return false;
+			final ByteArrayId indexId ) {
+		if (indexCache.containsKey(indexId)) {
+			return true;
+		}
+		final Index index = getIndexInternal(indexId);
+		return index != null;
 	}
 
 	@Override

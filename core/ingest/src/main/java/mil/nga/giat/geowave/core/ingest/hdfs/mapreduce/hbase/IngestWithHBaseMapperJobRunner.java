@@ -1,6 +1,8 @@
 package mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.hbase;
 
 import mil.nga.giat.geowave.core.ingest.IngestCommandLineOptions;
+import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestFromHdfsPlugin;
+import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithMapper;
 import mil.nga.giat.geowave.datastore.hbase.HBaseCommandLineOptions;
 import mil.nga.giat.geowave.datastore.hbase.mapreduce.output.GeoWaveHBaseOutputKey;
 
@@ -11,7 +13,7 @@ import org.apache.hadoop.mapreduce.Job;
  * This will run the mapper only ingest process.
  */
 public class IngestWithHBaseMapperJobRunner extends
-		AbstractMapReduceHBaseIngest<IngestWithHBaseMapper>
+		AbstractMapReduceHBaseIngest<IngestWithMapper>
 {
 
 	public IngestWithHBaseMapperJobRunner(
@@ -19,8 +21,8 @@ public class IngestWithHBaseMapperJobRunner extends
 			final IngestCommandLineOptions ingestOptions,
 			final Path inputFile,
 			final String typeName,
-			final IngestFromHBaseHdfsPlugin plugin,
-			final IngestWithHBaseMapper mapperIngest ) {
+			final IngestFromHdfsPlugin plugin,
+			final IngestWithMapper mapperIngest ) {
 		super(
 				accumuloOptions,
 				ingestOptions,

@@ -1,6 +1,8 @@
 package mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.hbase;
 
 import mil.nga.giat.geowave.core.ingest.IngestCommandLineOptions;
+import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestFromHdfsPlugin;
+import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithReducer;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IntermediateKeyValueMapper;
 import mil.nga.giat.geowave.core.store.filter.GenericTypeResolver;
 import mil.nga.giat.geowave.datastore.hbase.HBaseCommandLineOptions;
@@ -13,15 +15,15 @@ import org.apache.hadoop.mapreduce.Job;
  * value pairs and a reducer to ingest data into GeoWave.
  */
 public class IngestWithHBaseReducerJobRunner extends
-		AbstractMapReduceHBaseIngest<IngestWithHBaseReducer>
+		AbstractMapReduceHBaseIngest<IngestWithReducer>
 {
 	public IngestWithHBaseReducerJobRunner(
 			final HBaseCommandLineOptions accumuloOptions,
 			final IngestCommandLineOptions ingestOptions,
 			final Path inputFile,
 			final String typeName,
-			final IngestFromHBaseHdfsPlugin parentPlugin,
-			final IngestWithHBaseReducer ingestPlugin ) {
+			final IngestFromHdfsPlugin parentPlugin,
+			final IngestWithReducer ingestPlugin ) {
 		super(
 				accumuloOptions,
 				ingestOptions,

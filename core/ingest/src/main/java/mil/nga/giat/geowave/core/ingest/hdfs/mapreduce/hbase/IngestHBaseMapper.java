@@ -5,7 +5,9 @@ import java.io.IOException;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
+import mil.nga.giat.geowave.core.ingest.GeoWaveData;
 import mil.nga.giat.geowave.core.ingest.GeoWaveHBaseData;
+import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithMapper;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.datastore.hbase.mapreduce.output.GeoWaveHBaseOutputKey;
 
@@ -19,7 +21,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 public class IngestHBaseMapper extends
 		Mapper<AvroKey, NullWritable, GeoWaveHBaseOutputKey, Object>
 {
-	private IngestWithHBaseMapper ingestWithMapper;
+	private IngestWithMapper ingestWithMapper;
 	private String globalVisibility;
 	private ByteArrayId primaryIndexId;
 
@@ -30,10 +32,10 @@ public class IngestHBaseMapper extends
 			final org.apache.hadoop.mapreduce.Mapper.Context context )
 			throws IOException,
 			InterruptedException {
-		try (CloseableIterator<GeoWaveHBaseData> data = ingestWithMapper.toGeoWaveData(
+		try (CloseableIterator<GeoWaveHBaseData> data = convertDataToHBaseData(ingestWithMapper.toGeoWaveData(
 				key.datum(),
 				primaryIndexId,
-				globalVisibility)) {
+				globalVisibility))) {
 			while (data.hasNext()) {
 				final GeoWaveHBaseData d = data.next();
 				context.write(
@@ -41,6 +43,37 @@ public class IngestHBaseMapper extends
 						d.getValue());
 			}
 		}
+	}
+
+	//TODO #406 Need to fix this ugly GeoWaveData to GeoWaveHBaseData conversion
+	private CloseableIterator<GeoWaveHBaseData> convertDataToHBaseData( final 
+			CloseableIterator<GeoWaveData> geoWaveData) {
+		CloseableIterator<GeoWaveHBaseData> data = new CloseableIterator<GeoWaveHBaseData>() {
+
+			@Override
+			public boolean hasNext() {
+				return geoWaveData.hasNext();
+			}
+
+			@Override
+			public GeoWaveHBaseData next() {
+				GeoWaveData d = geoWaveData.next();
+				GeoWaveHBaseData next = new GeoWaveHBaseData(d.getAdapterId(), d.getIndexId(), d.getValue());
+				return next;
+			}
+
+			@Override
+			public void remove() {
+				geoWaveData.remove();
+			}
+
+			@Override
+			public void close() throws IOException {
+				geoWaveData.close();
+			}
+		};
+		
+		return data;
 	}
 
 	@Override
@@ -55,7 +88,7 @@ public class IngestHBaseMapper extends
 			final byte[] ingestWithMapperBytes = ByteArrayUtils.byteArrayFromString(ingestWithMapperStr);
 			ingestWithMapper = PersistenceUtils.fromBinary(
 					ingestWithMapperBytes,
-					IngestWithHBaseMapper.class);
+					IngestWithMapper.class);
 			globalVisibility = context.getConfiguration().get(
 					AbstractMapReduceHBaseIngest.GLOBAL_VISIBILITY_KEY);
 			final String primaryIndexIdStr = context.getConfiguration().get(

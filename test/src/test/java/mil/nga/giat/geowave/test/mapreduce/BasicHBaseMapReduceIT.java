@@ -20,15 +20,15 @@ import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
+import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveWritableInputMapper;
+import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
 import mil.nga.giat.geowave.datastore.hbase.HBaseAdapterStore;
 import mil.nga.giat.geowave.datastore.hbase.HBaseDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.hbase.HBaseDataStore;
 import mil.nga.giat.geowave.datastore.hbase.HBaseIndexStore;
 import mil.nga.giat.geowave.datastore.hbase.mapreduce.GeoWaveHBaseConfiguratorBase;
-import mil.nga.giat.geowave.datastore.hbase.mapreduce.GeoWaveHBaseWritableInputMapper;
 import mil.nga.giat.geowave.datastore.hbase.mapreduce.dedupe.GeoWaveHBaseDedupeJobRunner;
 import mil.nga.giat.geowave.datastore.hbase.mapreduce.input.GeoWaveHBaseInputFormat;
-import mil.nga.giat.geowave.datastore.hbase.mapreduce.input.GeoWaveHBaseInputKey;
 import mil.nga.giat.geowave.format.gpx.GpxIngestPlugin;
 import mil.nga.giat.geowave.test.GeoWaveTestEnvironment;
 
@@ -295,7 +295,7 @@ public class BasicHBaseMapReduceIT extends
 			// filtered results which should match the expected results
 			// resources
 			final Configuration conf = super.getConf();
-			MapReduceTestEnvironment.filterConfiguration(conf);
+			MapReduceHBaseTestEnvironment.filterConfiguration(conf);
 			final ByteBuffer buf = ByteBuffer.allocate((8 * expectedResults.hashedCentroids.size()) + 4);
 			buf.putInt(expectedResults.hashedCentroids.size());
 			for (final Long hashedCentroid : expectedResults.hashedCentroids) {
@@ -348,15 +348,15 @@ public class BasicHBaseMapReduceIT extends
 	}
 
 	private static class VerifyExpectedResultsMapper extends
-			GeoWaveHBaseWritableInputMapper<NullWritable, NullWritable>
+			GeoWaveWritableInputMapper<NullWritable, NullWritable>
 	{
 		private Set<Long> expectedHashedCentroids = new HashSet<Long>();
 
 		@Override
 		protected void mapNativeValue(
-				final GeoWaveHBaseInputKey key,
+				final GeoWaveInputKey key,
 				final Object value,
-				final Mapper<GeoWaveHBaseInputKey, ObjectWritable, NullWritable, NullWritable>.Context context )
+				final Mapper<GeoWaveInputKey, ObjectWritable, NullWritable, NullWritable>.Context context )
 				throws IOException,
 				InterruptedException {
 			ResultCounterType resultType = ResultCounterType.ERROR;
@@ -374,7 +374,7 @@ public class BasicHBaseMapReduceIT extends
 
 		@Override
 		protected void setup(
-				final Mapper<GeoWaveHBaseInputKey, ObjectWritable, NullWritable, NullWritable>.Context context )
+				final Mapper<GeoWaveInputKey, ObjectWritable, NullWritable, NullWritable>.Context context )
 				throws IOException,
 				InterruptedException {
 			super.setup(context);

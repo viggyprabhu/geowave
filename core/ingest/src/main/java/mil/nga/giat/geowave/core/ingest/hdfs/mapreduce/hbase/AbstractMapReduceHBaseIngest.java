@@ -6,6 +6,7 @@ import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.ingest.DataAdapterProvider;
 import mil.nga.giat.geowave.core.ingest.IngestCommandLineOptions;
+import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestFromHdfsPlugin;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.hbase.HBaseCommandLineOptions;
@@ -41,7 +42,7 @@ abstract public class AbstractMapReduceHBaseIngest<T extends Persistable & DataA
 	protected final IngestCommandLineOptions ingestOptions;
 	protected final Path inputFile;
 	protected final String typeName;
-	protected final IngestFromHBaseHdfsPlugin parentPlugin;
+	protected final IngestFromHdfsPlugin parentPlugin;
 	protected final T ingestPlugin;
 
 	public AbstractMapReduceHBaseIngest(
@@ -49,7 +50,7 @@ abstract public class AbstractMapReduceHBaseIngest<T extends Persistable & DataA
 			final IngestCommandLineOptions ingestOptions,
 			final Path inputFile,
 			final String typeName,
-			final IngestFromHBaseHdfsPlugin parentPlugin,
+			final IngestFromHdfsPlugin parentPlugin,
 			final T ingestPlugin ) {
 		this.hbaseOptions = accumuloOptions;
 		this.ingestOptions = ingestOptions;

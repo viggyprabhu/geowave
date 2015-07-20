@@ -317,4 +317,31 @@ public class GeoWaveHBaseConfiguratorBase
 					ByteArrayUtils.byteArrayToString(PersistenceUtils.toBinary(index)));
 		}
 	}
+	
+	public static DataAdapter<?> getDataAdapter(
+			final Class<?> implementingClass,
+			final JobContext context,
+			final ByteArrayId adapterId ) {
+		return getDataAdapterInternal(
+				implementingClass,
+				getConfiguration(context),
+				adapterId);
+	}
+
+	private static DataAdapter<?> getDataAdapterInternal(
+			final Class<?> implementingClass,
+			final Configuration configuration,
+			final ByteArrayId adapterId ) {
+		final String input = configuration.get(enumToConfKey(
+				implementingClass,
+				GeoWaveMetaStore.DATA_ADAPTER,
+				adapterId.getString()));
+		if (input != null) {
+			final byte[] dataAdapterBytes = ByteArrayUtils.byteArrayFromString(input);
+			return PersistenceUtils.fromBinary(
+					dataAdapterBytes,
+					DataAdapter.class);
+		}
+		return null;
+	}
 }

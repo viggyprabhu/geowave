@@ -461,6 +461,8 @@
 									<artifactSet>
 										<excludes>
 											<exclude>org.slf4j:*</exclude>
+											<exclude>org.jruby:*</exclude>
+											<exclude>jline:*</exclude>
 										</excludes>
 									</artifactSet>
 									<filters>

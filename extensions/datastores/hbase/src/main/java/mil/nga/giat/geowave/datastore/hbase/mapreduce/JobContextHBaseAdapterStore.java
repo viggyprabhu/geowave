@@ -10,6 +10,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.datastore.hbase.HBaseAdapterStore;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 
 import org.apache.hadoop.conf.Configuration;
@@ -41,24 +42,59 @@ public class JobContextHBaseAdapterStore implements
 	@Override
 	public void addAdapter(
 			DataAdapter<?> adapter ) {
-		// TODO #406 Need to fix
-		LOGGER.warn("Need to code this method addAdapter1");
+		adapterCache.put(
+				adapter.getAdapterId(),
+				adapter);
 	}
 
 	@Override
 	public DataAdapter<?> getAdapter(
 			ByteArrayId adapterId ) {
-		// TODO #406 Need to fix
-		LOGGER.warn("Need to code this method getAdapter1");
-		return null;
+		DataAdapter<?> adapter = adapterCache.get(adapterId);
+		if (adapter == null) {
+			adapter = getAdapterInternal(adapterId);
+		}
+		return adapter;
+	}
+	
+	private DataAdapter<?> getAdapterInternal(
+			final ByteArrayId adapterId ) {
+		// first try to get it from the job context
+		DataAdapter<?> adapter = getDataAdapter(
+				context,
+				adapterId);
+		if (adapter == null) {
+			// then try to get it from the accumulo persistent store
+			final HBaseAdapterStore adapterStore = new HBaseAdapterStore(
+					operations);
+			adapter = adapterStore.getAdapter(adapterId);
+		}
+
+		if (adapter != null) {
+			adapterCache.put(
+					adapterId,
+					adapter);
+		}
+		return adapter;
+	}
+	
+	protected static DataAdapter<?> getDataAdapter(
+			final JobContext context,
+			final ByteArrayId adapterId ) {
+		return GeoWaveHBaseConfiguratorBase.getDataAdapter(
+				CLASS,
+				context,
+				adapterId);
 	}
 
 	@Override
 	public boolean adapterExists(
-			ByteArrayId adapterId ) {
-		// TODO #406 Need to fix
-		LOGGER.warn("Need to code this method adapterExists1");
-		return false;
+			final ByteArrayId adapterId ) {
+		if (adapterCache.containsKey(adapterId)) {
+			return true;
+		}
+		final DataAdapter<?> adapter = getAdapterInternal(adapterId);
+		return adapter != null;
 	}
 
 	@Override
