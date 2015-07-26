@@ -317,7 +317,7 @@ public class GeoWaveHBaseConfiguratorBase
 					ByteArrayUtils.byteArrayToString(PersistenceUtils.toBinary(index)));
 		}
 	}
-	
+
 	public static DataAdapter<?> getDataAdapter(
 			final Class<?> implementingClass,
 			final JobContext context,

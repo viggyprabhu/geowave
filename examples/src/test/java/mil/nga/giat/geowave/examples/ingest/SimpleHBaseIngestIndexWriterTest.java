@@ -2,8 +2,8 @@ package mil.nga.giat.geowave.examples.ingest;
 
 import org.junit.Test;
 
-public class SimpleIngestIndexWriterTest extends
-		SimpleHBaseIngestTest
+public class SimpleHBaseIngestIndexWriterTest extends
+		SimpleIngestTest
 {
 	@Override
 	@Test

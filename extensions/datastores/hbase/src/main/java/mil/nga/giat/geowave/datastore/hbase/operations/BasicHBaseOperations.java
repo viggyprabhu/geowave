@@ -34,9 +34,15 @@ public class BasicHBaseOperations
 	private static final String HBASE_CONFIGURATION_TIMEOUT = "timeout";
 	private static final String HBASE_CONFIGURATION_ZOOKEEPER_QUORUM = "hbase.zookeeper.quorum";
 	private static final String DEFAULT_TABLE_NAMESPACE = "";
-	private static final String DEFAULT_COLUMN_FAMILY = "GridPoint";
-	private final Connection conn;
+	private static final int DEFAULT_NUM_THREADS = 16;
+	private static final long DEFAULT_TIMEOUT_MILLIS = 1000L; // 1 second
+	private static final long DEFAULT_BYTE_BUFFER_SIZE = 1048576L; // 1 MB
+	private static final String DEFAULT_AUTHORIZATION = null;
+
+	protected Connection conn;
 	private String tableNamespace;
+	
+
 
 	public BasicHBaseOperations(
 			String zookeeperInstances,
@@ -49,9 +55,8 @@ public class BasicHBaseOperations
 		hConf.setInt(
 				HBASE_CONFIGURATION_TIMEOUT,
 				120000);
-
-		conn = ConnectionFactory.createConnection(hConf);
-		tableNamespace = geowaveNamespace;
+		this.conn = ConnectionFactory.createConnection(hConf);
+		this.tableNamespace = geowaveNamespace;
 	}
 
 	public BasicHBaseOperations(
@@ -61,6 +66,20 @@ public class BasicHBaseOperations
 				zookeeperInstances,
 				DEFAULT_TABLE_NAMESPACE);
 	}
+	
+	public BasicHBaseOperations(
+			final Connection connector ) {
+		this(DEFAULT_TABLE_NAMESPACE,
+				connector);
+	}
+
+	public BasicHBaseOperations(
+			final String tableNamespace,
+			final Connection connector ) {
+		this.tableNamespace = tableNamespace;
+		this.conn = connector;
+	}
+	
 
 	public HBaseWriter createWriter(
 			String tableName,

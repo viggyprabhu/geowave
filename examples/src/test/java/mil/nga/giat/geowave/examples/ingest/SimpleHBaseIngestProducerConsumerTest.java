@@ -2,14 +2,15 @@ package mil.nga.giat.geowave.examples.ingest;
 
 import org.junit.Test;
 
-public class SimpleIngestIndexWriterTest extends
+public class SimpleHBaseIngestProducerConsumerTest extends
 		SimpleHBaseIngestTest
 {
 	@Override
 	@Test
 	public void TestIngest() {
-		final SimpleIngestIndexWriter si = new SimpleIngestIndexWriter();
+		final SimpleIngestProducerConsumer si = new SimpleIngestProducerConsumer();
 		si.generateGrid(mockDataStore);
 		validate(mockDataStore);
 	}
+
 }

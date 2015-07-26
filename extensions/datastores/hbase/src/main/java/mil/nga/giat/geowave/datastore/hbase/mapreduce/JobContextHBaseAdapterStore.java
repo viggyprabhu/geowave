@@ -56,7 +56,7 @@ public class JobContextHBaseAdapterStore implements
 		}
 		return adapter;
 	}
-	
+
 	private DataAdapter<?> getAdapterInternal(
 			final ByteArrayId adapterId ) {
 		// first try to get it from the job context
@@ -77,7 +77,7 @@ public class JobContextHBaseAdapterStore implements
 		}
 		return adapter;
 	}
-	
+
 	protected static DataAdapter<?> getDataAdapter(
 			final JobContext context,
 			final ByteArrayId adapterId ) {
