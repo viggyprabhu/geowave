@@ -22,6 +22,7 @@ import mil.nga.giat.geowave.core.store.ScanCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexDependentDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.MemoryAdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
@@ -599,9 +600,29 @@ public class HBaseDataStore implements
 	public <T> CloseableIterator<T> query(
 			DataAdapter<T> adapter,
 			Query query ) {
-		// TODO #406 Need to fix
-		LOGGER.error("This method query2 is not yet coded. Need to fix it");
-		return null;
+		return query(
+				adapter,
+				query,
+				null);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private <T> CloseableIterator<T> query(
+			final DataAdapter<T> adapter,
+			final Query query,
+			final Integer limit ) {
+		store(adapter);
+		return ((CloseableIterator<T>) query(
+				Arrays.asList(new ByteArrayId[] {
+					adapter.getAdapterId()
+				}),
+				query,
+				new MemoryAdapterStore(
+						new DataAdapter[] {
+							adapter
+						}),
+				limit,
+				null));
 	}
 
 	@Override
@@ -620,9 +641,11 @@ public class HBaseDataStore implements
 			Index index,
 			Query query,
 			QueryOptions queryOptions ) {
-		// TODO #406 Need to fix
-		LOGGER.error("This method query3 is not yet coded. Need to fix it");
-		return null;
+		return query(
+				index,
+				query,
+				null,
+				queryOptions);
 	}
 
 	@Override

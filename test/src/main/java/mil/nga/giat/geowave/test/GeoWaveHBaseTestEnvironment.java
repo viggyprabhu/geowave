@@ -32,7 +32,7 @@ public class GeoWaveHBaseTestEnvironment extends
 {
 
 	private final static Logger LOGGER = Logger.getLogger(GeoWaveHBaseTestEnvironment.class);
-	private static BasicHBaseOperations operations;
+	protected static BasicHBaseOperations operations;
 	protected static String zookeeper;
 	protected static File TEMP_DIR = new File(
 			"./target/hbase_temp"); // breaks on windows if temp directory

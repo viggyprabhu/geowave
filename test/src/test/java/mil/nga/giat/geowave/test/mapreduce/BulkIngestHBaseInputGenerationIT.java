@@ -72,9 +72,7 @@ public class BulkIngestHBaseInputGenerationIT
 	}
 
 	private void verifyNumAccumuloKeyValuePairs() {
-		final int accumuloEntriesPerKey = 4; // FeatureDataAdapter creates 4
-												// Accumulo entries per
-												// SimpleFeature
+		final int accumuloEntriesPerKey = 4; 
 		Assert.assertEquals(
 				mapOutputRecords,
 				(NUM_GEONAMES_RECORDS * accumuloEntriesPerKey));

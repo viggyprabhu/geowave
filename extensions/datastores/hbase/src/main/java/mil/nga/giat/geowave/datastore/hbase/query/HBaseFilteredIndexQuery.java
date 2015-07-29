@@ -182,16 +182,17 @@ public abstract class HBaseFilteredIndexQuery extends
 		while (dataAdapters.hasNext()) {
 
 			// dimension fields must be included
+			DataAdapter<?> next = dataAdapters.next();
 			for (ByteArrayId dimension : uniqueDimensions) {
 				scanner.addColumn(
-						dataAdapters.next().getAdapterId().getBytes(),
+						next.getAdapterId().getBytes(),
 						dimension.getBytes());
 			}
 
 			// configure scanner to fetch only the specified fieldIds
 			for (String fieldId : fieldIds) {
 				scanner.addColumn(
-						dataAdapters.next().getAdapterId().getBytes(),
+						next.getAdapterId().getBytes(),
 						StringUtils.stringToBinary(fieldId));
 			}
 		}
