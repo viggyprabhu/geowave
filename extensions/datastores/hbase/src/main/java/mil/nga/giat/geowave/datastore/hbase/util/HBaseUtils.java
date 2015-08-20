@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.NavigableMap;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
@@ -42,6 +43,7 @@ import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Put;
@@ -528,10 +530,23 @@ public class HBaseUtils
 		 * readField(din); // read the value map.add(new KeyValue(
 		 * CellUtil.cloneRow(v), cf, cq, timestamp, valBytes));
 		 */
-		for (Cell c : row.listCells()) {
-			map.add(new KeyValue(
-					c));
-		}
+		NavigableMap<byte[], NavigableMap<byte[], byte[]>> noVersionMap = row.getNoVersionMap();
+		for (byte[] family : noVersionMap.keySet()) {
+			for (byte[] qualifier : noVersionMap.get(
+					family).keySet()) {
+				Cell cell = CellUtil.createCell(
+						row.getRow(),
+						family,
+						qualifier,
+						System.currentTimeMillis(),
+						KeyValue.Type.Put.getCode(),
+						noVersionMap.get(
+								family).get(
+								qualifier));
+				map.add(new KeyValue(
+						cell));
+			}
+ 		}
 		return map;
 	}
 
