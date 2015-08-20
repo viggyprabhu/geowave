@@ -16,6 +16,7 @@ import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
+import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.log4j.Logger;
 
 /**
@@ -147,4 +148,9 @@ public class HBaseConstraintsQuery extends
 		filters.addAll(distributableFilters);
 		return filters;
 	}
+	
+	@Override
+    protected List<Filter> getDistributableFilter() {
+            return new ArrayList<Filter>();
+    }
 }

@@ -19,7 +19,6 @@ import mil.nga.giat.geowave.core.store.ScanCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.dimension.DimensionField;
-import mil.nga.giat.geowave.core.store.filter.FilterList;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.Index;
@@ -31,6 +30,8 @@ import mil.nga.giat.geowave.datastore.hbase.util.EntryIteratorWrapper;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.Iterators;
@@ -99,7 +100,16 @@ public abstract class HBaseFilteredIndexQuery extends
 		}
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
 		Scan scanner = getScanner(limit);
-
+		
+		List<Filter> distributableFilters = getDistributableFilter();
+		if(distributableFilters!= null && distributableFilters.size()>0){
+			FilterList filterList = new FilterList(); 
+			for (Filter filter : distributableFilters) {
+				filterList.addFilter(filter);
+			}
+			scanner.setFilter(filterList);
+ 		}
+		
 		// a subset of fieldIds is being requested
 		if (fieldIds != null && !fieldIds.isEmpty()) {
 			// configure scanner to fetch only the fieldIds specified
@@ -107,12 +117,6 @@ public abstract class HBaseFilteredIndexQuery extends
 					scanner,
 					adapterStore.getAdapters());
 		}
-
-		/*
-		 * if (scanner == null) {
-		 * LOGGER.error("Could not get scanner instance, getScanner returned null"
-		 * ); return new CloseableIterator.Empty(); }
-		 */
 
 		ResultScanner results = null;
 		try {
@@ -144,6 +148,8 @@ public abstract class HBaseFilteredIndexQuery extends
 			return null;
 		}
 	}
+
+	protected abstract List<Filter> getDistributableFilter();
 
 	private Scan getScanner(
 			Integer limit ) {
@@ -219,7 +225,7 @@ public abstract class HBaseFilteredIndexQuery extends
 				adapterStore,
 				index,
 				iterator,
-				new FilterList<QueryFilter>(
+				new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
 						filters),
 				scanCallback);
 	}
