@@ -276,9 +276,9 @@ public class HBaseDataStore implements
 			String... authorizations ) {
 		final String tableName = index.getId().getString();
 		final String altIdxTableName = tableName + HBaseUtils.ALT_INDEX_TABLE;
-		boolean useAltIndex = false;
+		boolean useAltIndex = options.isUseAltIndex();
 		try {
-			useAltIndex = options.isUseAltIndex() && operations.tableExists(altIdxTableName);
+			useAltIndex =  useAltIndex && operations.tableExists(altIdxTableName);
 		}
 		catch (IOException e) {
 			LOGGER.warn("Couldnt not check if " + altIdxTableName + " exists");
@@ -605,7 +605,7 @@ public class HBaseDataStore implements
 				query,
 				null);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private <T> CloseableIterator<T> query(
 			final DataAdapter<T> adapter,
