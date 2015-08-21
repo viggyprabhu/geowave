@@ -10,6 +10,8 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.datastore.hbase.metadata.AbstractHBasePersistence;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellUtil;
 import org.apache.log4j.Logger;
 
 /**
@@ -99,6 +101,16 @@ public class HBaseDataStatisticsStore extends
 	protected ByteArrayId getSecondaryId(
 			final DataStatistics<?> persistedObject ) {
 		return persistedObject.getDataAdapterId();
+	}
+	
+	@Override
+	protected DataStatistics<?> entryToValue(
+			final Cell entry ) {
+		final DataStatistics<?> stats = super.entryToValue(entry);
+		if (stats != null) {
+			stats.setDataAdapterId(getSecondaryId(CellUtil.cloneRow(entry)));
+		}
+		return stats;
 	}
 
 }

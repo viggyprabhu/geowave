@@ -136,6 +136,17 @@ public abstract class AbstractHBasePersistence<T extends Persistable>
 		// secondary indices,
 		return null;
 	}
+	
+	protected ByteArrayId getSecondaryId(
+			final byte[] key ) {
+		return new ByteArrayId(key);
+	}
+
+	protected ByteArrayId getPrimaryId(
+			final byte[] row ) {
+		return new ByteArrayId(
+					row);
+	}
 
 	protected Scan getScanner(
 			final ByteArrayId primaryId,

@@ -148,7 +148,17 @@ public class GeoWaveHBaseTestEnvironment extends
 		GeoWaveMain.main(args);
 		// TODO #406 Currently verifyStats is not implemented in HBase as some
 		// of the common classes are in geowave-datastore-accumulo package.
-		// verifyStats();
+		verifyStats();
+	}
+	
+	private void verifyStats() {
+		GeoWaveMain.main(new String[] {
+			"-hbasestatsdump",
+			"-z",
+			zookeeper,
+			"-n",
+			TEST_NAMESPACE
+		});
 	}
 
 }

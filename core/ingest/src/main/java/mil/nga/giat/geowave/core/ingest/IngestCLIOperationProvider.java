@@ -26,6 +26,11 @@ public class IngestCLIOperationProvider implements
 				new ClearNamespaceDriver(
 						"clear")),
 		new CLIOperation(
+				"clearhbase",
+				"clear ALL data from a GeoWave namespace, this actually deletes hbase tables prefixed by the given namespace",
+				new ClearNamespaceHBaseDriver(
+						"clear")),
+		new CLIOperation(
 				"localingest",
 				"ingest supported files in local file system directly, without using HDFS",
 				new LocalFileIngestDriver(
