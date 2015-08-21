@@ -26,8 +26,8 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
 /**
- * This extends the local file driver to directly ingest data into GeoWave
- * utilizing the LocalFileIngestPlugin's that are discovered by the system.
+ * @author viggy
+ * Functionality similar to <code> LocalFileIngestDriver </code> 
  */
 public class LocalFileIngestHBaseDriver extends
 		AbstractLocalHBaseFileDriver<LocalFileIngestPlugin<?>, IngestRunData>

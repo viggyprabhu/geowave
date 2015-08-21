@@ -11,21 +11,21 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 
 /**
- * This class will run the ingestion process by using a mapper to aggregate key
- * value pairs and a reducer to ingest data into GeoWave.
+ * @author viggy
+ * Functionality similar to <code> IngestWithReducerJobRunner </code> 
  */
 public class IngestWithHBaseReducerJobRunner extends
 		AbstractMapReduceHBaseIngest<IngestWithReducer>
 {
 	public IngestWithHBaseReducerJobRunner(
-			final HBaseCommandLineOptions accumuloOptions,
+			final HBaseCommandLineOptions options,
 			final IngestCommandLineOptions ingestOptions,
 			final Path inputFile,
 			final String typeName,
 			final IngestFromHdfsPlugin parentPlugin,
 			final IngestWithReducer ingestPlugin ) {
 		super(
-				accumuloOptions,
+				options,
 				ingestOptions,
 				inputFile,
 				typeName,

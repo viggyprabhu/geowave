@@ -16,8 +16,8 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 /**
- * This is the map-reduce reducer for ingestion with both the mapper and
- * reducer.
+ * @author viggy
+ * Functionality similar to <code> IngestReducer </code> 
  */
 public class IngestHBaseReducer extends
 		Reducer<WritableComparable<?>, Writable, GeoWaveHBaseOutputKey, Object>

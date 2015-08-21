@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> GeoWaveData </code> 
  */
 public class GeoWaveHBaseData<T>
 {

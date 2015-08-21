@@ -10,21 +10,22 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 
 /**
- * This will run the mapper only ingest process.
+ * @author viggy
+ * Functionality similar to <code> IngestWithMapperJobRunner </code> 
  */
 public class IngestWithHBaseMapperJobRunner extends
 		AbstractMapReduceHBaseIngest<IngestWithMapper>
 {
 
 	public IngestWithHBaseMapperJobRunner(
-			final HBaseCommandLineOptions accumuloOptions,
+			final HBaseCommandLineOptions options,
 			final IngestCommandLineOptions ingestOptions,
 			final Path inputFile,
 			final String typeName,
 			final IngestFromHdfsPlugin plugin,
 			final IngestWithMapper mapperIngest ) {
 		super(
-				accumuloOptions,
+				options,
 				ingestOptions,
 				inputFile,
 				typeName,

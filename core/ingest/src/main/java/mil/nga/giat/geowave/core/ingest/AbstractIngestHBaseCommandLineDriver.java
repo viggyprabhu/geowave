@@ -29,7 +29,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AbstractIngestCommandLineDriver </code> 
  */
 abstract public class AbstractIngestHBaseCommandLineDriver implements
 		CLIOperationDriver

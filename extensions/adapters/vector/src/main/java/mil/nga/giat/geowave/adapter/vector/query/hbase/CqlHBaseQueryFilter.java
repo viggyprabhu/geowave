@@ -34,7 +34,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * @author viggy
- * 
+ * This is a replacement for <code> CqlQueryFilterIterator </code>. This filter will run on 
+ * Tablet Servers. 
  */
 public class CqlHBaseQueryFilter extends
 		FilterBase
@@ -86,7 +87,7 @@ public class CqlHBaseQueryFilter extends
 			}
 			else {
 				final CommonIndexValue fieldValue = reader.readField(CellUtil.cloneValue(v));
-				// Currently we are not supporting Column Visibility
+				// TODO #406 Currently we are not supporting Column Visibility
 				// fieldValue.setVisibility(key.getColumnVisibilityData().getBackingArray());
 				commonData.addValue(new PersistentValue<CommonIndexValue>(
 						fieldId,
@@ -105,13 +106,7 @@ public class CqlHBaseQueryFilter extends
 			final SimpleFeature feature = dataAdapter.decode(
 					encoding,
 					new Index(
-							null, // because we know the feature data adapter
-									// doesn't use the numeric index strategy
-									// and only the common index model to decode
-									// the simple feature, we pass along a null
-									// strategy to eliminate the necessity to
-									// send a serialization of the strategy in
-									// the options of this iterator
+							null, 
 							model));
 			if (feature == null) {
 				return ReturnCode.NEXT_COL;
@@ -128,21 +123,7 @@ public class CqlHBaseQueryFilter extends
 			throws DeserializationException {
 		mil.nga.giat.geowave.adapter.vector.query.hbase.generated.FilterProtos.CqlHBaseQueryFilter proto;
 		try {
-			proto = FilterProtos.CqlHBaseQueryFilter.parseFrom(pbBytes); // co
-																			// CustomFilter-7-Read
-																			// Used
-																			// by
-																			// the
-																			// servers
-																			// to
-																			// establish
-																			// the
-																			// filter
-																			// instance
-																			// with
-																			// the
-																			// correct
-																			// values.
+			proto = FilterProtos.CqlHBaseQueryFilter.parseFrom(pbBytes); 
 			return new CqlHBaseQueryFilter(
 					proto.getGtFilter(),
 					proto.getModel().toByteArray(),
@@ -164,8 +145,6 @@ public class CqlHBaseQueryFilter extends
 	}
 
 	protected boolean defaultFilterResult() {
-		// if the query filter or index model did not get sent to this iterator,
-		// it'll just have to accept everything
 		return true;
 	}
 

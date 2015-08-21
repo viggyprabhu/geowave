@@ -28,43 +28,50 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- *
+ * Functionality similar to <code> DumpStatsOperation </code> 
  */
 public class HBaseDumpStatsOperation implements CLIOperationDriver {
 
 	protected static final Logger LOGGER = Logger.getLogger(StatsOperationCLIProvider.class);
 
-	public boolean doWork(
-			HBaseDataStatisticsStore statsStore,
-			DataStore dataStore,
-			IndexStore indexStore,
-			DataAdapter<?> adapter,
-			String[] authorizations ) {
-		try (CloseableIterator<DataStatistics<?>> statsIt = statsStore.getAllDataStatistics(authorizations)) {
-			while (statsIt.hasNext()) {
-				final DataStatistics<?> stats = statsIt.next();
-				if (adapter != null && !stats.getDataAdapterId().equals(
-						adapter.getAdapterId())) continue;
-				try {
-					System.out.println(stats.toString());
-				}
-				catch (Exception ex) {
-					LOGGER.error(
-							"Malformed statistic",
-							ex);
-				}
+	@Override
+	public void run(
+			final String[] args )
+			throws ParseException {
+		try {
+			final Options allOptions = new Options();
+			HBaseCommandLineOptions.applyOptions(allOptions);
+			StatsCommandLineOptions.applyOptions(
+					allOptions,
+					isTypeRequired());
+			final BasicParser parser = new BasicParser();
+			try {
+				final CommandLine commandLine = parser.parse(
+						allOptions,
+						args);
+				HBaseCommandLineOptions options;
+				options = HBaseCommandLineOptions.parseOptions(commandLine);
+
+				final StatsCommandLineOptions statsOperations = StatsCommandLineOptions.parseOptions(commandLine);
+				runOperation(
+						options.getOperations(),
+						statsOperations.getTypeName() != null ? new ByteArrayId(
+								statsOperations.getTypeName()) : null,
+						getAuthorizations(statsOperations.getAuthorizations()));
+			}
+			catch (final ParseException e) {
+				LOGGER.error(
+						"Unable to parse stats tool arguments",
+						e);
 			}
 		}
-		catch (final Exception ex) {
+		catch (IOException e) {
 			LOGGER.error(
-					"Error while dumping statistics.",
-					ex);
-			return false;
+					"Error while calculating statistics.",
+					e);
 		}
-		return true;
 	}
 	
-
 	public boolean runOperation(
 			final BasicHBaseOperations operations,
 			final ByteArrayId adapterId,
@@ -113,43 +120,34 @@ public class HBaseDumpStatsOperation implements CLIOperationDriver {
 	protected boolean isTypeRequired() {
 		return false;
 	}
-
-	@Override
-	public void run(
-			final String[] args )
-			throws ParseException {
-		try {
-			final Options allOptions = new Options();
-			HBaseCommandLineOptions.applyOptions(allOptions);
-			StatsCommandLineOptions.applyOptions(
-					allOptions,
-					isTypeRequired());
-			final BasicParser parser = new BasicParser();
-			try {
-				final CommandLine commandLine = parser.parse(
-						allOptions,
-						args);
-				HBaseCommandLineOptions options;
-				options = HBaseCommandLineOptions.parseOptions(commandLine);
-
-				final StatsCommandLineOptions statsOperations = StatsCommandLineOptions.parseOptions(commandLine);
-				runOperation(
-						options.getOperations(),
-						statsOperations.getTypeName() != null ? new ByteArrayId(
-								statsOperations.getTypeName()) : null,
-						getAuthorizations(statsOperations.getAuthorizations()));
-			}
-			catch (final ParseException e) {
-				LOGGER.error(
-						"Unable to parse stats tool arguments",
-						e);
+	
+	public boolean doWork(
+			HBaseDataStatisticsStore statsStore,
+			DataStore dataStore,
+			IndexStore indexStore,
+			DataAdapter<?> adapter,
+			String[] authorizations ) {
+		try (CloseableIterator<DataStatistics<?>> statsIt = statsStore.getAllDataStatistics(authorizations)) {
+			while (statsIt.hasNext()) {
+				final DataStatistics<?> stats = statsIt.next();
+				if (adapter != null && !stats.getDataAdapterId().equals(
+						adapter.getAdapterId())) continue;
+				try {
+					System.out.println(stats.toString());
+				}
+				catch (Exception ex) {
+					LOGGER.error(
+							"Malformed statistic",
+							ex);
+				}
 			}
 		}
-		catch (IOException e) {
+		catch (final Exception ex) {
 			LOGGER.error(
-					"Error while calculating statistics.",
-					e);
+					"Error while dumping statistics.",
+					ex);
+			return false;
 		}
+		return true;
 	}
-
 }

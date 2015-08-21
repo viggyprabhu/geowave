@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AbstractLocalFileDriver </code> 
  */
 abstract public class AbstractLocalHBaseFileDriver<P extends LocalPluginBase, R> extends
 		AbstractIngestHBaseCommandLineDriver

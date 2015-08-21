@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> StageToHdfsDriver </code> 
  */
 public class StageToHdfsHBaseDriver extends
 		AbstractLocalHBaseFileDriver<StageToAvroPlugin<?>, StageRunData>

@@ -22,13 +22,8 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.util.Tool;
 
 /**
- * This class can be sub-classed to run map-reduce jobs within the ingest
- * framework using plugins provided by types that are discovered through SPI.
- * 
- * @param <T>
- *            The type of map-reduce ingest plugin that can be persisted to the
- *            map-reduce job configuration and used by the mapper and/or reducer
- *            to ingest data
+ * @author viggy
+ * Functionality similar to <code> AbstractMapReduceIngest </code> 
  */
 abstract public class AbstractMapReduceHBaseIngest<T extends Persistable & DataAdapterProvider> extends
 		Configured implements
