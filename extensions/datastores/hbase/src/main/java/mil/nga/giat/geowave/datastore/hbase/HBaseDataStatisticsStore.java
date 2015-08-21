@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AccumuloDataStatisticsStore </code> 
  */
 public class HBaseDataStatisticsStore extends
 		AbstractHBasePersistence<DataStatistics<?>> implements

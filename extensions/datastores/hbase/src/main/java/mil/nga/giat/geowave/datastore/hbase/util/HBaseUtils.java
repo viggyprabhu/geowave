@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AccumuloUtils </code> 
  */
 public class HBaseUtils
 {

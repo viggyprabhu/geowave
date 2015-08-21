@@ -14,13 +14,13 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> CloseableIteratorWrapper </code> 
  */
-public class CloseableIteratorWrapper<E> implements
+public class HBaseCloseableIteratorWrapper<E> implements
 		CloseableIterator<E>
 {
 
-	private final static Logger LOGGER = Logger.getLogger(CloseableIteratorWrapper.class);
+	private final static Logger LOGGER = Logger.getLogger(HBaseCloseableIteratorWrapper.class);
 
 	public static class ScannerClosableWrapper implements
 			Closeable
@@ -40,7 +40,7 @@ public class CloseableIteratorWrapper<E> implements
 	private final Closeable closeable;
 	private final Iterator<E> iterator;
 
-	public CloseableIteratorWrapper(
+	public HBaseCloseableIteratorWrapper(
 			Closeable closeable,
 			Iterator<E> iterator ) {
 		this.closeable = closeable;

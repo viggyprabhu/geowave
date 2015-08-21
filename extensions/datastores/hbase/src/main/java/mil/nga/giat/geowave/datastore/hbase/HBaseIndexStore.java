@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AccumuloIndexStore </code> 
  */
 public class HBaseIndexStore extends
 		AbstractHBasePersistence<Index> implements

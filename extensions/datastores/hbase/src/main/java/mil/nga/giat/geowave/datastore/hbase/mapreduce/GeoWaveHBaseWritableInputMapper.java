@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> GeoWaveWritableInputMapper </code> 
  */
 public abstract class GeoWaveHBaseWritableInputMapper<KEYOUT, VALUEOUT> extends
 		Mapper<GeoWaveHBaseInputKey, ObjectWritable, KEYOUT, VALUEOUT>
@@ -50,14 +50,6 @@ public abstract class GeoWaveHBaseWritableInputMapper<KEYOUT, VALUEOUT> extends
 
 	}
 
-	/**
-	 * Helper method to create an object writable from a value managed by the
-	 * adapter.
-	 * 
-	 * @param key
-	 * @param value
-	 * @return
-	 */
 	protected ObjectWritable toWritableValue(
 			final GeoWaveHBaseInputKey key,
 			final Object value ) {

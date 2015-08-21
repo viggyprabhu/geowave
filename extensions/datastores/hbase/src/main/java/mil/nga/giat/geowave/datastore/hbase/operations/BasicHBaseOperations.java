@@ -25,7 +25,8 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> BasicAccumuloOperations </code>. 
+ * It is currently not extending any interface like AccumuloOperations to avoid replication.  
  */
 public class BasicHBaseOperations
 {
@@ -34,16 +35,10 @@ public class BasicHBaseOperations
 	private static final String HBASE_CONFIGURATION_TIMEOUT = "timeout";
 	private static final String HBASE_CONFIGURATION_ZOOKEEPER_QUORUM = "hbase.zookeeper.quorum";
 	private static final String DEFAULT_TABLE_NAMESPACE = "";
-	private static final int DEFAULT_NUM_THREADS = 16;
-	private static final long DEFAULT_TIMEOUT_MILLIS = 1000L; // 1 second
-	private static final long DEFAULT_BYTE_BUFFER_SIZE = 1048576L; // 1 MB
-	private static final String DEFAULT_AUTHORIZATION = null;
 
 	protected Connection conn;
 	private String tableNamespace;
 	
-
-
 	public BasicHBaseOperations(
 			String zookeeperInstances,
 			String geowaveNamespace )

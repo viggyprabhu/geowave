@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> JobContextIndexStore </code> 
  */
 public class JobContextHBaseIndexStore implements
 		IndexStore

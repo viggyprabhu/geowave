@@ -12,9 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class encapsulates all of the options and parsed values specific to
- * setting up GeoWave to appropriately connect to Accumulo.
- * 
+ * @author viggy
+ * Functionality similar to <code> AccumuloCommandLineOptions </code> 
  */
 public class HBaseCommandLineOptions
 {

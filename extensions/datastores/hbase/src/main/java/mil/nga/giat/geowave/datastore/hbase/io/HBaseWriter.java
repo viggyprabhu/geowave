@@ -16,7 +16,11 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
+ * Functionality similar to <code> BatchWriterWrapper </code> 
  * 
+ * TODO #406 This class directly writes to the HBase table instead of 
+ * using any existing Writer API provided by HBase.
+ *  
  */
 public class HBaseWriter
 {

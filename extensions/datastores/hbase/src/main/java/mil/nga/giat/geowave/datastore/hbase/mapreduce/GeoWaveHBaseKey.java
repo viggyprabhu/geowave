@@ -10,8 +10,11 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 
 /**
+ * @author viggy
+ * 
  * TODO #406 This is just duplicate of GeoWaveKey and added to not have
- * dependency. It can be merged together
+ * dependency. It can be merged together and moved to a common source directory. 
+ * It is currently needed because this source directory cannot depend on geowave-store-accumulo
  */
 public abstract class GeoWaveHBaseKey implements
 		WritableComparable<GeoWaveHBaseKey>

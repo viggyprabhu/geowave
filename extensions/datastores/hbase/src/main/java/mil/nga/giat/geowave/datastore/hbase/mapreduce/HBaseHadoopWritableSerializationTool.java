@@ -11,19 +11,8 @@ import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Writable;
 
 /**
- * Use this class to maintain a set of serializers per adapters associated with
- * the context of a single mapper or reducer. The intent is to support
- * maintaining single set of Writable instances. By the nature of holding single
- * instances of Writable instances by the serializers, this class and its
- * contents may be only accessed by one 'worker' (at a time).
- * 
- * The helper methods assume all Writable instances are wrapped in an
- * ObjectWritable. The reason for this approach, consistent with other support
- * classes in this package, is to allow mappers and reducers to use the generic
- * ObjectWritable since entry inputs maybe be associated with different
- * adapters, and thus have different associated Writable instances.
- * Configuration of Hadoop Mappers and Reducers requires a specific type.
- * 
+ * @author viggy
+ * Functionality similar to <code> HadoopWritableSerializationTool </code> 
  */
 public class HBaseHadoopWritableSerializationTool
 {

@@ -4,16 +4,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
- * This class is used internally within the ingest process of GeoWave to convert
- * each entry into a set of mutations and iterate through them (maintaining a
- * queue of mutations internally in the case where a single entry converts to
- * multiple mutations). It is generalized to wrap any iterator with a converter
- * to a list of a different type.
- * 
- * @param <InputType>
- *            The type of the input iterator
- * @param <ConvertedType>
- *            The type of the new converted iterator
+ * @author viggy
+ * Functionality similar to <code> IteratorWrapper </code> 
  */
 public class HBaseIteratorWrapper<InputType, ConvertedType> implements
 		Iterator<ConvertedType>

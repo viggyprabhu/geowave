@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AccumuloIndexWriter </code> 
  */
 public class HBaseIndexWriter implements
 		IndexWriter

@@ -10,13 +10,13 @@ import java.util.List;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseCloseableIteratorWrapper;
 
 import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AccumuloRowIdQuery </code> 
  */
 public class HBaseRowIdQuery extends
 		AbstractHBaseRowQuery<Object>
@@ -42,7 +42,7 @@ public class HBaseRowIdQuery extends
 
 	@Override
 	protected Object queryResultFromIterator(
-			CloseableIteratorWrapper<?> it ) {
+			HBaseCloseableIteratorWrapper<?> it ) {
 		Object retVal = null;
 		if (it.hasNext()) {
 			retVal = it.next();

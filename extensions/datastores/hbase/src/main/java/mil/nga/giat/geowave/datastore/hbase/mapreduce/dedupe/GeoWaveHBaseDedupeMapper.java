@@ -12,7 +12,7 @@ import org.apache.hadoop.mapreduce.MapContext;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> GeoWaveDedupeMapper </code> 
  */
 public class GeoWaveHBaseDedupeMapper extends
 		GeoWaveHBaseWritableOutputMapper<GeoWaveHBaseInputKey, Object>

@@ -12,18 +12,13 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.log4j.Logger;
 
 /**
- * This is used internally to translate Accumulo rows into native objects (using
- * the appropriate data adapter). It also performs any client-side filtering. It
- * will peek at the next entry in the accumulo iterator to always maintain a
- * reference to the next value.
- * 
- * @param <T>
- *            The type for the entry
+ * @author viggy
+ * Functionality similar to <code> EntryIteratorWrapper </code> 
  */
-public class EntryIteratorWrapper<T> implements
+public class HBaseEntryIteratorWrapper<T> implements
 		Iterator<T>
 {
-	private final static Logger LOGGER = Logger.getLogger(EntryIteratorWrapper.class);
+	private final static Logger LOGGER = Logger.getLogger(HBaseEntryIteratorWrapper.class);
 	private final AdapterStore adapterStore;
 	private final Index index;
 	private final Iterator<Result> scannerIt;
@@ -32,7 +27,7 @@ public class EntryIteratorWrapper<T> implements
 
 	private T nextValue;
 
-	public EntryIteratorWrapper(
+	public HBaseEntryIteratorWrapper(
 			final AdapterStore adapterStore,
 			final Index index,
 			final Iterator<Result> scannerIt,
@@ -44,7 +39,7 @@ public class EntryIteratorWrapper<T> implements
 		this.scanCallback = null;
 	}
 
-	public EntryIteratorWrapper(
+	public HBaseEntryIteratorWrapper(
 			final AdapterStore adapterStore,
 			final Index index,
 			final Iterator<Result> scannerIt,

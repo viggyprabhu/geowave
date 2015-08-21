@@ -14,7 +14,7 @@ import org.apache.hadoop.io.WritableComparator;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> GeoWaveInputKey </code> 
  */
 public class GeoWaveHBaseInputKey extends
 		GeoWaveHBaseKey

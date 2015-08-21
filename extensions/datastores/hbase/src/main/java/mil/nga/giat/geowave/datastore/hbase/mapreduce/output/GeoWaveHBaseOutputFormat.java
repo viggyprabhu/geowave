@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> GeoWaveOutputFormat </code> 
  */
 public class GeoWaveHBaseOutputFormat extends
 		OutputFormat<GeoWaveHBaseOutputKey, Object>
@@ -53,20 +53,16 @@ public class GeoWaveHBaseOutputFormat extends
 			final JobContext context )
 			throws IOException,
 			InterruptedException {
-		// the two required elements are the AccumuloOperations info and the
-		// Index
 		try {
-			// this should attempt to use the connection info to successfully
-			// connect
 			if (getOperations(context) == null) {
-				LOGGER.warn("Zookeeper connection for accumulo is null");
+				LOGGER.warn("Zookeeper connection for hbase is null");
 				throw new IOException(
-						"Zookeeper connection for accumulo is null");
+						"Zookeeper connection for hbase is null");
 			}
 		}
 		catch (final IOException e) {
 			LOGGER.warn(
-					"Error establishing zookeeper connection for accumulo",
+					"Error establishing zookeeper connection for hbase",
 					e);
 			throw new IOException(
 					e);
@@ -95,7 +91,7 @@ public class GeoWaveHBaseOutputFormat extends
 			throws IOException,
 			InterruptedException {
 		try {
-			// TODO expose GeoWave's AccumuloOptions
+			// TODO #406 expose GeoWave's HBaseOptions(Needs to be done for accumulo also)
 			final BasicHBaseOperations operations = getOperations(context);
 			final AdapterStore adapterStore = new HBaseAdapterStore(
 					operations);
@@ -174,10 +170,6 @@ public class GeoWaveHBaseOutputFormat extends
 				geowaveTableNamespace);
 	}
 
-	/**
-	 * A base class to be used to create {@link RecordWriter} instances that
-	 * write to HBase.
-	 */
 	protected static class GeoWaveHBaseRecordWriter extends
 			RecordWriter<GeoWaveHBaseOutputKey, Object>
 	{
@@ -206,12 +198,6 @@ public class GeoWaveHBaseOutputFormat extends
 			this.indexStore = indexStore;
 		}
 
-		/**
-		 * Push a mutation into a table. If table is null, the defaultTable will
-		 * be used. If canCreateTable is set, the table will be created if it
-		 * does not exist. The table name must only contain alphanumerics and
-		 * underscore.
-		 */
 		@SuppressWarnings({
 			"unchecked",
 			"rawtypes"

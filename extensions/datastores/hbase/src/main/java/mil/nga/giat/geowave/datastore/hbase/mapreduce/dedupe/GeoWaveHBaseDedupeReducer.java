@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> GeoWaveDedupeReducer </code> 
  */
 public class GeoWaveHBaseDedupeReducer extends
 		Reducer<GeoWaveHBaseInputKey, ObjectWritable, GeoWaveHBaseInputKey, ObjectWritable>

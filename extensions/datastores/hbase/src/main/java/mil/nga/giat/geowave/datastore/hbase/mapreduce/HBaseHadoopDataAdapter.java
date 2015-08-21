@@ -9,7 +9,7 @@ import org.apache.hadoop.io.Writable;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> HBaseHadoopDataAdapter </code> 
  */
 public interface HBaseHadoopDataAdapter<T, W extends Writable> extends
 		DataAdapter<T>

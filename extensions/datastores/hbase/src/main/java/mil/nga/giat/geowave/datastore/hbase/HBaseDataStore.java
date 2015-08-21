@@ -41,8 +41,8 @@ import mil.nga.giat.geowave.datastore.hbase.query.HBaseConstraintsQuery;
 import mil.nga.giat.geowave.datastore.hbase.query.HBaseFilteredIndexQuery;
 import mil.nga.giat.geowave.datastore.hbase.query.HBaseRowIdQuery;
 import mil.nga.giat.geowave.datastore.hbase.query.SingleEntryFilter;
-import mil.nga.giat.geowave.datastore.hbase.util.AltIndexIngestCallback;
-import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseAltIndexIngestCallback;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseCloseableIteratorWrapper;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseIteratorWrapper;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseIteratorWrapper.Callback;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseIteratorWrapper.Converter;
@@ -62,7 +62,7 @@ import com.google.common.collect.Iterators;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AccumuloDataStore </code> 
  */
 public class HBaseDataStore implements
 		DataStore
@@ -693,7 +693,7 @@ public class HBaseDataStore implements
 					"unable to close index iterator for query",
 					e);
 		}
-		return new CloseableIteratorWrapper<Object>(
+		return new HBaseCloseableIteratorWrapper<Object>(
 				new Closeable() {
 					@Override
 					public void close()
@@ -860,7 +860,7 @@ public class HBaseDataStore implements
 		// everything
 		clientDedupeFilter.setMultiIndexSupportEnabled(indexCount > 1);
 		// concatenate iterators
-		return new CloseableIteratorWrapper<Object>(
+		return new HBaseCloseableIteratorWrapper<Object>(
 				new Closeable() {
 					@Override
 					public void close()
@@ -926,7 +926,7 @@ public class HBaseDataStore implements
 						dataWriter.getAdapterId().getString(),
 						options.isCreateTable());
 
-				callbacks.add(new AltIndexIngestCallback<T>(
+				callbacks.add(new HBaseAltIndexIngestCallback<T>(
 						altIdxWriter,
 						dataWriter));
 			}

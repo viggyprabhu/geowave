@@ -18,8 +18,8 @@ import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
-import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper;
-import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper.ScannerClosableWrapper;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseCloseableIteratorWrapper;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseCloseableIteratorWrapper.ScannerClosableWrapper;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
 import org.apache.hadoop.hbase.Cell;
@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AbstractAccumuloPersistence </code> 
  */
 public abstract class AbstractHBasePersistence<T extends Persistable>
 {
@@ -48,12 +48,8 @@ public abstract class AbstractHBasePersistence<T extends Persistable>
 			MAX_ENTRIES + 1,
 			.75F,
 			true) {
-		/**
-				 *
-				 */
 		private static final long serialVersionUID = 1L;
 
-		// This method is called just after a new entry has been added
 		@Override
 		public boolean removeEldestEntry(
 				final Map.Entry<ByteArrayId, T> eldest ) {
@@ -132,8 +128,6 @@ public abstract class AbstractHBasePersistence<T extends Persistable>
 
 	protected ByteArrayId getSecondaryId(
 			final T persistedObject ) {
-		// this is the default implementation, if the persistence store requires
-		// secondary indices,
 		return null;
 	}
 	
@@ -239,7 +233,7 @@ public abstract class AbstractHBasePersistence<T extends Persistable>
 					scanner,
 					getTablename());
 			final Iterator<Result> it = rS.iterator();
-			return new CloseableIteratorWrapper<T>(
+			return new HBaseCloseableIteratorWrapper<T>(
 					new ScannerClosableWrapper(
 							rS),
 					new NativeIteratorWrapper(
@@ -321,8 +315,6 @@ public abstract class AbstractHBasePersistence<T extends Persistable>
 			}
 		}
 		catch (final IOException e) {
-			// this is only debug, because if the table doesn't exist, its
-			// essentially empty, but doesn't necessarily indicate an issue
 			LOGGER.debug(
 					"Unable to check existence of object '" + getCombinedId(
 							primaryId,
@@ -373,7 +365,7 @@ public abstract class AbstractHBasePersistence<T extends Persistable>
 					scanner,
 					getTablename());
 			final Iterator<Result> it = rS.iterator();
-			return new CloseableIteratorWrapper<T>(
+			return new HBaseCloseableIteratorWrapper<T>(
 					new ScannerClosableWrapper(
 							rS),
 					new NativeIteratorWrapper(

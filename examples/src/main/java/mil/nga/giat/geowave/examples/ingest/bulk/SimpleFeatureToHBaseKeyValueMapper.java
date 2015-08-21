@@ -11,7 +11,7 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
 import mil.nga.giat.geowave.core.store.data.visibility.UnconstrainedVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.hbase.util.HBaseKeyValuePairGenerator;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseCellGenerator;
 
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
@@ -33,7 +33,7 @@ public class SimpleFeatureToHBaseKeyValueMapper extends
 	private final Index index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 	private final VisibilityWriter<SimpleFeature> visibilityWriter = new UniformVisibilityWriter<SimpleFeature>(
 			new UnconstrainedVisibilityHandler<SimpleFeature, Object>());
-	private HBaseKeyValuePairGenerator<SimpleFeature> generator = new HBaseKeyValuePairGenerator<SimpleFeature>(
+	private HBaseCellGenerator<SimpleFeature> generator = new HBaseCellGenerator<SimpleFeature>(
 			adapter,
 			index,
 			visibilityWriter);

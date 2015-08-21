@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> GeoWaveJobRunner </code> 
  */
 public abstract class GeoWaveHBaseJobRunner extends
 		Configured implements

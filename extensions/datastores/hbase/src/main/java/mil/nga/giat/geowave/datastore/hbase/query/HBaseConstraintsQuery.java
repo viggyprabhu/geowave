@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AccumuloConstraintsQuery </code> 
  */
 public class HBaseConstraintsQuery extends
 		HBaseFilteredIndexQuery

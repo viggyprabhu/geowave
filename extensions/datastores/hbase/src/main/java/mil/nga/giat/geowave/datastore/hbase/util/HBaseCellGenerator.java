@@ -14,14 +14,19 @@ import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.KeyValue;
 
-public class HBaseKeyValuePairGenerator<T>
+/**
+ * @author viggy
+ * Functionality similar to <code> AccumuloKeyValuePairGenerator </code> 
+ * Since HBase already has a concept of Cell, we are using it rather than custom implementation of KeyValue Pair
+ */
+public class HBaseCellGenerator<T>
 {
 
 	private WritableDataAdapter<T> adapter;
 	private Index index;
 	private VisibilityWriter<T> visibilityWriter;
 
-	public HBaseKeyValuePairGenerator(
+	public HBaseCellGenerator(
 			WritableDataAdapter<T> adapter,
 			Index index,
 			VisibilityWriter<T> visibilityWriter ) {

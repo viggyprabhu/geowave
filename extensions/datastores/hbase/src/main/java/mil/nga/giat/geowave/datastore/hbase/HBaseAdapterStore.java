@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AccumuloAdapterStore </code>
  */
 public class HBaseAdapterStore extends
 		AbstractHBasePersistence<DataAdapter<?>> implements

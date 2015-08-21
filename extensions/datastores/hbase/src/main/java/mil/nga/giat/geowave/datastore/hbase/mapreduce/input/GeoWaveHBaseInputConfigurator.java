@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> GeoWaveInputConfigurator </code> 
  */
 public class GeoWaveHBaseInputConfigurator extends
 		GeoWaveHBaseConfiguratorBase

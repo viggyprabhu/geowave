@@ -7,7 +7,7 @@ import org.apache.hadoop.io.Writable;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> HadoopWritableSerializer </code> 
  */
 public interface HBaseHadoopWritableSerializer<T, W extends Writable>
 {

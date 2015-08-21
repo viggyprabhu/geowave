@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AccumuloRowId </code> 
  */
 public class HBaseRowId
 {

@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> GeoWaveConfiguratorBase </code> 
  */
 public class GeoWaveHBaseConfiguratorBase
 {

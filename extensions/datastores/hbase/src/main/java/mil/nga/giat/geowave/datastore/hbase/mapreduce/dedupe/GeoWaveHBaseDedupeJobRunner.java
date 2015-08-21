@@ -20,7 +20,7 @@ import org.apache.hadoop.util.ToolRunner;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> GeoWaveDedupeJobRunner </code> 
  */
 public class GeoWaveHBaseDedupeJobRunner extends
 		GeoWaveHBaseJobRunner

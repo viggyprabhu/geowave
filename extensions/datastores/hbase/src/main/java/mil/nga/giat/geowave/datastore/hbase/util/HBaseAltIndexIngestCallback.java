@@ -5,13 +5,17 @@ import mil.nga.giat.geowave.core.store.IngestCallback;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
 
-public class AltIndexIngestCallback<T> implements
+/**
+ * @author viggy
+ * Functionality similar to <code> AltIndexIngestCallback </code> 
+ */
+public class HBaseAltIndexIngestCallback<T> implements
 		IngestCallback<T>
 {
 	final private HBaseWriter writer;
 	final WritableDataAdapter<T> writeableAdapter;
 
-	public AltIndexIngestCallback(
+	public HBaseAltIndexIngestCallback(
 			final HBaseWriter writer,
 			final WritableDataAdapter<T> writeableAdapter ) {
 		this.writer = writer;

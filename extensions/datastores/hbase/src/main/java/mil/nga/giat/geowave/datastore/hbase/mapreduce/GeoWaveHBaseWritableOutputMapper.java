@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> GeoWaveWritableOutptMapper </code> 
  */
 public abstract class GeoWaveHBaseWritableOutputMapper<KEYIN, VALUEIN> extends
 		Mapper<KEYIN, VALUEIN, GeoWaveHBaseInputKey, ObjectWritable>

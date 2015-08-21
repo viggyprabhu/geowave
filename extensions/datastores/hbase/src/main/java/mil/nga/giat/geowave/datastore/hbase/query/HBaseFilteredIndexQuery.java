@@ -23,9 +23,9 @@ import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
-import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper;
-import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper.ScannerClosableWrapper;
-import mil.nga.giat.geowave.datastore.hbase.util.EntryIteratorWrapper;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseCloseableIteratorWrapper;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseCloseableIteratorWrapper.ScannerClosableWrapper;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseEntryIteratorWrapper;
 
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
@@ -38,7 +38,7 @@ import com.google.common.collect.Iterators;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AccumuloFilteredIndexQuery </code> 
  */
 public abstract class HBaseFilteredIndexQuery extends
 		HBaseQuery
@@ -133,7 +133,7 @@ public abstract class HBaseFilteredIndexQuery extends
 							it,
 							limit);
 				}
-				return new CloseableIteratorWrapper(
+				return new HBaseCloseableIteratorWrapper(
 						new ScannerClosableWrapper(
 								results),
 						it);
@@ -221,7 +221,7 @@ public abstract class HBaseFilteredIndexQuery extends
 		// server side filters and hence they have to run on clients itself. So
 		// need to add server side filters also in list of client filters.
 		List<QueryFilter> filters = getAllFiltersList();
-		return new EntryIteratorWrapper(
+		return new HBaseEntryIteratorWrapper(
 				adapterStore,
 				index,
 				iterator,

@@ -11,9 +11,9 @@ import mil.nga.giat.geowave.core.store.ScanCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
-import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper;
-import mil.nga.giat.geowave.datastore.hbase.util.CloseableIteratorWrapper.ScannerClosableWrapper;
-import mil.nga.giat.geowave.datastore.hbase.util.EntryIteratorWrapper;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseCloseableIteratorWrapper;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseCloseableIteratorWrapper.ScannerClosableWrapper;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseEntryIteratorWrapper;
 
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author viggy
- * 
+ * Functionality similar to <code> AbstractAccumuloRowQuery </code> 
  */
 abstract public class AbstractHBaseRowQuery<T> extends
 		HBaseQuery
@@ -60,10 +60,10 @@ abstract public class AbstractHBaseRowQuery<T> extends
 		 * getScanner( accumuloOperations, getScannerLimit());
 		 * addScanIteratorSettings(scanner);
 		 */
-		final CloseableIteratorWrapper<Object> it = new CloseableIteratorWrapper<Object>(
+		final HBaseCloseableIteratorWrapper<Object> it = new HBaseCloseableIteratorWrapper<Object>(
 				new ScannerClosableWrapper(
 						results),
-				new EntryIteratorWrapper(
+				new HBaseEntryIteratorWrapper(
 						adapterStore,
 						index,
 						results.iterator(),
@@ -74,5 +74,5 @@ abstract public class AbstractHBaseRowQuery<T> extends
 	abstract protected Integer getScannerLimit();
 
 	abstract protected T queryResultFromIterator(
-			final CloseableIteratorWrapper<?> it );
+			final HBaseCloseableIteratorWrapper<?> it );
 }
