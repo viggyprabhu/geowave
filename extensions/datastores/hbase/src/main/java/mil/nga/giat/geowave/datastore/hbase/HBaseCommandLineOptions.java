@@ -12,8 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author viggy
- * Functionality similar to <code> AccumuloCommandLineOptions </code> 
+ * @author viggy Functionality similar to
+ *         <code> AccumuloCommandLineOptions </code>
  */
 public class HBaseCommandLineOptions
 {

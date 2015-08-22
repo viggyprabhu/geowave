@@ -13,7 +13,6 @@ import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.MiniHBaseCluster;
 import org.apache.log4j.Logger;
@@ -48,29 +47,23 @@ public class GeoWaveHBaseTestEnvironment extends
 			if (operations == null) {
 				zookeeper = System.getProperty("zookeeperUrl");
 				if (!isSet(zookeeper)) {
-					try {
-						// TEMP_DIR = Files.createTempDir();
-						if (!TEMP_DIR.exists()) {
-							if (!TEMP_DIR.mkdirs()) {
-								throw new IOException(
-										"Could not create temporary directory");
-							}
-						}
-						TEMP_DIR.deleteOnExit();
-						utilty = new HBaseTestingUtility();
-						utilty.startMiniCluster(2);
-						if (SystemUtils.IS_OS_WINDOWS) {
-							LOGGER.error("Windows installation is not yet supported!!!");
-						}
-						zookeeper = utilty.getZooKeeperWatcher().getBaseZNode();
-						hbaseInstance = utilty.getMiniHBaseCluster();
-					}
-					catch (Exception e) {
-						LOGGER.warn(
-								"Unable to start mini HBase instance",
-								e);
-						Assert.fail("Unable to start mini hbase instance: '" + e.getLocalizedMessage() + "'");
-					}
+					Assert.fail("Currently HBase tests in GeoWave does not support running on mock instances like Accumulo.\n" + "Please provide a live running instance of zookeeper as zookeeperUrl property.");
+					/*
+					 * TODO #406 Currently HBase does tests does not support
+					 * running on mock instances like Accumulo. Need to
+					 * experiment with <code> HBaseTestingUtility </code> and
+					 * check if it suits our purpose. // TEMP_DIR =
+					 * Files.createTempDir(); if (!TEMP_DIR.exists()) { if
+					 * (!TEMP_DIR.mkdirs()) { throw new IOException(
+					 * "Could not create temporary directory"); } }
+					 * TEMP_DIR.deleteOnExit(); utilty = new
+					 * HBaseTestingUtility(); utilty.startMiniCluster(2); if
+					 * (SystemUtils.IS_OS_WINDOWS) {
+					 * LOGGER.error("Windows installation is not yet supported!!!"
+					 * ); } zookeeper =
+					 * utilty.getZooKeeperWatcher().getBaseZNode();
+					 * hbaseInstance = utilty.getMiniHBaseCluster();
+					 */
 				}
 				try {
 					operations = new BasicHBaseOperations(
@@ -113,10 +106,6 @@ public class GeoWaveHBaseTestEnvironment extends
 
 				if (TEMP_DIR != null) {
 					try {
-						// sleep because mini accumulo processes still have a
-						// hold
-						// on the log files and there is no hook to get notified
-						// when it is completely stopped
 						Thread.sleep(1000);
 						FileUtils.deleteDirectory(TEMP_DIR);
 						TEMP_DIR = null;
@@ -146,11 +135,9 @@ public class GeoWaveHBaseTestEnvironment extends
 				"-localhbaseingest -f geotools-vector -b " + ingestFilePath + " -z " + zookeeper + " -n " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
 				' ');
 		GeoWaveMain.main(args);
-		// TODO #406 Currently verifyStats is not implemented in HBase as some
-		// of the common classes are in geowave-datastore-accumulo package.
 		verifyStats();
 	}
-	
+
 	private void verifyStats() {
 		GeoWaveMain.main(new String[] {
 			"-hbasestatsdump",

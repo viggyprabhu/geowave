@@ -23,8 +23,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> StageToHdfsDriver </code> 
+ * @author viggy Functionality similar to <code> StageToHdfsDriver </code>
  */
 public class StageToHdfsHBaseDriver extends
 		AbstractLocalHBaseFileDriver<StageToAvroPlugin<?>, StageRunData>

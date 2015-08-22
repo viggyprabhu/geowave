@@ -33,8 +33,8 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> AbstractAccumuloPersistence </code> 
+ * @author viggy Functionality similar to
+ *         <code> AbstractAccumuloPersistence </code>
  */
 public abstract class AbstractHBasePersistence<T extends Persistable>
 {
@@ -130,16 +130,17 @@ public abstract class AbstractHBasePersistence<T extends Persistable>
 			final T persistedObject ) {
 		return null;
 	}
-	
+
 	protected ByteArrayId getSecondaryId(
 			final byte[] key ) {
-		return new ByteArrayId(key);
+		return new ByteArrayId(
+				key);
 	}
 
 	protected ByteArrayId getPrimaryId(
 			final byte[] row ) {
 		return new ByteArrayId(
-					row);
+				row);
 	}
 
 	protected Scan getScanner(

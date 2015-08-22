@@ -12,8 +12,7 @@ import mil.nga.giat.geowave.datastore.hbase.mapreduce.output.GeoWaveHBaseOutputK
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> GeoWaveData </code> 
+ * @author viggy Functionality similar to <code> GeoWaveData </code>
  */
 public class GeoWaveHBaseData<T>
 {

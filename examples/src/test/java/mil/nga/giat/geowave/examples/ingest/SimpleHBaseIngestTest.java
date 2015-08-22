@@ -42,18 +42,20 @@ public class SimpleHBaseIngestTest
 	@Before
 	public void setUp() {
 		Connection connection = null;
-		testUtil.getConfiguration().addResource("hbase-site-local.xml");
+		testUtil.getConfiguration().addResource(
+				"hbase-site-local.xml");
 		testUtil.getConfiguration().reloadConfiguration();
 		// start mini hbase cluster
 		try {
 			testUtil.startMiniCluster(1);
 			connection = testUtil.getConnection();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			LOGGER.error(
 					"Failed to create HBase MiniCluster",
 					e);
 		}
-		
+
 		hbaseOperations = new BasicHBaseOperations(
 				connection);
 

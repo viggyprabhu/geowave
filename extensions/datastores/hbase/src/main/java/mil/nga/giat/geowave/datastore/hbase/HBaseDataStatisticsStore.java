@@ -15,8 +15,8 @@ import org.apache.hadoop.hbase.CellUtil;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> AccumuloDataStatisticsStore </code> 
+ * @author viggy Functionality similar to
+ *         <code> AccumuloDataStatisticsStore </code>
  */
 public class HBaseDataStatisticsStore extends
 		AbstractHBasePersistence<DataStatistics<?>> implements
@@ -102,7 +102,7 @@ public class HBaseDataStatisticsStore extends
 			final DataStatistics<?> persistedObject ) {
 		return persistedObject.getDataAdapterId();
 	}
-	
+
 	@Override
 	protected DataStatistics<?> entryToValue(
 			final Cell entry ) {

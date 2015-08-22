@@ -38,8 +38,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> GeoWaveOutputFormat </code> 
+ * @author viggy Functionality similar to <code> GeoWaveOutputFormat </code>
  */
 public class GeoWaveHBaseOutputFormat extends
 		OutputFormat<GeoWaveHBaseOutputKey, Object>
@@ -91,7 +90,8 @@ public class GeoWaveHBaseOutputFormat extends
 			throws IOException,
 			InterruptedException {
 		try {
-			// TODO #406 expose GeoWave's HBaseOptions(Needs to be done for accumulo also)
+			// TODO #406 expose GeoWave's HBaseOptions(Needs to be done for
+			// accumulo also)
 			final BasicHBaseOperations operations = getOperations(context);
 			final AdapterStore adapterStore = new HBaseAdapterStore(
 					operations);

@@ -66,8 +66,10 @@ public class SimpleFeatureToHBaseKeyValueMapper extends
 		// on MapReduce to sort by Key
 		for (Cell keyValue : keyValuePairs) {
 			context.write(
-					new ImmutableBytesWritable(CellUtil.cloneRow(keyValue)),
-					new ImmutableBytesWritable(CellUtil.cloneValue(keyValue)));
+					new ImmutableBytesWritable(
+							CellUtil.cloneRow(keyValue)),
+					new ImmutableBytesWritable(
+							CellUtil.cloneValue(keyValue)));
 		}
 	}
 

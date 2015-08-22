@@ -4,8 +4,7 @@
 package mil.nga.giat.geowave.datastore.hbase;
 
 /**
- * @author viggy
- * Functionality similar to <code> AccumuloOptions </code> 
+ * @author viggy Functionality similar to <code> AccumuloOptions </code>
  */
 public class HBaseOptions
 {

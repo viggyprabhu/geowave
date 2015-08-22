@@ -11,8 +11,8 @@ import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Writable;
 
 /**
- * @author viggy
- * Functionality similar to <code> HadoopWritableSerializationTool </code> 
+ * @author viggy Functionality similar to
+ *         <code> HadoopWritableSerializationTool </code>
  */
 public class HBaseHadoopWritableSerializationTool
 {

@@ -27,8 +27,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> IngestFromHdfsDriver </code> 
+ * @author viggy Functionality similar to <code> IngestFromHdfsDriver </code>
  */
 public class IngestFromHBaseHdfsDriver extends
 		AbstractIngestHBaseCommandLineDriver

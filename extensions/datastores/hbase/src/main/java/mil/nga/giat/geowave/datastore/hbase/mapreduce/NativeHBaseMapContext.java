@@ -28,8 +28,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.security.Credentials;
 
 /**
- * @author viggy
- * Functionality similar to <code> NativeMapContext </code> 
+ * @author viggy Functionality similar to <code> NativeMapContext </code>
  */
 public class NativeHBaseMapContext<KEYIN, VALUEIN> implements
 		MapContext<KEYIN, VALUEIN, GeoWaveHBaseInputKey, Object>

@@ -29,8 +29,7 @@ import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> AccumuloIndexWriter </code> 
+ * @author viggy Functionality similar to <code> AccumuloIndexWriter </code>
  */
 public class HBaseIndexWriter implements
 		IndexWriter

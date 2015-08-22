@@ -37,8 +37,8 @@ import org.apache.log4j.Logger;
 import com.google.common.collect.Iterators;
 
 /**
- * @author viggy
- * Functionality similar to <code> AccumuloFilteredIndexQuery </code> 
+ * @author viggy Functionality similar to
+ *         <code> AccumuloFilteredIndexQuery </code>
  */
 public abstract class HBaseFilteredIndexQuery extends
 		HBaseQuery
@@ -100,16 +100,16 @@ public abstract class HBaseFilteredIndexQuery extends
 		}
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
 		Scan scanner = getScanner(limit);
-		
+
 		List<Filter> distributableFilters = getDistributableFilter();
-		if(distributableFilters!= null && distributableFilters.size()>0){
-			FilterList filterList = new FilterList(); 
+		if (distributableFilters != null && distributableFilters.size() > 0) {
+			FilterList filterList = new FilterList();
 			for (Filter filter : distributableFilters) {
 				filterList.addFilter(filter);
 			}
 			scanner.setFilter(filterList);
- 		}
-		
+		}
+
 		// a subset of fieldIds is being requested
 		if (fieldIds != null && !fieldIds.isEmpty()) {
 			// configure scanner to fetch only the fieldIds specified

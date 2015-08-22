@@ -16,8 +16,7 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 /**
- * @author viggy
- * Functionality similar to <code> IngestReducer </code> 
+ * @author viggy Functionality similar to <code> IngestReducer </code>
  */
 public class IngestHBaseReducer extends
 		Reducer<WritableComparable<?>, Writable, GeoWaveHBaseOutputKey, Object>
@@ -46,10 +45,11 @@ public class IngestHBaseReducer extends
 			}
 		}
 	}
-	
-	//TODO #406 Need to fix this ugly GeoWaveData to GeoWaveHBaseData conversion
-	private CloseableIterator<GeoWaveHBaseData> convertDataToHBaseData( final 
-			CloseableIterator<GeoWaveData> geoWaveData) {
+
+	// TODO #406 Need to fix this ugly GeoWaveData to GeoWaveHBaseData
+	// conversion
+	private CloseableIterator<GeoWaveHBaseData> convertDataToHBaseData(
+			final CloseableIterator<GeoWaveData> geoWaveData ) {
 		CloseableIterator<GeoWaveHBaseData> data = new CloseableIterator<GeoWaveHBaseData>() {
 
 			@Override
@@ -60,7 +60,10 @@ public class IngestHBaseReducer extends
 			@Override
 			public GeoWaveHBaseData next() {
 				GeoWaveData d = geoWaveData.next();
-				GeoWaveHBaseData next = new GeoWaveHBaseData(d.getAdapterId(), d.getIndexId(), d.getValue());
+				GeoWaveHBaseData next = new GeoWaveHBaseData(
+						d.getAdapterId(),
+						d.getIndexId(),
+						d.getValue());
 				return next;
 			}
 
@@ -70,11 +73,12 @@ public class IngestHBaseReducer extends
 			}
 
 			@Override
-			public void close() throws IOException {
+			public void close()
+					throws IOException {
 				geoWaveData.close();
 			}
 		};
-		
+
 		return data;
 	}
 

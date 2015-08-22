@@ -12,8 +12,7 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> EntryIteratorWrapper </code> 
+ * @author viggy Functionality similar to <code> EntryIteratorWrapper </code>
  */
 public class HBaseEntryIteratorWrapper<T> implements
 		Iterator<T>

@@ -15,9 +15,10 @@ import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.KeyValue;
 
 /**
- * @author viggy
- * Functionality similar to <code> AccumuloKeyValuePairGenerator </code> 
- * Since HBase already has a concept of Cell, we are using it rather than custom implementation of KeyValue Pair
+ * @author viggy Functionality similar to
+ *         <code> AccumuloKeyValuePairGenerator </code> Since HBase already has
+ *         a concept of Cell, we are using it rather than custom implementation
+ *         of KeyValue Pair
  */
 public class HBaseCellGenerator<T>
 {

@@ -72,7 +72,7 @@ public class GeoWaveData<T>
 	public T getValue() {
 		return data;
 	}
-	
+
 	public ByteArrayId getAdapterId() {
 		return adapterId;
 	}

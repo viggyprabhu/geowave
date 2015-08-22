@@ -10,8 +10,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 
 /**
- * @author viggy
- * Functionality similar to <code> IngestWithMapperJobRunner </code> 
+ * @author viggy Functionality similar to
+ *         <code> IngestWithMapperJobRunner </code>
  */
 public class IngestWithHBaseMapperJobRunner extends
 		AbstractMapReduceHBaseIngest<IngestWithMapper>

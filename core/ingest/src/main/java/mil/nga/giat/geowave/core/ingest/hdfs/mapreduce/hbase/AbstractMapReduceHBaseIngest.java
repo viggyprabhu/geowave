@@ -22,8 +22,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.util.Tool;
 
 /**
- * @author viggy
- * Functionality similar to <code> AbstractMapReduceIngest </code> 
+ * @author viggy Functionality similar to <code> AbstractMapReduceIngest </code>
  */
 abstract public class AbstractMapReduceHBaseIngest<T extends Persistable & DataAdapterProvider> extends
 		Configured implements

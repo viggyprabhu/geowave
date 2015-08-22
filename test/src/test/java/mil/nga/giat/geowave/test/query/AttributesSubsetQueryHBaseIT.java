@@ -1,6 +1,5 @@
 package mil.nga.giat.geowave.test.query;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,8 +75,8 @@ public class AttributesSubsetQueryHBaseIT extends
 		dataAdapter = new FeatureDataAdapter(
 				simpleFeatureType);
 
-		dataStore = new HBaseDataStore(operations
-				);
+		dataStore = new HBaseDataStore(
+				operations);
 
 		ingestSampleData();
 	}

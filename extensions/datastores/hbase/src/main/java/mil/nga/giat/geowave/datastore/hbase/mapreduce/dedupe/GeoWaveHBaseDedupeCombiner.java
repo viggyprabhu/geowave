@@ -12,8 +12,7 @@ import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 /**
- * @author viggy
- * Functionality similar to <code> GeoWaveDedupeCombiner </code> 
+ * @author viggy Functionality similar to <code> GeoWaveDedupeCombiner </code>
  */
 public class GeoWaveHBaseDedupeCombiner extends
 		Reducer<GeoWaveHBaseInputKey, ObjectWritable, GeoWaveHBaseInputKey, ObjectWritable>

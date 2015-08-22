@@ -19,8 +19,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
- * @author viggy
- * Functionality similar to <code> GeoWaveDedupeJobRunner </code> 
+ * @author viggy Functionality similar to <code> GeoWaveDedupeJobRunner </code>
  */
 public class GeoWaveHBaseDedupeJobRunner extends
 		GeoWaveHBaseJobRunner

@@ -45,9 +45,10 @@ public class IngestHBaseMapper extends
 		}
 	}
 
-	//TODO #406 Need to fix this ugly GeoWaveData to GeoWaveHBaseData conversion
-	private CloseableIterator<GeoWaveHBaseData> convertDataToHBaseData( final 
-			CloseableIterator<GeoWaveData> geoWaveData) {
+	// TODO #406 Need to fix this ugly GeoWaveData to GeoWaveHBaseData
+	// conversion
+	private CloseableIterator<GeoWaveHBaseData> convertDataToHBaseData(
+			final CloseableIterator<GeoWaveData> geoWaveData ) {
 		CloseableIterator<GeoWaveHBaseData> data = new CloseableIterator<GeoWaveHBaseData>() {
 
 			@Override
@@ -58,7 +59,10 @@ public class IngestHBaseMapper extends
 			@Override
 			public GeoWaveHBaseData next() {
 				GeoWaveData d = geoWaveData.next();
-				GeoWaveHBaseData next = new GeoWaveHBaseData(d.getAdapterId(), d.getIndexId(), d.getValue());
+				GeoWaveHBaseData next = new GeoWaveHBaseData(
+						d.getAdapterId(),
+						d.getIndexId(),
+						d.getValue());
 				return next;
 			}
 
@@ -68,11 +72,12 @@ public class IngestHBaseMapper extends
 			}
 
 			@Override
-			public void close() throws IOException {
+			public void close()
+					throws IOException {
 				geoWaveData.close();
 			}
 		};
-		
+
 		return data;
 	}
 

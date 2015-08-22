@@ -13,8 +13,7 @@ import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> AccumuloIndexStore </code> 
+ * @author viggy Functionality similar to <code> AccumuloIndexStore </code>
  */
 public class HBaseIndexStore extends
 		AbstractHBasePersistence<Index> implements

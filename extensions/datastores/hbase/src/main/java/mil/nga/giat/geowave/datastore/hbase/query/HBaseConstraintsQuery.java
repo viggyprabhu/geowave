@@ -20,8 +20,8 @@ import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> AccumuloConstraintsQuery </code> 
+ * @author viggy Functionality similar to
+ *         <code> AccumuloConstraintsQuery </code>
  */
 public class HBaseConstraintsQuery extends
 		HBaseFilteredIndexQuery
@@ -148,9 +148,9 @@ public class HBaseConstraintsQuery extends
 		filters.addAll(distributableFilters);
 		return filters;
 	}
-	
+
 	@Override
-    protected List<Filter> getDistributableFilter() {
-            return new ArrayList<Filter>();
-    }
+	protected List<Filter> getDistributableFilter() {
+		return new ArrayList<Filter>();
+	}
 }

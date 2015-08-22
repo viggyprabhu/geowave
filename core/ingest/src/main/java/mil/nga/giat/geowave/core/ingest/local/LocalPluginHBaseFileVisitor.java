@@ -20,8 +20,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> LocalPluginFileVisitor </code> 
+ * @author viggy Functionality similar to <code> LocalPluginFileVisitor </code>
  */
 public class LocalPluginHBaseFileVisitor<P extends LocalPluginBase, R> implements
 		FileVisitor<Path>

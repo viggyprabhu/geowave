@@ -26,8 +26,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> LocalFileIngestDriver </code> 
+ * @author viggy Functionality similar to <code> LocalFileIngestDriver </code>
  */
 public class LocalFileIngestHBaseDriver extends
 		AbstractLocalHBaseFileDriver<LocalFileIngestPlugin<?>, IngestRunData>

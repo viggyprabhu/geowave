@@ -13,8 +13,8 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> CloseableIteratorWrapper </code> 
+ * @author viggy Functionality similar to
+ *         <code> CloseableIteratorWrapper </code>
  */
 public class HBaseCloseableIteratorWrapper<E> implements
 		CloseableIterator<E>

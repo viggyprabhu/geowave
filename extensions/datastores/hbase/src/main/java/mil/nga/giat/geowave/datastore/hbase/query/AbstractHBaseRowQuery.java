@@ -20,8 +20,8 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> AbstractAccumuloRowQuery </code> 
+ * @author viggy Functionality similar to
+ *         <code> AbstractAccumuloRowQuery </code>
  */
 abstract public class AbstractHBaseRowQuery<T> extends
 		HBaseQuery

@@ -7,8 +7,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 /**
- * @author viggy
- * Functionality similar to <code> MultiStageCommandLineDriver </code> 
+ * @author viggy Functionality similar to
+ *         <code> MultiStageCommandLineDriver </code>
  */
 public class MultiStageHBaseCommandLineDriver extends
 		AbstractIngestHBaseCommandLineDriver

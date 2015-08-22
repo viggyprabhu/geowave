@@ -20,8 +20,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> GeoWaveConfiguratorBase </code> 
+ * @author viggy Functionality similar to <code> GeoWaveConfiguratorBase </code>
  */
 public class GeoWaveHBaseConfiguratorBase
 {

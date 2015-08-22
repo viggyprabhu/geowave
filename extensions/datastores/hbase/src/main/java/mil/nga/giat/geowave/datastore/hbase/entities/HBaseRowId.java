@@ -7,8 +7,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /**
- * @author viggy
- * Functionality similar to <code> AccumuloRowId </code> 
+ * @author viggy Functionality similar to <code> AccumuloRowId </code>
  */
 public class HBaseRowId
 {

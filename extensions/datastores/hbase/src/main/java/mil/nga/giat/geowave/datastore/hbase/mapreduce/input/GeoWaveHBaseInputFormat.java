@@ -27,8 +27,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> GeoWaveInputFormat </code> 
+ * @author viggy Functionality similar to <code> GeoWaveInputFormat </code>
  */
 public class GeoWaveHBaseInputFormat<T> extends
 		InputFormat<GeoWaveHBaseInputKey, T>
@@ -44,7 +43,7 @@ public class GeoWaveHBaseInputFormat<T> extends
 			throws IOException,
 			InterruptedException {
 		// TODO #406 Need to fix
-		
+
 		final List<InputSplit> retVal = new ArrayList<InputSplit>();
 		LOGGER.error("This method getSplits1 is not yet coded. Need to fix it");
 		return retVal;

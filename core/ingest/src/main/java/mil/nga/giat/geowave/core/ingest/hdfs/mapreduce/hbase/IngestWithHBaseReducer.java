@@ -11,8 +11,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * @author viggy
- * Functionality similar to <code> IngestWithReducer </code> 
+ * @author viggy Functionality similar to <code> IngestWithReducer </code>
  */
 public interface IngestWithHBaseReducer<I, K extends WritableComparable<?>, V extends Writable, O> extends
 		DataAdapterProvider<O>,

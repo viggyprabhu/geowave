@@ -61,8 +61,7 @@ import org.apache.log4j.Logger;
 import com.google.common.collect.Iterators;
 
 /**
- * @author viggy
- * Functionality similar to <code> AccumuloDataStore </code> 
+ * @author viggy Functionality similar to <code> AccumuloDataStore </code>
  */
 public class HBaseDataStore implements
 		DataStore
@@ -278,7 +277,7 @@ public class HBaseDataStore implements
 		final String altIdxTableName = tableName + HBaseUtils.ALT_INDEX_TABLE;
 		boolean useAltIndex = options.isUseAltIndex();
 		try {
-			useAltIndex =  useAltIndex && operations.tableExists(altIdxTableName);
+			useAltIndex = useAltIndex && operations.tableExists(altIdxTableName);
 		}
 		catch (IOException e) {
 			LOGGER.warn("Couldnt not check if " + altIdxTableName + " exists");

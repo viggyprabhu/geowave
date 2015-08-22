@@ -15,8 +15,7 @@ import mil.nga.giat.geowave.datastore.hbase.util.HBaseCloseableIteratorWrapper;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> AccumuloRowIdQuery </code> 
+ * @author viggy Functionality similar to <code> AccumuloRowIdQuery </code>
  */
 public class HBaseRowIdQuery extends
 		AbstractHBaseRowQuery<Object>

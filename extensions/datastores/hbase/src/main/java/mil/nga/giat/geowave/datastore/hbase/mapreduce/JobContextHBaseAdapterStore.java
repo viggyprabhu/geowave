@@ -18,8 +18,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> JobContextAdapterStore </code> 
+ * @author viggy Functionality similar to <code> JobContextAdapterStore </code>
  */
 public class JobContextHBaseAdapterStore implements
 		AdapterStore

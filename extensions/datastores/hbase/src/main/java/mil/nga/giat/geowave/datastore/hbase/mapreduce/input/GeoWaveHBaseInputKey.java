@@ -13,8 +13,7 @@ import mil.nga.giat.geowave.datastore.hbase.mapreduce.GeoWaveHBaseKey;
 import org.apache.hadoop.io.WritableComparator;
 
 /**
- * @author viggy
- * Functionality similar to <code> GeoWaveInputKey </code> 
+ * @author viggy Functionality similar to <code> GeoWaveInputKey </code>
  */
 public class GeoWaveHBaseInputKey extends
 		GeoWaveHBaseKey

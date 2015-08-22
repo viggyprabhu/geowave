@@ -13,8 +13,8 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> GeoWaveWritableInputMapper </code> 
+ * @author viggy Functionality similar to
+ *         <code> GeoWaveWritableInputMapper </code>
  */
 public abstract class GeoWaveHBaseWritableInputMapper<KEYOUT, VALUEOUT> extends
 		Mapper<GeoWaveHBaseInputKey, ObjectWritable, KEYOUT, VALUEOUT>

@@ -4,8 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
- * @author viggy
- * Functionality similar to <code> IteratorWrapper </code> 
+ * @author viggy Functionality similar to <code> IteratorWrapper </code>
  */
 public class HBaseIteratorWrapper<InputType, ConvertedType> implements
 		Iterator<ConvertedType>

@@ -24,9 +24,9 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> BasicAccumuloOperations </code>. 
- * It is currently not extending any interface like AccumuloOperations to avoid replication.  
+ * @author viggy Functionality similar to <code> BasicAccumuloOperations </code>
+ *         . It is currently not extending any interface like AccumuloOperations
+ *         to avoid replication.
  */
 public class BasicHBaseOperations
 {
@@ -38,7 +38,7 @@ public class BasicHBaseOperations
 
 	protected Connection conn;
 	private String tableNamespace;
-	
+
 	public BasicHBaseOperations(
 			String zookeeperInstances,
 			String geowaveNamespace )
@@ -61,10 +61,11 @@ public class BasicHBaseOperations
 				zookeeperInstances,
 				DEFAULT_TABLE_NAMESPACE);
 	}
-	
+
 	public BasicHBaseOperations(
 			final Connection connector ) {
-		this(DEFAULT_TABLE_NAMESPACE,
+		this(
+				DEFAULT_TABLE_NAMESPACE,
 				connector);
 	}
 
@@ -74,7 +75,6 @@ public class BasicHBaseOperations
 		this.tableNamespace = tableNamespace;
 		this.conn = connector;
 	}
-	
 
 	public HBaseWriter createWriter(
 			String tableName,

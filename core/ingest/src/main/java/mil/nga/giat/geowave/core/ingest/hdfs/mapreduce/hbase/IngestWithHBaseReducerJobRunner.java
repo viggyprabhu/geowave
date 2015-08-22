@@ -11,8 +11,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 
 /**
- * @author viggy
- * Functionality similar to <code> IngestWithReducerJobRunner </code> 
+ * @author viggy Functionality similar to
+ *         <code> IngestWithReducerJobRunner </code>
  */
 public class IngestWithHBaseReducerJobRunner extends
 		AbstractMapReduceHBaseIngest<IngestWithReducer>

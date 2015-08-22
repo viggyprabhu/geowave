@@ -33,9 +33,8 @@ import org.opengis.feature.simple.SimpleFeature;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
- * @author viggy
- * This is a replacement for <code> CqlQueryFilterIterator </code>. This filter will run on 
- * Tablet Servers. 
+ * @author viggy This is a replacement for <code> CqlQueryFilterIterator </code>
+ *         . This filter will run on Tablet Servers.
  */
 public class CqlHBaseQueryFilter extends
 		FilterBase
@@ -106,7 +105,7 @@ public class CqlHBaseQueryFilter extends
 			final SimpleFeature feature = dataAdapter.decode(
 					encoding,
 					new Index(
-							null, 
+							null,
 							model));
 			if (feature == null) {
 				return ReturnCode.NEXT_COL;
@@ -123,7 +122,7 @@ public class CqlHBaseQueryFilter extends
 			throws DeserializationException {
 		mil.nga.giat.geowave.adapter.vector.query.hbase.generated.FilterProtos.CqlHBaseQueryFilter proto;
 		try {
-			proto = FilterProtos.CqlHBaseQueryFilter.parseFrom(pbBytes); 
+			proto = FilterProtos.CqlHBaseQueryFilter.parseFrom(pbBytes);
 			return new CqlHBaseQueryFilter(
 					proto.getGtFilter(),
 					proto.getModel().toByteArray(),

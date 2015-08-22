@@ -12,8 +12,7 @@ import mil.nga.giat.geowave.core.store.index.Index;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> AccumuloQuery </code> 
+ * @author viggy Functionality similar to <code> AccumuloQuery </code>
  */
 abstract public class HBaseQuery
 {

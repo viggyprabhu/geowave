@@ -52,8 +52,7 @@ import org.apache.hadoop.hbase.client.RowMutations;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> AccumuloUtils </code> 
+ * @author viggy Functionality similar to <code> AccumuloUtils </code>
  */
 public class HBaseUtils
 {
@@ -546,7 +545,7 @@ public class HBaseUtils
 				map.add(new KeyValue(
 						cell));
 			}
- 		}
+		}
 		return map;
 	}
 

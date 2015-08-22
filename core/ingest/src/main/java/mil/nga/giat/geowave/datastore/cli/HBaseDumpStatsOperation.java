@@ -27,10 +27,11 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
 /**
- * @author viggy
- * Functionality similar to <code> DumpStatsOperation </code> 
+ * @author viggy Functionality similar to <code> DumpStatsOperation </code>
  */
-public class HBaseDumpStatsOperation implements CLIOperationDriver {
+public class HBaseDumpStatsOperation implements
+		CLIOperationDriver
+{
 
 	protected static final Logger LOGGER = Logger.getLogger(StatsOperationCLIProvider.class);
 
@@ -71,7 +72,7 @@ public class HBaseDumpStatsOperation implements CLIOperationDriver {
 					e);
 		}
 	}
-	
+
 	public boolean runOperation(
 			final BasicHBaseOperations operations,
 			final ByteArrayId adapterId,
@@ -103,7 +104,7 @@ public class HBaseDumpStatsOperation implements CLIOperationDriver {
 				adapter,
 				authorizations);
 	}
-	
+
 	private static String[] getAuthorizations(
 			final String auths ) {
 		if ((auths == null) || (auths.length() == 0)) {
@@ -120,7 +121,7 @@ public class HBaseDumpStatsOperation implements CLIOperationDriver {
 	protected boolean isTypeRequired() {
 		return false;
 	}
-	
+
 	public boolean doWork(
 			HBaseDataStatisticsStore statsStore,
 			DataStore dataStore,
