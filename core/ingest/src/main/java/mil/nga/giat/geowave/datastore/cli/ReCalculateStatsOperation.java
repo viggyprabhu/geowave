@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.datastore.accumulo.cli;
+package mil.nga.giat.geowave.datastore.cli;
 
 import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
 import mil.nga.giat.geowave.core.store.CloseableIterator;

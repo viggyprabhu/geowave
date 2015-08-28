@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.datastore.accumulo.cli;
+package mil.nga.giat.geowave.datastore.cli;
 
 import java.io.IOException;
 
@@ -13,7 +13,6 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOptions;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
