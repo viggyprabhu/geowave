@@ -70,9 +70,10 @@ public class CqlHBaseQueryFilter extends
 			final PersistentDataset<CommonIndexValue> commonData = new PersistentDataset<CommonIndexValue>();
 			final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
 
-			//TODO #406 Need to fix this. Adding it currently to just fix compilation issue due to merge with #238
+			// TODO #406 Need to fix this. Adding it currently to just fix
+			// compilation issue due to merge with #238
 			final PersistentDataset<byte[]> unknownData = new PersistentDataset<byte[]>();
-			
+
 			final ByteArrayId fieldId = new ByteArrayId(
 					CellUtil.cloneQualifier(v));
 			final FieldReader<? extends CommonIndexValue> reader = model.getReader(fieldId);

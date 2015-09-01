@@ -115,7 +115,9 @@ public class HBaseDumpStatsOperation implements
 	}
 
 	@Override
-	public void runOperation(String[] args) throws ParseException {
+	public void runOperation(
+			String[] args )
+			throws ParseException {
 		try {
 			final Options allOptions = new Options();
 			HBaseCommandLineOptions.applyOptions(allOptions);

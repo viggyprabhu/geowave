@@ -1,12 +1,12 @@
 package mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.hbase;
 
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.ingest.IngestCommandLineOptions;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.AbstractMapReduceIngest;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestFromHdfsPlugin;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithReducer;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IntermediateKeyValueMapper;
 import mil.nga.giat.geowave.core.store.filter.GenericTypeResolver;
-import mil.nga.giat.geowave.datastore.hbase.HBaseCommandLineOptions;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
@@ -19,7 +19,7 @@ public class IngestWithHBaseReducerJobRunner extends
 		AbstractMapReduceIngest<IngestWithReducer>
 {
 	public IngestWithHBaseReducerJobRunner(
-			final HBaseCommandLineOptions options,
+			final DataStoreCommandLineOptions options,
 			final IngestCommandLineOptions ingestOptions,
 			final Path inputFile,
 			final String typeName,

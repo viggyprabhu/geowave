@@ -251,7 +251,7 @@ public class HBaseIndexWriter implements
 	public void flush() {
 		// TODO #406 Need to fix
 		LOGGER.error("This method flush is not yet coded. Need to fix it");
-		
+
 	}
 
 }

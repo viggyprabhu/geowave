@@ -114,20 +114,23 @@ public class HBaseDataStatisticsStore extends
 	}
 
 	@Override
-	public void removeAllStatistics(ByteArrayId adapterId,
-			String... authorizations) {
+	public void removeAllStatistics(
+			ByteArrayId adapterId,
+			String... authorizations ) {
 		// TODO #406 Need to fix
 		LOGGER.error("This method removeAllStatistics is not yet coded. Need to fix it");
-		
+
 	}
 
 	@Override
-	public void transformVisibility(ByteArrayId adapterId,
-			String transformingRegex, String replacement,
-			String... authorizations) {
+	public void transformVisibility(
+			ByteArrayId adapterId,
+			String transformingRegex,
+			String replacement,
+			String... authorizations ) {
 		// TODO #406 Need to fix
 		LOGGER.error("This method transformVisibility is not yet coded. Need to fix it");
-		
+
 	}
 
 }

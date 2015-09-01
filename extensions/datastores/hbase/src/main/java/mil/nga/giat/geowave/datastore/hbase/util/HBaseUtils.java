@@ -397,10 +397,11 @@ public class HBaseUtils
 		// decode the persistence model into the native data type
 		final PersistentDataset<CommonIndexValue> indexData = new PersistentDataset<CommonIndexValue>();
 		final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
-		
-		//TODO #406 Need to fix this. Adding it currently to just fix compilation issue due to merge with #238
+
+		// TODO #406 Need to fix this. Adding it currently to just fix
+		// compilation issue due to merge with #238
 		final PersistentDataset<byte[]> unknownData = new PersistentDataset<byte[]>();
-		
+
 		// for now we are assuming all entries in a row are of the same type
 		// and use the same adapter
 		boolean adapterMatchVerified;

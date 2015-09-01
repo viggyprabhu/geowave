@@ -38,8 +38,12 @@ public abstract class StatsOperation implements
 			final ByteArrayId adapterId,
 			final String[] authorizations )
 			throws IOException {
-		final AccumuloOptions accumuloOptions = new AccumuloOptions();
-		accumuloOptions.setPersistDataStatistics(true);
+		/*
+		 * TODO #406 Currently commenting this to fix the compilation issue due
+		 * to merge. However we need to check how to fix this. final
+		 * AccumuloOptions accumuloOptions = new AccumuloOptions();
+		 * accumuloOptions.setPersistDataStatistics(true);
+		 */
 		final DataAdapter<?> adapter = null;
 		if (adapterId != null) {
 			adapterStore.getAdapter(adapterId);

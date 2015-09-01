@@ -649,7 +649,7 @@ public class HBaseDataStore implements
 				},
 				new ArrayList<Object>().iterator());
 	}
-	
+
 	@Override
 	public <T> CloseableIterator<T> query(
 			DataAdapter<T> adapter,
@@ -680,7 +680,8 @@ public class HBaseDataStore implements
 			final Index index,
 			final Query query,
 			final Integer limit,
-			final QueryOptions queryOptions ) {
+			final QueryOptions queryOptions, 
+			final String... additionalAuthorizations ) {
 		if ((query != null) && !query.isSupported(index)) {
 			throw new IllegalArgumentException(
 					"Index does not support the query");
@@ -697,7 +698,7 @@ public class HBaseDataStore implements
 				limit,
 				null,
 				queryOptions,
-				null);
+				additionalAuthorizations);
 	}
 
 	private CloseableIterator<?> query(
@@ -1057,108 +1058,155 @@ public class HBaseDataStore implements
 	}
 
 	@Override
-	public CloseableIterator<?> query(Query query, String... authorizations) {
-		// TODO #406 Need to fix
-		LOGGER.error("This method query2 is not yet coded. Need to fix it");
-		return null;
+	public CloseableIterator<?> query(
+			Query query,
+			String... authorizations ) {
+		return query(
+				(List<ByteArrayId>) null,
+				query,
+				authorizations);
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(DataAdapter<T> adapter, Query query,
-			String... additionalAuthorizations) {
+	public <T> CloseableIterator<T> query(
+			DataAdapter<T> adapter,
+			Query query,
+			String... additionalAuthorizations ) {
 		// TODO #406 Need to fix
 		LOGGER.error("This method query3c is not yet coded. Need to fix it");
 		return null;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(Index index, Query query,
-			String... additionalAuthorizations) {
+	public <T> CloseableIterator<T> query(
+			Index index,
+			Query query,
+			String... additionalAuthorizations ) {
+		return query(
+				index,
+				query,
+				null,
+				additionalAuthorizations);
+	}
+
+	@Override
+	public <T> CloseableIterator<T> query(
+			Index index,
+			Query query,
+			QueryOptions queryOptions,
+			String... additionalAuthorizations ) {
+		return query(
+				index,
+				query,
+				null,
+				queryOptions,
+				additionalAuthorizations);
+	}
+
+	@Override
+	public <T> CloseableIterator<T> query(
+			DataAdapter<T> adapter,
+			Index index,
+			Query query,
+			String... additionalAuthorizations ) {
 		// TODO #406 Need to fix
-				LOGGER.error("This method query3b is not yet coded. Need to fix it");
+		LOGGER.error("This method query4c is not yet coded. Need to fix it");
 		return null;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(Index index, Query query,
-			QueryOptions queryOptions, String... additionalAuthorizations) {
-		// TODO #406 Need to fix
-				LOGGER.error("This method query4d is not yet coded. Need to fix it");
-		return null;
+	public CloseableIterator<?> query(
+			List<ByteArrayId> adapterIds,
+			Query query,
+			String... additionalAuthorizations ) {
+		return query(
+				adapterIds,
+				query,
+				adapterStore,
+				null,
+				null,
+				additionalAuthorizations);
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(DataAdapter<T> adapter, Index index,
-			Query query, String... additionalAuthorizations) {
-		// TODO #406 Need to fix
-				LOGGER.error("This method query4c is not yet coded. Need to fix it");
-		return null;
-	}
-
-	@Override
-	public CloseableIterator<?> query(List<ByteArrayId> adapterIds,
-			Query query, String... additionalAuthorizations) {
-		// // TODO #406 Need to fix
-		LOGGER.error("This method query3a is not yet coded. Need to fix it");
-		return null;
-	}
-
-	@Override
-	public CloseableIterator<?> query(Query query, int limit,
-			String... additionalAuthorizations) {
+	public CloseableIterator<?> query(
+			Query query,
+			int limit,
+			String... additionalAuthorizations ) {
 		// // TODO #406 Need to fix
 		LOGGER.error("This method query3 is not yet coded. Need to fix it");
 		return null;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(DataAdapter<T> adapter, Query query,
-			int limit, String... additionalAuthorizations) {
+	public <T> CloseableIterator<T> query(
+			DataAdapter<T> adapter,
+			Query query,
+			int limit,
+			String... additionalAuthorizations ) {
 		// // TODO #406 Need to fix
 		LOGGER.error("This method query4b is not yet coded. Need to fix it");
 		return null;
 	}
 
 	@Override
-	public <T> CloseableIterator<T> query(Index index, Query query, int limit,
-			String... additionalAuthorizations) {
+	public <T> CloseableIterator<T> query(
+			Index index,
+			Query query,
+			int limit,
+			String... additionalAuthorizations ) {
 		// // TODO #406 Need to fix
 		LOGGER.error("This method query4a is not yet coded. Need to fix it");
 		return null;
 	}
 
 	@Override
-	public CloseableIterator<?> query(List<ByteArrayId> adapterIds,
-			Query query, int limit, String... additionalAuthorizations) {
+	public CloseableIterator<?> query(
+			List<ByteArrayId> adapterIds,
+			Query query,
+			int limit,
+			String... additionalAuthorizations ) {
 		// // TODO #406 Need to fix
 		LOGGER.error("This method query4 is not yet coded. Need to fix it");
 		return null;
 	}
 
 	@Override
-	public void delete(Query query, String... additionalAuthorizations) {
+	public void delete(
+			Query query,
+			String... additionalAuthorizations ) {
 		// // TODO #406 Need to fix
 		LOGGER.error("This method delete2 is not yet coded. Need to fix it");
-		
+
 	}
 
 	@Override
-	public RecordReader<GeoWaveInputKey, ?> createRecordReader(Index[] indices,
-			List<ByteArrayId> adapterIds, DistributableQuery query,
-			QueryOptions queryOptions, AdapterStore adapterStore,
-			IndexStore indexStore, boolean isOutputWritable,
-			String[] additionalAuthorizations, InputSplit inputSplit) {
+	public RecordReader<GeoWaveInputKey, ?> createRecordReader(
+			Index[] indices,
+			List<ByteArrayId> adapterIds,
+			DistributableQuery query,
+			QueryOptions queryOptions,
+			AdapterStore adapterStore,
+			IndexStore indexStore,
+			boolean isOutputWritable,
+			String[] additionalAuthorizations,
+			InputSplit inputSplit ) {
 		// // TODO #406 Need to fix
 		LOGGER.error("This method createRecordReader9 is not yet coded. Need to fix it");
 		return null;
 	}
 
 	@Override
-	public List<InputSplit> getSplits(Index[] indices,
-			List<ByteArrayId> adapterIds, DistributableQuery query,
-			QueryOptions queryOptions, AdapterStore adapterStore,
-			IndexStore indexStore, String[] additionalAuthorizations,
-			Integer minSplits, Integer maxSplits) {
+	public List<InputSplit> getSplits(
+			Index[] indices,
+			List<ByteArrayId> adapterIds,
+			DistributableQuery query,
+			QueryOptions queryOptions,
+			AdapterStore adapterStore,
+			IndexStore indexStore,
+			String[] additionalAuthorizations,
+			Integer minSplits,
+			Integer maxSplits ) {
 		// TODO #406 Need to fix
 		LOGGER.error("This method getSplits9 is not yet coded. Need to fix it");
 		return null;

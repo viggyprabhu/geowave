@@ -93,7 +93,7 @@ abstract public class AbstractMapReduceHBaseIngest<T extends Persistable & DataA
 		job.setInputFormatClass(AvroKeyInputFormat.class);
 		AvroJob.setInputKeySchema(
 				job,
-				parentPlugin.getAvroSchemaForHdfsType());
+				parentPlugin.getAvroSchema());
 		FileInputFormat.setInputPaths(
 				job,
 				inputFile);
